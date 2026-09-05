@@ -13,24 +13,24 @@ import (
 
 const embeddingBatch = 100 // 默认向量化批大小
 
-// VectorizePhase 向量化阶段：批量向量化并回写状态
-type VectorizePhase struct {
+// VectorizeStage 向量化阶段：批量向量化并回写状态
+type VectorizeStage struct {
 	repo    adapter.DocumentRepository
 	indexer adapter.VectorIndexer
 }
 
-func NewVectorizePhase(repo adapter.DocumentRepository, indexer adapter.VectorIndexer) *VectorizePhase {
-	return &VectorizePhase{
+func NewVectorizeStage(repo adapter.DocumentRepository, indexer adapter.VectorIndexer) *VectorizeStage {
+	return &VectorizeStage{
 		repo:    repo,
 		indexer: indexer,
 	}
 }
 
-func (p *VectorizePhase) Name() string {
+func (p *VectorizeStage) Name() string {
 	return "向量化阶段"
 }
 
-func (p *VectorizePhase) Execute(ctx context.Context, buildCtx *Context) error {
+func (p *VectorizeStage) Execute(ctx context.Context, buildCtx *Context) error {
 	if buildCtx.ResumeCommittedGraph {
 		logx.Infof("从已提交 GraphRAG outcome 恢复索引任务，跳过构建向量，documentId=%d, taskId=%d", buildCtx.DocumentId, buildCtx.TaskId)
 		return nil

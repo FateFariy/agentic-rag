@@ -1,7 +1,13 @@
 package main
 
 import (
+	"context"
+	"os"
+
+	"github.com/zeromicro/go-zero/core/logx"
+
 	"github.com/swiftbit/know-agent/internal/config"
+	"github.com/swiftbit/know-agent/internal/domain/chat/adapter"
 	"github.com/swiftbit/know-agent/internal/domain/chat/adapter/model"
 	chatlogic "github.com/swiftbit/know-agent/internal/domain/chat/logic"
 	"github.com/swiftbit/know-agent/internal/domain/chat/logic/conversation"
@@ -16,7 +22,6 @@ import (
 	"github.com/swiftbit/know-agent/internal/domain/chat/logic/retrieval/fuse"
 	"github.com/swiftbit/know-agent/internal/domain/chat/logic/rewrite"
 	"github.com/swiftbit/know-agent/internal/domain/chat/logic/route"
-	"github.com/swiftbit/know-agent/internal/domain/document/adapter"
 	doclogic "github.com/swiftbit/know-agent/internal/domain/document/logic"
 	"github.com/swiftbit/know-agent/internal/domain/document/logic/process"
 	"github.com/swiftbit/know-agent/internal/domain/document/logic/process/analysis"
@@ -25,6 +30,9 @@ import (
 	"github.com/swiftbit/know-agent/internal/domain/document/logic/process/chunk/recursive"
 	"github.com/swiftbit/know-agent/internal/domain/document/logic/process/chunk/semantic"
 	"github.com/swiftbit/know-agent/internal/domain/document/logic/process/index"
+	graphbuild "github.com/swiftbit/know-agent/internal/domain/document/logic/process/index/graph"
+	extract "github.com/swiftbit/know-agent/internal/domain/document/logic/process/index/graph/extract"
+	merge "github.com/swiftbit/know-agent/internal/domain/document/logic/process/index/graph/merge"
 	"github.com/swiftbit/know-agent/internal/domain/document/model/enum"
 	knowlogic "github.com/swiftbit/know-agent/internal/domain/knowledge/logic"
 	knowroute "github.com/swiftbit/know-agent/internal/domain/knowledge/logic/route"
@@ -78,6 +86,20 @@ func bootstrap(c *config.Config) *server.Server {
 	knowledgeRepo := persistence.NewKnowledgeRepository(svcCtx)
 	documentForKnowledge := gateway.NewDocumentAdapterForKnowledge(documentRepo)
 	documentForChat := gateway.NewDocumentAdapterForChat(documentRepo)
+
+	// GraphRAG（M1）：Neo4j 图谱存储 + 构建服务 + 检索网关
+	var graphGateway adapter.GraphGateway
+	var graphBuildService index.GraphRagBuilder
+	if svcCtx.Neo4j != nil {
+		neo4jStore := storage.NewNeo4jGraphStore(svcCtx, &svcCtx.Config.Chat.Rag.GraphRag)
+		if cypher, e := os.ReadFile("etc/neo4j/constraints.cypher"); e == nil {
+			if ae := neo4jStore.ApplyConstraints(context.Background(), string(cypher)); ae != nil {
+				logx.Errorf("应用 Neo4j 约束失败: %v", ae)
+			}
+		}
+		graphGateway = neo4jStore
+		graphBuildService = graphbuild.NewBuildService(neo4jStore, extract.NewLLMExtractor(chatModel, renderer, gseTokenizer), merge.NewResolver(), &svcCtx.Config.Chat.Rag.GraphRag)
+	}
 	observability.RegisterConversationTraceRecorder(chatRepo)
 	observability.RegisterRagEvalMetricsHandler(chatRepo)
 	observability.RegisterModelUsageHandler(svcCtx.Config.ChatModel)
@@ -98,6 +120,9 @@ func bootstrap(c *config.Config) *server.Server {
 	channels := []retrieval.Retrieval{
 		channel.NewVectorRetrievalChannel(svcCtx, milvusVector),
 		channel.NewKeywordRetrievalChannel(milvusKeyword),
+	}
+	if graphGateway != nil {
+		channels = append(channels, channel.NewGraphRetrievalChannel(graphGateway))
 	}
 
 	rrfFusion := fuse.NewRRFFusion()
@@ -135,7 +160,7 @@ func bootstrap(c *config.Config) *server.Server {
 
 	generateImpl := process.NewProfileGenerateImpl(documentRepo)
 	analysisChain := analysis.NewAnalysisChain(svcCtx, documentRepo, tableRepo, minioStorage, generateImpl, knowledgeAdapter)
-	indexChain := index.NewBuildIndexChain(documentRepo, minioStorage, milvusVector, milvusKeyword, strategyRegistry, knowledgeAdapter, gseTokenizer)
+	indexChain := index.NewBuildIndexChain(documentRepo, minioStorage, milvusVector, milvusKeyword, strategyRegistry, knowledgeAdapter, gseTokenizer, graphBuildService)
 	asyncProcessImpl := process.NewAsyncProcessImpl(documentRepo, analysisChain, indexChain)
 	lifecycleLogicImpl := doclogic.NewLifecycleLogicImpl(svcCtx, rocketMQMessageProducer, minioStorage, documentRepo, knowledgeAdapter)
 	profileLogicImpl := doclogic.NewProfileLogicImpl(documentRepo, minioStorage, generateImpl)

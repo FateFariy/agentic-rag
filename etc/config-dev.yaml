@@ -32,7 +32,7 @@ Minio:
   UseSSL: false
 
 Neo4j:
-  Enabled: false
+  Enabled: true
   Uri: bolt://127.0.0.1:7687
   Username: neo4j
   Password: neo4j
@@ -127,8 +127,14 @@ Chat:
       Enabled: true
     GraphRag:
       Enabled: true
-      TopK: 5
+      PageRankDamping: 0.85
+      PageRankIterations: 20
+      LouvainResolution: 1.0
+      EntityLabel: Entity
+      RelationshipType: REL
       MaxHops: 2
+      TopK: 30
+      CommunityTopNodes: 5
     Raptor:
       Enabled: true
       TopK: 5

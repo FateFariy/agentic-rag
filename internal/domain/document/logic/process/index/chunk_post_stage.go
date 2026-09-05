@@ -14,7 +14,7 @@ type ChunkPostStage struct {
 	repo adapter.DocumentRepository
 }
 
-func NewChunkPostPhase(repo adapter.DocumentRepository) *ChunkPostStage {
+func NewChunkPostStage(repo adapter.DocumentRepository) *ChunkPostStage {
 	return &ChunkPostStage{repo: repo}
 }
 

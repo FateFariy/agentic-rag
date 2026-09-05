@@ -43,7 +43,13 @@ func (e *LLMExtractor) Extract(ctx context.Context, chunk *entity.DocumentChunk)
 	if err != nil {
 		return nil, err
 	}
-	return parseRawGraph(resp, chunk.ID)
+	raw, err := parseRawGraph(resp, chunk.ID)
+	if err != nil {
+		return nil, err
+	}
+	// 契约 + grounding 校验：quote 非原文子串/缺失的条目直接丢弃（不整体失败）
+	ValidateGrounding(raw, text)
+	return raw, nil
 }
 
 func (e *LLMExtractor) renderUser(text string) (string, error) {

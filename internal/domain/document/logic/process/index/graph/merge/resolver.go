@@ -162,7 +162,7 @@ func (r *graphResolver) Resolve(raws []*extract.RawGraph) *GraphData {
 						SourceKey:      srcKey,
 						TargetKey:      tgtKey,
 						RelationType:   relType,
-						PredicateQuote: strings.TrimSpace(rel.RelationName),
+						PredicateQuote: strings.TrimSpace(rel.Quote),
 					},
 					chunkSet: map[int64]struct{}{},
 					quoteSet: map[string]struct{}{},

@@ -46,6 +46,7 @@ func (s *Builder) RebuildDocumentGraph(ctx context.Context, documentId, taskId, 
 	}
 	// 1. 逐块抽取（LLM 调用失败仅告警跳过该块，保留其余）
 	var raws []*extract.RawGraph
+	droppedEntity, droppedRelation := 0, 0
 	for _, ch := range chunks {
 		rg, err := s.extractor.Extract(ctx, ch)
 		if err != nil {
@@ -54,7 +55,12 @@ func (s *Builder) RebuildDocumentGraph(ctx context.Context, documentId, taskId, 
 		}
 		if rg != nil {
 			raws = append(raws, rg)
+			droppedEntity += rg.DroppedEntities
+			droppedRelation += rg.DroppedRelations
 		}
+	}
+	if droppedEntity > 0 || droppedRelation > 0 {
+		logx.Infof("grounding 校验丢弃不可信抽取: documentId=%d, 实体=%d, 关系=%d", documentId, droppedEntity, droppedRelation)
 	}
 	// 2. 实体消解 + 关系合并
 	data := s.resolver.Resolve(raws)
@@ -66,9 +72,13 @@ func (s *Builder) RebuildDocumentGraph(ctx context.Context, documentId, taskId, 
 	// 3. PageRank 并写回节点 pagerank/rank_boost/degree 与关系 rank_boost
 	ranks := rank.PageRank(data.Nodes, data.Edges, s.config.PageRankDamping, s.config.PageRankIterations)
 	writeBackGraphMetrics(data, ranks)
-	// 4. 社区发现 + 抽取式社区报告
-	commIDs := community.DetectLouvain(data.Nodes, data.Edges, s.config.LouvainResolution)
+	// 4. 社区发现（并查集连通分量保底 + 大分量内 Louvain 细化）+ 抽取式社区报告
+	commIDs := community.DetectCommunities(data.Nodes, data.Edges, s.config.LouvainResolution)
 	communities := community.BuildCommunities(data.Nodes, commIDs, ranks, s.config.CommunityTopNodes)
+	if mod := community.Modularity(data.Nodes, data.Edges, commIDs); mod > 0 {
+		logx.Infof("图谱社区检测完成: documentId=%d, communities=%d, modularity=%.4f",
+			documentId, len(communities), mod)
+	}
 	// 5. 无有效关系：仅实体入库（降级）
 	if len(data.Edges) == 0 {
 		result.GraphPersistenceOutcome = enum.GraphPersistenceOutcomeDegraded
