@@ -1,6 +1,9 @@
 package rank
 
-import "github.com/swiftbit/know-agent/internal/domain/document/model/entity"
+import (
+	"github.com/swiftbit/know-agent/common/utils"
+	"github.com/swiftbit/know-agent/internal/domain/document/model/entity"
+)
 
 type outEdge struct {
 	to int
@@ -15,9 +18,8 @@ func PageRank(nodes []*entity.GraphNode, edges []*entity.GraphEdge, damping floa
 	if n == 0 {
 		return rank
 	}
-	keyIdx := make(map[string]int, n)
-	for i, nd := range nodes {
-		keyIdx[nd.EntityKey] = i
+	keyIdx := utils.IndexBy(nodes, func(nd *entity.GraphNode) string { return nd.EntityKey })
+	for _, nd := range nodes {
 		rank[nd.EntityKey] = 1.0 / float64(n)
 	}
 	adj := make([][]outEdge, n)

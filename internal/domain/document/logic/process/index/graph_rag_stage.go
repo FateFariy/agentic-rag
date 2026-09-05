@@ -13,18 +13,21 @@ import (
 	errorx "github.com/swiftbit/know-agent/internal/error"
 )
 
-// graphRagStage GraphRAG 构建阶段（M1：抽取→合并→算法→落库 Neo4j）
+// graphRagStage GraphRAG 构建阶段（抽取→合并→算法→落库 Neo4j）
 type graphRagStage struct {
-	builder GraphRagBuilder
 	repo    adapter.DocumentRepository
+	builder GraphRagBuilder
 }
 
 // NewGraphRagStage 创建 GraphRAG 构建阶段
 func NewGraphRagStage(repo adapter.DocumentRepository, builder GraphRagBuilder) Stage {
-	return &graphRagStage{builder: builder, repo: repo}
+	return &graphRagStage{
+		repo:    repo,
+		builder: builder,
+	}
 }
 
-func (s *graphRagStage) Name() string { return "GraphRagStage" }
+func (s *graphRagStage) Name() string { return "图谱构建阶段" }
 
 // Execute 执行 GraphRAG 构建。
 // 图谱为增强依赖：未装配 builder / 无子块 / 已提交过图谱（断点恢复）时直接跳过；

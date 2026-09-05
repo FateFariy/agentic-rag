@@ -4,6 +4,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/swiftbit/know-agent/common/utils"
 	"github.com/swiftbit/know-agent/internal/domain/document/model/entity"
 )
 
@@ -22,10 +23,7 @@ func DetectLouvain(nodes []*entity.GraphNode, edges []*entity.GraphEdge, resolut
 	if resolution <= 0 {
 		resolution = 1.0
 	}
-	keyIdx := make(map[string]int, n)
-	for i, nd := range nodes {
-		keyIdx[nd.EntityKey] = i
-	}
+	keyIdx := utils.IndexBy(nodes, func(nd *entity.GraphNode) string { return nd.EntityKey })
 	adj := make([][]neighbor, n)
 	degrees := make([]float64, n)
 	var totalWeight float64
@@ -89,13 +87,6 @@ func DetectLouvain(nodes []*entity.GraphNode, edges []*entity.GraphEdge, resolut
 	return comm
 }
 
-func nodeRank(nodes []*entity.GraphNode, ranks map[string]float64, idx int) float64 {
-	if r, ok := ranks[nodes[idx].EntityKey]; ok {
-		return r
-	}
-	return 0
-}
-
 // BuildCommunities 根据社区划分生成抽取式社区报告（标题取 top 实体名，零 LLM 成本）。
 // CommunityNo 按社区重要性降序从 1 编号，作为 (document_id, task_id) 内唯一落库键。
 func BuildCommunities(nodes []*entity.GraphNode, commIDs []int, ranks map[string]float64, topN int) []*entity.GraphCommunity {
@@ -112,7 +103,7 @@ func BuildCommunities(nodes []*entity.GraphNode, commIDs []int, ranks map[string
 	communities := make([]*entity.GraphCommunity, 0, len(groups))
 	for _, members := range groups {
 		sort.Slice(members, func(a, b int) bool {
-			return nodeRank(nodes, ranks, members[a]) > nodeRank(nodes, ranks, members[b])
+			return ranks[nodes[members[a]].EntityKey] > ranks[nodes[members[b]].EntityKey]
 		})
 		names := make([]string, 0, len(members))
 		memberKeys := make([]string, 0, len(members))
@@ -120,7 +111,7 @@ func BuildCommunities(nodes []*entity.GraphNode, commIDs []int, ranks map[string
 		for _, mi := range members {
 			names = append(names, nodes[mi].Name)
 			memberKeys = append(memberKeys, nodes[mi].EntityKey)
-			sum += nodeRank(nodes, ranks, mi)
+			sum += ranks[nodes[mi].EntityKey]
 		}
 		titleParts := names
 		if len(titleParts) > topN {

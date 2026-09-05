@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/swiftbit/know-agent/common/utils"
 	"github.com/swiftbit/know-agent/internal/domain/document/logic/process/index/graph/extract"
 	"github.com/swiftbit/know-agent/internal/domain/document/model/entity"
 	"github.com/swiftbit/know-agent/internal/domain/document/model/enum"
@@ -29,23 +30,9 @@ func NewResolver() Resolver {
 	return &graphResolver{}
 }
 
-// normalizeWidth 全角字符转半角（ASCII 范围 + 全角空格）
-func normalizeWidth(s string) string {
-	runes := []rune(s)
-	for i, r := range runes {
-		switch {
-		case r == '\u3000':
-			runes[i] = ' '
-		case r >= '\uff01' && r <= '\uff5e':
-			runes[i] = r - 0xfee0
-		}
-	}
-	return string(runes)
-}
-
 // canonical 实体名规范化：去首尾空格 + 全角转半角 + ASCII 大写，作为 normalized_name
 func canonical(name string) string {
-	return strings.ToUpper(normalizeWidth(strings.TrimSpace(name)))
+	return strings.ToUpper(utils.ToHalfWidth(strings.TrimSpace(name)))
 }
 
 // normalizeEntityType 实体类型受控归一：白名单内原样返回，未命中归入"概念"防类型爆炸
@@ -126,17 +113,14 @@ func (r *graphResolver) Resolve(raws []*extract.RawGraph) *GraphData {
 		}
 	}
 
-	keys := make([]string, 0, len(entMap))
-	for k := range entMap {
-		keys = append(keys, k)
-	}
+	keys := utils.MapKeys(entMap)
 	sort.Strings(keys)
 	nodes := make([]*entity.GraphNode, 0, len(keys))
 	for _, k := range keys {
 		acc := entMap[k]
 		acc.node.MentionCount = acc.mentionCnt
 		acc.node.Aliases = sortedSet(acc.nameSet)
-		if longest := longestName(acc.node.Aliases); longest != "" {
+		if longest := utils.Longest(acc.node.Aliases); longest != "" {
 			acc.node.Name = longest
 		}
 		nodes = append(nodes, acc.node)
@@ -182,10 +166,7 @@ func (r *graphResolver) Resolve(raws []*extract.RawGraph) *GraphData {
 		}
 	}
 
-	edgeKeys := make([]edgeKey, 0, len(edgeMap))
-	for ek := range edgeMap {
-		edgeKeys = append(edgeKeys, ek)
-	}
+	edgeKeys := utils.MapKeys(edgeMap)
 	sort.Slice(edgeKeys, func(i, j int) bool {
 		if edgeKeys[i].src != edgeKeys[j].src {
 			return edgeKeys[i].src < edgeKeys[j].src
@@ -198,10 +179,7 @@ func (r *graphResolver) Resolve(raws []*extract.RawGraph) *GraphData {
 	edges := make([]*entity.GraphEdge, 0, len(edgeKeys))
 	for _, ek := range edgeKeys {
 		acc := edgeMap[ek]
-		chunkIDs := make([]int64, 0, len(acc.chunkSet))
-		for id := range acc.chunkSet {
-			chunkIDs = append(chunkIDs, id)
-		}
+		chunkIDs := utils.MapKeys(acc.chunkSet)
 		sort.Slice(chunkIDs, func(i, j int) bool { return chunkIDs[i] < chunkIDs[j] })
 		acc.edge.ChunkIds = chunkIDs
 		acc.edge.QuoteTexts = sortedSet(acc.quoteSet)
@@ -220,21 +198,9 @@ func firstEntityKey(canonToKeys map[string][]string, entMap map[string]*entAcc, 
 	return entMap[keys[0]].node.EntityKey
 }
 
+// sortedSet 集合键升序输出（确定性，用于别名/引用片段落库）
 func sortedSet(set map[string]struct{}) []string {
-	out := make([]string, 0, len(set))
-	for s := range set {
-		out = append(out, s)
-	}
+	out := utils.MapKeys(set)
 	sort.Strings(out)
 	return out
-}
-
-func longestName(names []string) string {
-	var longest string
-	for _, n := range names {
-		if len([]rune(n)) > len([]rune(longest)) {
-			longest = n
-		}
-	}
-	return longest
 }
