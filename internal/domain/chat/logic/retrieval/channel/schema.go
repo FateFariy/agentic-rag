@@ -7,13 +7,14 @@ import (
 	"github.com/swiftbit/know-agent/internal/domain/chat/logic/retrieval"
 )
 
-// DocumentRetrieve 文档检索
-type DocumentRetrieve struct {
+// Input 通道输入
+type Input struct {
 	Question          string                   `json:"question"`          // 问题
 	DocumentIds       []int64                  `json:"documentIds"`       // 文档ID列表
 	TaskIds           []int64                  `json:"taskIds"`           // 任务ID列表
 	TopK              int                      `json:"topK"`              // 返回数量
 	Filters           *DocumentRetrieveFilters `json:"filters"`           // 过滤器
+	Hops              int                      `json:"hops"`              // 跳数
 	QueryContextHints []string                 `json:"queryContextHints"` // 查询上下文提示（暂未使用）
 }
 
@@ -27,8 +28,8 @@ type DocumentRetrieveFilters struct {
 	YearHints            []string // 年份提示
 }
 
-// NewDocumentRetrieve 根据检索执行请求和渠道名称构建文档检索请求。
-func NewDocumentRetrieve(channelName string, input *retrieval.ExecutionInput) (*DocumentRetrieve, error) {
+// NewInput 根据检索执行请求和渠道名称构建文档检索请求。
+func NewInput(channelName string, input *retrieval.ExecutionInput) (*Input, error) {
 	if input == nil {
 		return nil, fmt.Errorf("ExecutionInput is required for document retrieval")
 	}
@@ -39,12 +40,13 @@ func NewDocumentRetrieve(channelName string, input *retrieval.ExecutionInput) (*
 		return nil, err
 	}
 
-	req := &DocumentRetrieve{
+	req := &Input{
 		Question:          input.SubQuestion,
 		TopK:              channel.TopK,
 		QueryContextHints: input.ContextHints,
 		DocumentIds:       input.DocumentScope,
 		TaskIds:           input.TaskScope,
+		Hops:              input.GraphIntent.MaxHops,
 	}
 
 	// 设置过滤器
@@ -60,13 +62,16 @@ func NewDocumentRetrieve(channelName string, input *retrieval.ExecutionInput) (*
 }
 
 func (d *DocumentRetrieveFilters) IsEmpty() bool {
-	return d == nil && len(d.DocumentNameHints) == 0 &&
+	if d == nil {
+		return true
+	}
+	return len(d.DocumentNameHints) == 0 &&
 		len(d.SectionPathHints) == 0 &&
 		len(d.CanonicalPathHints) == 0 &&
 		len(d.ItemIndexHints) == 0 &&
 		len(d.YearHints) == 0
 }
 
-func (d *DocumentRetrieve) Validate() bool {
+func (d *Input) Validate() bool {
 	return d != nil && len(d.DocumentIds) > 0 && len(d.TaskIds) > 0 && utils.IsNotBlank(d.Question)
 }

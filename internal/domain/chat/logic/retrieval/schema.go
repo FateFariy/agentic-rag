@@ -27,7 +27,7 @@ type ExecutionInput struct {
 	Filters          *vo.RetrievalMetadataFilters
 	Channels         []*vo.RetrievalChannelPlan
 	TableIntent      *vo.TableIntent  // 表格意图（暂未使用）
-	GraphIntent      *vo.GraphIntent  // 图意图（暂未使用）
+	GraphIntent      *vo.GraphIntent  // 图意图
 	RaptorIntent     *vo.RaptorIntent // Raptor意图（暂未使用）
 }
 

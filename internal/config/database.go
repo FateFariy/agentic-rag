@@ -1,7 +1,7 @@
 package config
 
 type MysqlConf struct {
-	Endpoint string `json:",default=127.0.0.1:3306"`
+	Addr     string `json:",default=127.0.0.1:3306"`
 	Username string
 	Password string
 	DbName   string

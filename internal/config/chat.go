@@ -51,26 +51,23 @@ type RewriteConf struct {
 
 // RagConf RAG配置
 type RagConf struct {
-	Enabled                        bool                  `json:",default=true"` // 是否启用RAG
-	ChannelTimeout                 time.Duration         `json:",default=5s"`   // 通道超时时间
-	SubQuestionTimeout             time.Duration         `json:",default=12s"`  // 子问题超时时间
-	CandidateTopK                  int                   `json:",default=40"`   // 候选集TopK
-	FinalTopK                      int                   `json:",default=6"`    // 最终结果TopK
-	ParentEvidenceMaxChars         int                   `json:",default=2200"` // 父证据最大字符数
-	PlanningHistoryMaxChars        int                   `json:",default=1600"` // 规划历史最大字符数
-	QuestionHistoryMaxChars        int                   `json:",default=1000"` // 问题历史最大字符数
-	TotalEvidenceMaxChars          int                   `json:",default=5200"` // 总证据最大字符数
-	PerSubQuestionEvidenceMaxChars int                   `json:",default=2200"` // 每个子问题证据最大字符数
-	Keyword                        KeywordConf           // 关键词通道
-	Vector                         VectorConf            // 向量通道
-	Table                          TableConf             // 表格通道
-	GraphRag                       GraphRagConf          // 图RAG通道
-	Raptor                         RaptorConf            // RAPTOR通道
-	Rerank                         RerankConf            // 重排序通道
-	Hybrid                         HybridConf            // 混合检索权重
-	GraphRagQueryPlan              GraphRagQueryPlanConf // 图RAG查询计划
-	AutoRoute                      AutoRouteConf         // 自动路由配置
-
+	Enabled                        bool          `json:",default=true"` // 是否启用RAG
+	ChannelTimeout                 time.Duration `json:",default=5s"`   // 通道超时时间
+	SubQuestionTimeout             time.Duration `json:",default=12s"`  // 子问题超时时间
+	CandidateTopK                  int           `json:",default=40"`   // 候选集TopK
+	FinalTopK                      int           `json:",default=6"`    // 最终结果TopK
+	ParentEvidenceMaxChars         int           `json:",default=2200"` // 父证据最大字符数
+	PlanningHistoryMaxChars        int           `json:",default=1600"` // 规划历史最大字符数
+	QuestionHistoryMaxChars        int           `json:",default=1000"` // 问题历史最大字符数
+	TotalEvidenceMaxChars          int           `json:",default=5200"` // 总证据最大字符数
+	PerSubQuestionEvidenceMaxChars int           `json:",default=2200"` // 每个子问题证据最大字符数
+	Keyword                        *KeywordConf  // 关键词通道
+	Vector                         *VectorConf   // 向量通道
+	Table                          *TableConf    // 表格通道
+	Graph                          *GraphRagConf // 图RAG通道
+	Raptor                         *RaptorConf   // RAPTOR通道
+	Rerank                         *RerankConf   // 重排序通道
+	Hybrid                         *HybridConf   // 混合检索权重
 }
 
 // SemanticCacheConf 语义缓存配置
@@ -105,15 +102,19 @@ type TableConf struct {
 
 // GraphRagConf 图RAG相关配置
 type GraphRagConf struct {
-	Enabled            bool    `json:",default=false"`  // 启用开关
-	PageRankDamping    float64 `json:",default=0.85"`   // PageRank 阻尼系数
-	PageRankIterations int     `json:",default=20"`     // PageRank 迭代次数
-	LouvainResolution  float64 `json:",default=1.0"`    // Louvain 社区分辨率
-	EntityLabel        string  `json:",default=Entity"` // 实体节点标签
-	RelationshipType   string  `json:",default=REL"`    // 关系边类型
-	MaxHops            int     `json:",default=2"`      // 最大跳数
-	TopK               int     `json:",default=30"`     // 返回结果数
-	CommunityTopNodes  int     `json:",default=5"`      // 社区摘要节点数
+	Enabled           bool    `json:",default=true"` // 启用开关
+	ExtractBatch      int     `json:",default=8"`    // 每批 chunk 数（抽取提示）
+	ChunkMaxChars     int     `json:",default=1200"` // 单 chunk 抽取截断字符数
+	MaxEntities       int     `json:",default=300"`  // 单文档实体上限（超限按 PageRank 截断）
+	MaxRelations      int     `json:",default=500"`  // 单文档关系上限
+	MaxCommunities    int     `json:",default=50"`   // 单文档社区上限
+	CommunityTopNodes int     `json:",default=5"`    // 社区标题/摘要取 top 实体数
+	LouvainEnabled    bool    `json:",default=true"` // 是否启用 Louvain 细化（false 时仅并查集连通分量）
+	LouvainGamma      float64 `json:",default=1.0"`  // Louvain 分辨率（γ）
+	PageRankDamping   float64 `json:",default=0.85"` // PageRank 阻尼系数
+	PageRankMaxIter   int     `json:",default=30"`   // PageRank 最大迭代轮数
+	SearchMaxHops     int     `json:",default=2"`    // 检索最大跳数（硬限 2）
+	SearchTopK        int     `json:",default=10"`   // 检索返回上限
 }
 
 type RaptorConf struct {
@@ -124,11 +125,6 @@ type RaptorConf struct {
 	MaxLevels           int     `json:",default=3"`    // 最大层级
 	LlmSummaryEnabled   bool    `json:",default=true"` // 启用LLM摘要
 	SummaryQualityFloor float64 `json:",default=0.42"` // 摘要质量下限
-}
-
-// GraphRagQueryPlanConf 图RAG查询计划
-type GraphRagQueryPlanConf struct {
-	Enabled bool `json:",default=true"`
 }
 
 // HybridConf 混合检索权重
@@ -144,11 +140,6 @@ type HybridConf struct {
 	MaxMetadataBoost    float64 `json:",default=1.0"`
 }
 
-// AutoRouteConf 自动路由
-type AutoRouteConf struct {
-	RecommendationThreshold float64 `json:",default=0.55"`
-}
-
 // AgentConf Agent配置
 type AgentConf struct {
 	RecommendationEnabled  bool          `json:",default=true"` // 是否启用推荐追问
@@ -159,7 +150,6 @@ type AgentConf struct {
 	HistoryPreviewTurns    int           `json:",default=4"`    // 预览历史轮次
 	RecommendationTimeout  time.Duration `json:",default=5s"`   // 推荐生成超时时间
 	SystemPrompt           string        `json:",optional"`     // 系统提示
-	RecommendationPrompt   string        `json:",optional"`     // 推荐追问提示
 }
 
 type RerankConf struct {

@@ -10,7 +10,6 @@ import (
 	"github.com/swiftbit/know-agent/internal/domain/chat/logic/retrieval"
 	"github.com/swiftbit/know-agent/internal/domain/chat/model/enum"
 	"github.com/swiftbit/know-agent/internal/domain/chat/model/vo"
-	"github.com/swiftbit/know-agent/internal/svc"
 )
 
 // VectorRetrievalChannel 向量检索通道
@@ -19,7 +18,7 @@ type VectorRetrievalChannel struct {
 }
 
 // NewVectorRetrievalChannel 创建向量检索通道
-func NewVectorRetrievalChannel(svcCtx *svc.ServiceContext, retriever VectorRetriever) *VectorRetrievalChannel {
+func NewVectorRetrievalChannel(retriever VectorRetriever) *VectorRetrievalChannel {
 	return &VectorRetrievalChannel{
 		retriever: retriever,
 	}
@@ -33,18 +32,18 @@ func (c *VectorRetrievalChannel) Name() string {
 // Retrieve 执行向量检索
 // 流程：参数校验 → 构建描述符 map → 调用 Milvus 向量相似度查询（topK + 过滤）
 func (c *VectorRetrievalChannel) Retrieve(ctx context.Context, input *retrieval.ExecutionInput) (*retrieval.RetrievalChannelResult, error) {
-	query, err := NewDocumentRetrieve(c.Name(), input)
+	chanInput, err := NewInput(c.Name(), input)
 	if err != nil {
 		return nil, err
 	}
 
-	if !query.Validate() {
+	if !chanInput.Validate() {
 		return nil, fmt.Errorf("invaild value")
 	}
 
-	docs, err := c.retriever.SearchByVector(ctx, query)
+	docs, err := c.retriever.SearchByVector(ctx, chanInput)
 	if err != nil {
-		logx.Errorf("向量检索失败: question='%s', error=%v", query.Question, err)
+		logx.Errorf("向量检索失败: question='%s', error=%v", chanInput.Question, err)
 		return nil, err
 	}
 

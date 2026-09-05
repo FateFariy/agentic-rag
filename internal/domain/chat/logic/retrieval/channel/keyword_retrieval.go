@@ -33,18 +33,18 @@ func (c *KeywordRetrievalChannel) Name() string {
 
 // Retrieve 执行关键词检索
 func (c *KeywordRetrievalChannel) Retrieve(ctx context.Context, input *retrieval.ExecutionInput) (*retrieval.RetrievalChannelResult, error) {
-	query, err := NewDocumentRetrieve(c.Name(), input)
+	chanInput, err := NewInput(c.Name(), input)
 	if err != nil {
 		return nil, err
 	}
 
-	if !query.Validate() {
+	if !chanInput.Validate() {
 		return nil, fmt.Errorf("invaild value")
 	}
 
-	docs, err := c.retriever.SearchByKeyword(ctx, query)
+	docs, err := c.retriever.SearchByKeyword(ctx, chanInput)
 	if err != nil {
-		logx.Errorf("关键词检索失败: question='%s', error=%v", query.Question, err)
+		logx.Errorf("关键词检索失败: question='%s', error=%v", chanInput.Question, err)
 		return nil, err
 	}
 
