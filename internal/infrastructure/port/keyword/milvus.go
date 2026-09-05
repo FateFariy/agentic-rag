@@ -32,7 +32,7 @@ func (m *MilvusKeyword) BuildIndexes(ctx context.Context, chunks []*entity.Docum
 	return nil
 }
 
-func (m *MilvusKeyword) SearchByKeyword(ctx context.Context, query *channel.DocumentRetrieve) ([]*vo.DocumentChunk, error) {
+func (m *MilvusKeyword) SearchByKeyword(ctx context.Context, query *channel.Input) ([]*vo.DocumentChunk, error) {
 	return m.Search(ctx, query)
 }
 

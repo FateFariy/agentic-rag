@@ -26,8 +26,8 @@ func (c *LocalConfig) CurrentOptions() *vo.RagRuntimeOptions {
 	rag := c.conf.Chat.Rag
 	opts.VectorTopK = rag.Vector.TopK
 	opts.KeywordTopK = rag.Keyword.TopK
-	opts.GraphRagTopK = rag.GraphRag.TopK
-	opts.GraphRagMaxHops = rag.GraphRag.MaxHops
+	opts.GraphRagTopK = rag.Graph.SearchTopK
+	opts.GraphRagMaxHops = rag.Graph.SearchMaxHops
 	opts.RaptorTopK = rag.Raptor.TopK
 	opts.RaptorSourceChunkTopK = rag.Raptor.SourceChunkTopK
 	opts.CandidateTopK = rag.FinalTopK
@@ -40,7 +40,7 @@ func (c *LocalConfig) CurrentOptions() *vo.RagRuntimeOptions {
 	opts.KeywordRelativeScoreFloor = rag.Keyword.RelativeScoreFloor
 	opts.KeywordChannelEnabled = rag.Keyword.Enabled
 	opts.TableChannelEnabled = rag.Table.Enabled
-	opts.GraphRagChannelEnabled = rag.GraphRag.Enabled
+	opts.GraphRagChannelEnabled = rag.Graph.Enabled
 	opts.RaptorChannelEnabled = rag.Raptor.Enabled
 	hybrid := rag.Hybrid
 	opts.Hybrid = &vo.HybridOptions{
@@ -79,7 +79,7 @@ func (c *LocalConfig) CurrentIndexingOptions() *vo.IndexingOptions {
 			ParentSemanticMinChars:           chunk.ParentSemanticMinChars,
 		},
 		GraphRag: vo.GraphRagBuildOptions{
-			GraphRagBuildEnabled: rag.GraphRag.Enabled,
+			GraphRagBuildEnabled: rag.Graph.Enabled,
 		},
 		Raptor: vo.RaptorBuildOptions{
 			RaptorBuildEnabled:        rag.Raptor.Enabled,

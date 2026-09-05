@@ -53,7 +53,7 @@ func (b *Base) DeleteByDocumentId(ctx context.Context, documentId int64) error {
 }
 
 // Search 检索
-func (b *Base) Search(ctx context.Context, query *channel.DocumentRetrieve) ([]*cvo.DocumentChunk, error) {
+func (b *Base) Search(ctx context.Context, query *channel.Input) ([]*cvo.DocumentChunk, error) {
 	filterExpr := b.buildFilterExpr(query)
 	retrievedDocs, err := b.retriever.Retrieve(ctx, query.Question, retriever.WithTopK(query.TopK), retrievermilvus.WithFilter(filterExpr))
 	if err != nil {
@@ -71,7 +71,7 @@ func (b *Base) Search(ctx context.Context, query *channel.DocumentRetrieve) ([]*
 //	    [ AND structure_node_id in [..] ]               ← structureNodeIdHints
 //	    [ AND (canonical_path like "%h1%" or ...) ]     ← canonicalPathHints
 //	    [ AND item_index in [..] ]                      ← itemIndexHints
-func (b *Base) buildFilterExpr(query *channel.DocumentRetrieve) string {
+func (b *Base) buildFilterExpr(query *channel.Input) string {
 	var sb strings.Builder
 	sb.WriteString("document_id in ")
 	sb.WriteString(utils.Join(query.DocumentIds, "[", "]", ", "))

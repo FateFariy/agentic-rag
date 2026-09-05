@@ -55,7 +55,7 @@ func (m *MilvusVector) BuildVectors(ctx context.Context, chunks []*entity.Docume
 	return nil
 }
 
-func (m *MilvusVector) SearchByVector(ctx context.Context, query *channel.DocumentRetrieve) ([]*vo.DocumentChunk, error) {
+func (m *MilvusVector) SearchByVector(ctx context.Context, query *channel.Input) ([]*vo.DocumentChunk, error) {
 	return m.Search(ctx, query)
 }
 
