@@ -19,8 +19,8 @@ type graphRagStage struct {
 	repo    adapter.DocumentRepository
 }
 
-// NewGraphRagPhase 创建 GraphRAG 构建阶段
-func NewGraphRagPhase(repo adapter.DocumentRepository, builder GraphRagBuilder) Stage {
+// NewGraphRagStage 创建 GraphRAG 构建阶段
+func NewGraphRagStage(repo adapter.DocumentRepository, builder GraphRagBuilder) Stage {
 	return &graphRagStage{builder: builder, repo: repo}
 }
 
