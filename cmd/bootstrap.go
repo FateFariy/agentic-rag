@@ -72,7 +72,7 @@ func bootstrap(c *config.Config) *server.Server {
 	semanticCacheStore := cache.NewSemanticCache(svcCtx, embedder)
 	neo4jStore := storage.NewNeo4jGraphStore(svcCtx, gseTokenizer)
 
-	documentRepo := persistence.NewDocumentRepository(svcCtx, minioStorage, milvusStorage)
+	documentRepo := persistence.NewDocumentRepository(svcCtx, minioStorage)
 	tableRepo := persistence.NewTableRepository(svcCtx)
 	chatRepo := persistence.NewChatRepository(svcCtx)
 	knowledgeRepo := persistence.NewKnowledgeRepository(svcCtx)
@@ -131,15 +131,15 @@ func bootstrap(c *config.Config) *server.Server {
 	chain := conversation.NewChain(chatRepo, redisMutexLock, memoryManageImpl, chainRuntime, stages)
 	conversationLogicImpl := chatlogic.NewConversationLogicImpl(chatRepo, knowledgeAdapter, memoryManageImpl, redisMutexLock, checkPointStore, chain)
 
-	reporter := community.NewLLMCommunityReporter(chatModel, renderer)
-	llmExtractor := extract.NewLLMExtractor(chatModel, renderer, gseTokenizer, svcCtx.Config.Chat.Rag.Graph.ChunkMaxChars)
+	reporter := community.NewLLMCommunityReporter(ollamaModel, renderer)
+	llmExtractor := extract.NewLLMExtractor(ollamaModel, renderer, gseTokenizer, svcCtx.Config.Chat.Rag.Graph.ChunkMaxChars)
 	graphBuilder := graphbuild.NewBuilder(neo4jStore, llmExtractor, svcCtx.Config.Chat.Rag.Graph, reporter, milvusStorage)
 	strategyRegistry := NewChunkStrategyRegistry(svcCtx, chatModel, renderer)
 	generateImpl := process.NewProfileGenerateImpl(documentRepo)
 	analysisChain := analysis.NewAnalysisChain(svcCtx, documentRepo, tableRepo, minioStorage, generateImpl, knowledgeAdapter)
 	indexChain := index.NewBuildIndexChain(documentRepo, minioStorage, milvusStorage, milvusStorage, strategyRegistry, knowledgeAdapter, gseTokenizer, graphBuilder)
 	asyncProcessImpl := process.NewAsyncProcessImpl(documentRepo, analysisChain, indexChain)
-	lifecycleLogicImpl := doclogic.NewLifecycleLogicImpl(svcCtx, rocketMQMessageProducer, minioStorage, documentRepo, knowledgeAdapter)
+	lifecycleLogicImpl := doclogic.NewLifecycleLogicImpl(svcCtx, rocketMQMessageProducer, minioStorage, documentRepo, knowledgeAdapter, milvusStorage, neo4jStore)
 	profileLogicImpl := doclogic.NewProfileLogicImpl(documentRepo, minioStorage, generateImpl)
 
 	parseConsumer := consumer.NewParseDocumentConsumer(svcCtx, asyncProcessImpl)

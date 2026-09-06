@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/cloudwego/eino-ext/components/model/ark"
@@ -147,7 +148,7 @@ func NewNeo4jClient(c config.Neo4jConf) neo4j.DriverWithContext {
 	}
 
 	// 读取约束脚本
-	cypherBytes, err := os.ReadFile("etc/neo4j/constraints.cypher")
+	cypherBytes, err := os.ReadFile("etc/constraints.cypher")
 	if err != nil {
 		logx.Errorf("读取 Neo4j 约束文件失败: %v", err)
 		return driver // 文件缺失不影响已建立的连接，直接返回 driver
@@ -160,9 +161,33 @@ func NewNeo4jClient(c config.Neo4jConf) neo4j.DriverWithContext {
 	session := driver.NewSession(execCtx, neo4j.SessionConfig{DatabaseName: c.Database})
 	defer session.Close(execCtx)
 
-	if _, err = session.Run(execCtx, string(cypherBytes), nil); err != nil {
-		logx.Errorf("应用 Neo4j 约束失败: %v", err)
+	// Neo4j 一次查询仅允许一条语句，按分号拆分后逐条执行
+	for _, stmt := range splitCypherStatements(string(cypherBytes)) {
+		if _, err = session.Run(execCtx, stmt, nil); err != nil {
+			logx.Errorf("应用 Neo4j 约束失败: %v", err)
+			break
+		}
 	}
 
 	return driver
+}
+
+// splitCypherStatements 拆分 Cypher 脚本为语句列表：剥离 // 注释行与空行，按分号切分并去掉尾部分号
+func splitCypherStatements(script string) []string {
+	var stmts []string
+	var buf strings.Builder
+	for _, line := range strings.Split(script, "\n") {
+		line = strings.TrimSpace(line)
+		if line == "" || strings.HasPrefix(line, "//") {
+			continue
+		}
+		buf.WriteString(line)
+		buf.WriteString(" ")
+		if !strings.HasSuffix(line, ";") {
+			continue
+		}
+		stmts = append(stmts, strings.TrimSuffix(strings.TrimSpace(buf.String()), ";"))
+		buf.Reset()
+	}
+	return stmts
 }

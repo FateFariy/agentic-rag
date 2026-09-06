@@ -25,84 +25,55 @@ import (
 
 type DocumentRepositoryImpl struct {
 	rdb     *redis.Client
-	vdb     adapter.VectorIndexer
 	storage adapter.Storage
 	*transactionManager
 }
 
 var _ adapter.DocumentRepository = (*DocumentRepositoryImpl)(nil)
 
-func NewDocumentRepository(svcCtx *svc.ServiceContext, storage adapter.Storage, vdb adapter.VectorIndexer) *DocumentRepositoryImpl {
+func NewDocumentRepository(svcCtx *svc.ServiceContext, storage adapter.Storage) *DocumentRepositoryImpl {
 	return &DocumentRepositoryImpl{
 		transactionManager: &transactionManager{db: svcCtx.Db},
 		rdb:                svcCtx.Rdb,
 		storage:            storage,
-		vdb:                vdb,
 	}
 }
 
 // DeleteDocumentRelatedDataById 删除文档关联数据
-func (d *DocumentRepositoryImpl) DeleteDocumentRelatedDataById(ctx context.Context, documentId int64) (string, error) {
-	var documentName string
-	err := d.dbWithContext(ctx).Transaction(func(tx *gorm.DB) error {
-		document, err := d.SelectDocumentById(ctx, documentId)
-		if err != nil {
+func (d *DocumentRepositoryImpl) DeleteDocumentRelatedDataById(ctx context.Context, documentId int64) error {
+	return d.withinTx(ctx, func(ctx context.Context, tx *gorm.DB) error {
+		if err := d.DeleteProfileByDocumentId(ctx, documentId); err != nil {
 			return err
 		}
-		documentName = document.DocumentName
-
-		// 删除存储对象
-		if err = d.storage.DeleteObjects(ctx, []string{document.ObjectName, document.ParseTextPath}); err != nil {
+		if err := d.DeleteTopicDocumentRelationByDocumentId(ctx, documentId); err != nil {
 			return err
 		}
-
-		// 删除向量索引
-		if err = d.vdb.DeleteByDocumentId(ctx, documentId); err != nil {
+		if err := d.DeleteParentChunkByDocumentId(ctx, documentId); err != nil {
 			return err
 		}
-
-		// 删除其他索引（TODO: 实现关键词搜索、导航索引、知识路由索引、结构图投影）
-
-		// 删除相关数据
-		if err = d.DeleteProfileByDocumentId(ctx, documentId); err != nil {
+		if err := d.DeleteChunkByDocumentId(ctx, documentId); err != nil {
 			return err
 		}
-		if err = d.DeleteTopicDocumentRelationByDocumentId(ctx, documentId); err != nil {
+		if err := d.DeleteStructureNodeByDocumentId(ctx, documentId); err != nil {
 			return err
 		}
-		if err = d.DeleteParentChunkByDocumentId(ctx, documentId); err != nil {
+		if err := d.DeleteDocumentBlocksByDocumentId(ctx, documentId); err != nil {
 			return err
 		}
-		if err = d.DeleteChunkByDocumentId(ctx, documentId); err != nil {
+		if err := d.DeleteTaskLogByDocumentId(ctx, documentId); err != nil {
 			return err
 		}
-		if err = d.DeleteStructureNodeByDocumentId(ctx, documentId); err != nil {
+		if err := d.DeleteStepByDocumentId(ctx, documentId); err != nil {
 			return err
 		}
-		if err = d.DeleteDocumentBlocksByDocumentId(ctx, documentId); err != nil {
+		if err := d.DeleteTaskByDocumentId(ctx, documentId); err != nil {
 			return err
 		}
-		//if err = d.DeleteTablesByDocumentId(ctx, documentId); err != nil {
-		//	return err
-		//}
-		if err = d.DeleteTaskLogByDocumentId(ctx, documentId); err != nil {
+		if err := d.DeletePlanByDocumentId(ctx, documentId); err != nil {
 			return err
 		}
-		if err = d.DeleteStepByDocumentId(ctx, documentId); err != nil {
-			return err
-		}
-		if err = d.DeleteTaskByDocumentId(ctx, documentId); err != nil {
-			return err
-		}
-		if err = d.DeletePlanByDocumentId(ctx, documentId); err != nil {
-			return err
-		}
-		if err = d.DeleteDocumentById(ctx, documentId); err != nil {
-			return err
-		}
-		return nil
+		return d.DeleteDocumentById(ctx, documentId)
 	})
-	return documentName, err
 }
 
 // ========== 文档相关 ==========

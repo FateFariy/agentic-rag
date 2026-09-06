@@ -27,7 +27,7 @@ type DocumentRepository interface {
 	UpdateDocumentById(ctx context.Context, document *entity.Document) error
 
 	// DeleteDocumentRelatedDataById 删除文档关联数据
-	DeleteDocumentRelatedDataById(ctx context.Context, documentId int64) (string, error)
+	DeleteDocumentRelatedDataById(ctx context.Context, documentId int64) error
 
 	// SelectRetrievableDocumentsByIds 根据ID查询可检索的文档
 	SelectRetrievableDocumentsByIds(ctx context.Context, documentIds ...int64) ([]*vo.DocumentMetadata, error)

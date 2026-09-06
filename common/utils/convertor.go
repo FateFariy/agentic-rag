@@ -32,6 +32,12 @@ func MustConvert[T any](v any) (T, error) {
 	case int:
 		val, err := toInt(v)
 		return any(val).(T), err
+	case int8:
+		val, err := toInt8(v)
+		return any(val).(T), err
+	case int16:
+		val, err := toInt16(v)
+		return any(val).(T), err
 	case int32:
 		val, err := toInt32(v)
 		return any(val).(T), err
@@ -105,6 +111,10 @@ func toInt(v any) (int, error) {
 	switch val := v.(type) {
 	case int:
 		return val, nil
+	case int8:
+		return int(val), nil
+	case int16:
+		return int(val), nil
 	case int32:
 		return int(val), nil
 	case int64:
@@ -121,11 +131,25 @@ func toInt(v any) (int, error) {
 	return 0, fmt.Errorf("cannot convert %T to int", v)
 }
 
+func toInt8(v any) (int8, error) {
+	val, err := toInt64(v)
+	return int8(val), err
+}
+
+func toInt16(v any) (int16, error) {
+	val, err := toInt64(v)
+	return int16(val), err
+}
+
 func toInt32(v any) (int32, error) {
 	switch val := v.(type) {
 	case int32:
 		return val, nil
 	case int:
+		return int32(val), nil
+	case int8:
+		return int32(val), nil
+	case int16:
 		return int32(val), nil
 	case int64:
 		return int32(val), nil
@@ -146,6 +170,10 @@ func toInt64(v any) (int64, error) {
 	case int64:
 		return val, nil
 	case int:
+		return int64(val), nil
+	case int8:
+		return int64(val), nil
+	case int16:
 		return int64(val), nil
 	case int32:
 		return int64(val), nil

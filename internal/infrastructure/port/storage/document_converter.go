@@ -9,6 +9,7 @@ import (
 	"github.com/cloudwego/eino/schema"
 	"github.com/milvus-io/milvus/client/v2/column"
 
+	"github.com/swiftbit/know-agent/common/utils"
 	"github.com/swiftbit/know-agent/internal/domain/chat/model/vo"
 )
 
@@ -44,23 +45,23 @@ func DocumentConverter(vector *milvus2.VectorConfig, _ *milvus2.SparseVectorConf
 		for idx, doc := range docs {
 			ids = append(ids, doc.ID)
 			contents = append(contents, doc.Content)
-			documentIds = append(documentIds, doc.MetaData[vo.MetaDocumentId].(int64))
-			taskIds = append(taskIds, doc.MetaData[vo.MetaTaskId].(int64))
-			planIds = append(planIds, doc.MetaData[vo.MetaPlanId].(int64))
-			parentBlockIds = append(parentBlockIds, doc.MetaData[vo.MetaParentBlockId].(int64))
-			chunkNos = append(chunkNos, doc.MetaData[vo.MetaChunkNo].(int32))
-			sourceTypes = append(sourceTypes, doc.MetaData[vo.MetaSourceType].(int32))
-			sectionPaths = append(sectionPaths, doc.MetaData[vo.MetaSectionPath].(string))
-			structureNodeIds = append(structureNodeIds, doc.MetaData[vo.MetaStructureNodeId].(int64))
-			structureNodeTypes = append(structureNodeTypes, doc.MetaData[vo.MetaStructureNodeType].(int32))
-			canonicalPaths = append(canonicalPaths, doc.MetaData[vo.MetaCanonicalPath].(string))
-			itemIndices = append(itemIndices, doc.MetaData[vo.MetaItemIndex].(int32))
-			charCounts = append(charCounts, doc.MetaData["charCount"].(int32))
-			tokenCounts = append(tokenCounts, doc.MetaData["tokenCount"].(int32))
-			embeddingModels = append(embeddingModels, doc.MetaData["embeddingModel"].(string))
-			createTimes = append(createTimes, doc.MetaData["createTime"].(time.Time))
-			updateTimes = append(updateTimes, doc.MetaData["updateTime"].(time.Time))
-			statuses = append(statuses, doc.MetaData["status"].(int8))
+			documentIds = append(documentIds, utils.Convert[int64](doc.MetaData[vo.MetaDocumentId]))
+			taskIds = append(taskIds, utils.Convert[int64](doc.MetaData[vo.MetaTaskId]))
+			planIds = append(planIds, utils.Convert[int64](doc.MetaData[vo.MetaPlanId]))
+			parentBlockIds = append(parentBlockIds, utils.Convert[int64](doc.MetaData[vo.MetaParentBlockId]))
+			chunkNos = append(chunkNos, utils.Convert[int32](doc.MetaData[vo.MetaChunkNo]))
+			sourceTypes = append(sourceTypes, utils.Convert[int32](doc.MetaData[vo.MetaSourceType]))
+			sectionPaths = append(sectionPaths, utils.Convert[string](doc.MetaData[vo.MetaSectionPath]))
+			structureNodeIds = append(structureNodeIds, utils.Convert[int64](doc.MetaData[vo.MetaStructureNodeId]))
+			structureNodeTypes = append(structureNodeTypes, utils.Convert[int32](doc.MetaData[vo.MetaStructureNodeType]))
+			canonicalPaths = append(canonicalPaths, utils.Convert[string](doc.MetaData[vo.MetaCanonicalPath]))
+			itemIndices = append(itemIndices, utils.Convert[int32](doc.MetaData[vo.MetaItemIndex]))
+			charCounts = append(charCounts, utils.Convert[int32](doc.MetaData["charCount"]))
+			tokenCounts = append(tokenCounts, utils.Convert[int32](doc.MetaData["tokenCount"]))
+			embeddingModels = append(embeddingModels, utils.Convert[string](doc.MetaData["embeddingModel"]))
+			createTimes = append(createTimes, utils.Convert[time.Time](doc.MetaData["createTime"]))
+			updateTimes = append(updateTimes, utils.Convert[time.Time](doc.MetaData["updateTime"]))
+			statuses = append(statuses, utils.Convert[int8](doc.MetaData["status"]))
 
 			var sourceVec []float64
 			if len(vectors) == len(docs) {

@@ -27,6 +27,8 @@ import (
 type LifecycleLogicImpl struct {
 	repo             adapter.DocumentRepository
 	store            adapter.Storage
+	vectorIndexer    adapter.VectorIndexer
+	graphStore       adapter.GraphStore
 	knowledgeGateway adapter.KnowledgeGateway
 	messageProducer  adapter.MessageProducer
 	parseTopic       string
@@ -36,10 +38,12 @@ type LifecycleLogicImpl struct {
 var _ LifecycleLogic = (*LifecycleLogicImpl)(nil)
 
 func NewLifecycleLogicImpl(svcCtx *svc.ServiceContext, messageProducer adapter.MessageProducer, store adapter.Storage,
-	repo adapter.DocumentRepository, knowledgeGateway adapter.KnowledgeGateway) *LifecycleLogicImpl {
+	repo adapter.DocumentRepository, knowledgeGateway adapter.KnowledgeGateway, vectorIndexer adapter.VectorIndexer, graphStore adapter.GraphStore) *LifecycleLogicImpl {
 	return &LifecycleLogicImpl{
 		repo:             repo,
 		store:            store,
+		graphStore:       graphStore,
+		vectorIndexer:    vectorIndexer,
 		knowledgeGateway: knowledgeGateway,
 		messageProducer:  messageProducer,
 		parseTopic:       svcCtx.Config.MQ.ParseTopic,
@@ -205,7 +209,7 @@ func (d *LifecycleLogicImpl) QueryDocumentDetail(ctx context.Context, documentId
 	return document, nil
 }
 
-// DeleteDocument 删除文档 todo 删除其他索引,实现关键词搜索、导航索引、知识路由索引、结构图投影
+// DeleteDocument 删除文档
 func (d *LifecycleLogicImpl) DeleteDocument(ctx context.Context, documentId int64) (string, error) {
 	// 检查是否有活跃任务
 	activeTaskCount, err := d.repo.CountTaskByParams(ctx, documentId, 0, []int{enum.TaskStatusNew, enum.TaskStatusRunning})
@@ -215,8 +219,28 @@ func (d *LifecycleLogicImpl) DeleteDocument(ctx context.Context, documentId int6
 	if activeTaskCount > 0 {
 		return "", errorx.ErrDocumentStatusInvalid.Format("当前文档存在进行中的任务，请等待任务结束后再删除")
 	}
-
-	return d.repo.DeleteDocumentRelatedDataById(ctx, documentId)
+	document, err := d.repo.SelectDocumentById(ctx, documentId)
+	if err != nil {
+		return "", err
+	}
+	fn := func(txCtx context.Context) error {
+		if err = d.repo.DeleteDocumentRelatedDataById(ctx, documentId); err != nil {
+			return err
+		}
+		// 删除存储对象
+		if err = d.store.DeleteObjects(ctx, []string{document.ObjectName, document.ParseTextPath}); err != nil {
+			return err
+		}
+		// 删除向量索引
+		if err = d.vectorIndexer.DeleteByDocumentId(ctx, documentId); err != nil {
+			return err
+		}
+		return d.graphStore.DeleteDocumentGraph(ctx, documentId)
+	}
+	if err = d.repo.Do(ctx, fn); err != nil {
+		return "", err
+	}
+	return document.DocumentName, nil
 }
 
 // QueryStrategyPlan 查询策略方案
@@ -525,10 +549,10 @@ func (d *LifecycleLogicImpl) BuildIndex(ctx context.Context, documentId, planId,
 	// 事务性操作：更新文档状态、插入任务、插入任务日志
 	fn := func(txCtx context.Context) error {
 		// 更新文档状态为"构建中"
-		if err := d.repo.UpdateDocumentById(txCtx, &entity.Document{ID: documentId, IndexStatus: enum.IndexStatusBuilding}); err != nil {
+		if err = d.repo.UpdateDocumentById(txCtx, &entity.Document{ID: documentId, IndexStatus: enum.IndexStatusBuilding}); err != nil {
 			return err
 		}
-		if err := d.repo.InsertTask(txCtx, task); err != nil {
+		if err = d.repo.InsertTask(txCtx, task); err != nil {
 			return err
 		}
 		return d.repo.InsertTaskLog(txCtx, taskLog)
