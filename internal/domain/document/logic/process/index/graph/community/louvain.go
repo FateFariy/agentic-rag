@@ -1,7 +1,8 @@
 package community
 
 import (
-	"sort"
+	"cmp"
+	"slices"
 	"strings"
 
 	"github.com/swiftbit/know-agent/common/utils"
@@ -102,8 +103,8 @@ func BuildCommunities(nodes []*entity.GraphNode, commIDs []int, ranks map[string
 	}
 	communities := make([]*entity.GraphCommunity, 0, len(groups))
 	for _, members := range groups {
-		sort.Slice(members, func(a, b int) bool {
-			return ranks[nodes[members[a]].EntityKey] > ranks[nodes[members[b]].EntityKey]
+		slices.SortFunc(members, func(a, b int) int {
+			return cmp.Compare(ranks[nodes[members[b]].EntityKey], ranks[nodes[members[a]].EntityKey])
 		})
 		names := make([]string, 0, len(members))
 		memberKeys := make([]string, 0, len(members))
@@ -125,7 +126,7 @@ func BuildCommunities(nodes []*entity.GraphNode, commIDs []int, ranks map[string
 			RankBoost:   sum / float64(len(names)),
 		})
 	}
-	sort.Slice(communities, func(i, j int) bool { return communities[i].RankBoost > communities[j].RankBoost })
+	slices.SortFunc(communities, func(a, b *entity.GraphCommunity) int { return cmp.Compare(b.RankBoost, a.RankBoost) })
 	for i := range communities {
 		communities[i].CommunityNo = i + 1
 	}

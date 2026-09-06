@@ -1,5 +1,7 @@
 package enum
 
+import "strings"
+
 // GraphPersistenceOutcome 图谱持久化结果枚举
 type GraphPersistenceOutcome = string
 
@@ -18,16 +20,16 @@ var GraphRagEntityTypes = map[string]struct{}{
 }
 
 // GraphRagRelationFallback 关系类型兜底值：白名单外一律落该关系类型，保留 predicate_quote 原文谓词
-const GraphRagRelationFallback = "RELATED_TO"
+const GraphRagRelationFallback = "相关于"
 
-// GraphRagRelationWhitelist 受控关系类型白名单（通用语义集合，命中→动态关系类型；未命中→RELATED_TO 兜底）
+// GraphRagRelationWhitelist 受控关系类型白名单（通用语义集合，命中→动态关系类型；未命中→相关于 兜底）
 // 覆盖分类/组成/定义/引用/依据/约束/变更等常见本体语义，语料具体细节由 predicate_quote 原文谓词承载
 var GraphRagRelationWhitelist = map[string]struct{}{
 	"属于": {}, "包含": {}, "定义": {}, "引用": {}, "适用于": {},
 	"依据": {}, "要求": {}, "禁止": {}, "取代": {},
 }
 
-// NormalizeRelationType 归一化关系类型：白名单内原样返回，否则落 RELATED_TO 兜底
+// NormalizeRelationType 归一化关系类型：白名单内原样返回，否则落 相关于 兜底
 func NormalizeRelationType(rt string) string {
 	if rt != "" {
 		if _, ok := GraphRagRelationWhitelist[rt]; ok {
@@ -37,20 +39,12 @@ func NormalizeRelationType(rt string) string {
 	return GraphRagRelationFallback
 }
 
-// IsValidGraphRelation 校验关系类型是否在受控白名单内
-func IsValidGraphRelation(rt string) bool {
-	if rt == "" {
-		return false
+// NormalizeEntityType 实体类型受控归一：白名单内原样返回，未命中归入"概念"防类型爆炸
+func NormalizeEntityType(t string) string {
+	if t = strings.TrimSpace(t); t != "" {
+		if _, ok := GraphRagEntityTypes[t]; ok {
+			return t
+		}
 	}
-	_, ok := GraphRagRelationWhitelist[rt]
-	return ok
-}
-
-// IsValidGraphEntityType 校验实体类型是否允许
-func IsValidGraphEntityType(t string) bool {
-	if t == "" {
-		return false
-	}
-	_, ok := GraphRagEntityTypes[t]
-	return ok
+	return "概念"
 }

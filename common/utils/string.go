@@ -15,6 +15,14 @@ func EqualsIgnoreCase(a, b string) bool {
 	return strings.EqualFold(a, b)
 }
 
+// ContainsFold 忽略大小写的子串包含判定（str 是否包含 substr；任一参数为空返回 false）
+func ContainsFold(str, substr string) bool {
+	if str == "" || substr == "" {
+		return false
+	}
+	return strings.Contains(strings.ToLower(str), strings.ToLower(substr))
+}
+
 func BlankToDefault(s string, defaultValue string) string {
 	space := strings.TrimSpace(s)
 	if space == "" {
@@ -208,7 +216,43 @@ func ContainsAnyString(str string, substrs []string) bool {
 	return strutil.ContainsAny(str, substrs)
 }
 
+// ToHalfWidth 全角字符转半角（ASCII 范围 + 全角空格）
+func ToHalfWidth(s string) string {
+	runes := []rune(s)
+	for i, r := range runes {
+		switch {
+		case r == '\u3000':
+			runes[i] = ' '
+		case r >= '\uff01' && r <= '\uff5e':
+			runes[i] = r - 0xfee0
+		}
+	}
+	return string(runes)
+}
+
+// TrimPairs 去除字符串首尾成对出现的包裹符号（如引号/书名号），每组最多剥一层
+func TrimPairs(s string, pairs ...[2]string) string {
+	s = Trim(s)
+	for _, p := range pairs {
+		if p[0] == "" || p[1] == "" {
+			continue
+		}
+		if strings.HasPrefix(s, p[0]) && strings.HasSuffix(s, p[1]) && Len(s) > Len(p[0]) {
+			s = Trim(s[len(p[0]) : len(s)-len(p[1])])
+		}
+	}
+	return s
+}
+
 // Substring 截取字符串
 func Substring(s string, offset int, length uint) string {
 	return strutil.Substring(s, offset, length)
+}
+
+func Truncate(s string, max int) string {
+	runes := []rune(s)
+	if len(runes) <= max {
+		return s
+	}
+	return string(runes[:max])
 }

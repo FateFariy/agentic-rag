@@ -1,8 +1,9 @@
 package merge
 
 import (
+	"cmp"
 	"hash/fnv"
-	"sort"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -33,14 +34,6 @@ func NewResolver() Resolver {
 // canonical 实体名规范化：去首尾空格 + 全角转半角 + ASCII 大写，作为 normalized_name
 func canonical(name string) string {
 	return strings.ToUpper(utils.ToHalfWidth(strings.TrimSpace(name)))
-}
-
-// normalizeEntityType 实体类型受控归一：白名单内原样返回，未命中归入"概念"防类型爆炸
-func normalizeEntityType(t string) string {
-	if t = strings.TrimSpace(t); enum.IsValidGraphEntityType(t) {
-		return t
-	}
-	return "概念"
 }
 
 // mergeKey 内存消解键：同 normalized_name + 同受控 type 视为同一实体
@@ -87,7 +80,7 @@ func (r *graphResolver) Resolve(raws []*extract.RawGraph) *GraphData {
 			if normalized == "" {
 				continue
 			}
-			etype := normalizeEntityType(e.Type)
+			etype := enum.NormalizeEntityType(e.Type)
 			key := mergeKey(normalized, etype)
 			acc, ok := entMap[key]
 			if !ok {
@@ -114,13 +107,14 @@ func (r *graphResolver) Resolve(raws []*extract.RawGraph) *GraphData {
 	}
 
 	keys := utils.MapKeys(entMap)
-	sort.Strings(keys)
+	slices.Sort(keys)
 	nodes := make([]*entity.GraphNode, 0, len(keys))
 	for _, k := range keys {
 		acc := entMap[k]
 		acc.node.MentionCount = acc.mentionCnt
-		acc.node.Aliases = sortedSet(acc.nameSet)
-		if longest := utils.Longest(acc.node.Aliases); longest != "" {
+		acc.node.Aliases = utils.SortedKeys(acc.nameSet)
+		longest := slices.MaxFunc(acc.node.Aliases, func(a, b string) int { return cmp.Compare(utils.Len(a), utils.Len(b)) })
+		if longest != "" {
 			acc.node.Name = longest
 		}
 		nodes = append(nodes, acc.node)
@@ -167,22 +161,22 @@ func (r *graphResolver) Resolve(raws []*extract.RawGraph) *GraphData {
 	}
 
 	edgeKeys := utils.MapKeys(edgeMap)
-	sort.Slice(edgeKeys, func(i, j int) bool {
-		if edgeKeys[i].src != edgeKeys[j].src {
-			return edgeKeys[i].src < edgeKeys[j].src
+	slices.SortFunc(edgeKeys, func(a, b edgeKey) int {
+		if c := cmp.Compare(a.src, b.src); c != 0 {
+			return c
 		}
-		if edgeKeys[i].tgt != edgeKeys[j].tgt {
-			return edgeKeys[i].tgt < edgeKeys[j].tgt
+		if c := cmp.Compare(a.tgt, b.tgt); c != 0 {
+			return c
 		}
-		return edgeKeys[i].rel < edgeKeys[j].rel
+		return cmp.Compare(a.rel, b.rel)
 	})
 	edges := make([]*entity.GraphEdge, 0, len(edgeKeys))
 	for _, ek := range edgeKeys {
 		acc := edgeMap[ek]
-		chunkIDs := utils.MapKeys(acc.chunkSet)
-		sort.Slice(chunkIDs, func(i, j int) bool { return chunkIDs[i] < chunkIDs[j] })
-		acc.edge.ChunkIds = chunkIDs
-		acc.edge.QuoteTexts = sortedSet(acc.quoteSet)
+		chunkIds := utils.MapKeys(acc.chunkSet)
+		slices.Sort(chunkIds)
+		acc.edge.ChunkIds = chunkIds
+		acc.edge.QuoteTexts = utils.SortedKeys(acc.quoteSet)
 		edges = append(edges, acc.edge)
 	}
 	return &GraphData{Nodes: nodes, Edges: edges}
@@ -194,13 +188,6 @@ func firstEntityKey(canonToKeys map[string][]string, entMap map[string]*entAcc, 
 	if len(keys) == 0 {
 		return ""
 	}
-	sort.Strings(keys)
+	slices.Sort(keys)
 	return entMap[keys[0]].node.EntityKey
-}
-
-// sortedSet 集合键升序输出（确定性，用于别名/引用片段落库）
-func sortedSet(set map[string]struct{}) []string {
-	out := utils.MapKeys(set)
-	sort.Strings(out)
-	return out
 }

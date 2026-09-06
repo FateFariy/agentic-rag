@@ -1,9 +1,10 @@
 package graph
 
 import (
+	"cmp"
 	"context"
 	"fmt"
-	"sort"
+	"slices"
 
 	"github.com/swiftbit/know-agent/common/logx"
 	"github.com/swiftbit/know-agent/common/utils"
@@ -18,27 +19,31 @@ import (
 	"github.com/swiftbit/know-agent/internal/domain/document/model/vo"
 )
 
-// Builder 实现 index.GraphRagBuilder：编排 抽取→消解合并→成本闸门→PageRank→社区发现→事务化全删全插（M1）
+// Builder 实现 index.GraphRagBuilder：编排 抽取→消解合并→成本闸门→PageRank→社区发现→LLM 社区报告→事务化全删全插→图卡片投影（M1+M3）
 type Builder struct {
-	store     adapter.GraphStore
-	extractor Extractor
-	resolver  merge.Resolver
-	config    *config.GraphRagConf
+	store         adapter.GraphStore
+	extractor     Extractor
+	resolver      merge.Resolver
+	config        *config.GraphRagConf
+	reporter      CommunityReporter     // M3：可选 LLM 社区报告器（nil 时使用抽取式摘要）
+	vectorIndexer adapter.VectorIndexer // M3：可选图卡片向量化投影（nil 时关闭）
 }
 
 // NewBuildService 创建图谱构建服务
-func NewBuildService(store adapter.GraphStore, extractor Extractor, resolver merge.Resolver, cfg *config.GraphRagConf) *Builder {
+func NewBuildService(store adapter.GraphStore, extractor Extractor, resolver merge.Resolver,
+	cfg *config.GraphRagConf, reporter CommunityReporter, vectorIndexer adapter.VectorIndexer) *Builder {
 	return &Builder{
-		store:     store,
-		extractor: extractor,
-		resolver:  resolver,
-		config:    cfg,
+		store:         store,
+		extractor:     extractor,
+		resolver:      resolver,
+		config:        cfg,
+		reporter:      reporter,
+		vectorIndexer: vectorIndexer,
 	}
 }
 
 // RebuildDocumentGraph 构建并落库单篇文档图谱。
-// 任一环节失败均返回 error，由 GraphRagStage 记录失败结果并按 ErrGraphRagBuildFailed 降级，
-// 保证「图谱失败不影响索引任务完成」。
+// 任一环节失败均返回 error，由 GraphRagStage 记录失败结果并按 ErrGraphRagBuildFailed 降级，保证「图谱失败不影响索引任务完成」
 func (s *Builder) RebuildDocumentGraph(ctx context.Context, documentId, taskId, knowledgeBaseId int64, chunks []*entity.DocumentChunk) (*vo.GraphRagBuildResult, error) {
 	result := &vo.GraphRagBuildResult{}
 	if len(chunks) == 0 {
@@ -89,11 +94,13 @@ func (s *Builder) RebuildDocumentGraph(ctx context.Context, documentId, taskId, 
 		commIDs = community.DetectUnionFind(nodes, edges)
 	}
 	communities := community.BuildCommunities(nodes, commIDs, ranks, s.config.CommunityTopNodes)
-	communities = enforceCommunityLimit(communities, s.config.MaxCommunities, documentId)
+	communities = utils.Limit(communities, s.config.MaxCommunities)
 	if mod := community.Modularity(nodes, edges, commIDs); mod > 0 {
 		logx.Infof("图谱社区检测完成: documentId=%d, communities=%d, modularity=%.4f",
 			documentId, len(communities), mod)
 	}
+	// 5.1 M3：LLM 社区报告（预算闸门：仅前 CommunityReportTopN 个重要社区；失败回退抽取式摘要）
+	s.enhanceCommunitySummaries(ctx, nodes, communities)
 	// 6. 无有效关系：仅实体入库（降级）
 	if len(edges) == 0 {
 		result.GraphPersistenceOutcome = enum.GraphPersistenceOutcomeDegraded
@@ -111,10 +118,12 @@ func (s *Builder) RebuildDocumentGraph(ctx context.Context, documentId, taskId, 
 	if err := s.store.ReplaceDocumentGraph(ctx, snapshot); err != nil {
 		return nil, fmt.Errorf("落库图谱失败: %w", err)
 	}
+	// 7.1 M3：Typed chunk 投影（图卡片写入向量库，增强依赖：失败仅降级告警，不阻断索引任务）
+	s.projectTypedChunks(ctx, snapshot)
 	// 8. 结果统计
 	result.EntityCount = len(nodes)
 	result.RelationCount = len(edges)
-	result.EvidenceCount = countEvidence(edges)
+	result.EvidenceCount = utils.Reduce(edges, func(n int, e *entity.GraphEdge) int { return n + len(e.ChunkIds) }, 0)
 	result.CommunityCount = len(communities)
 	if result.GraphPersistenceOutcome == "" {
 		result.GraphPersistenceOutcome = enum.GraphPersistenceOutcomeSuccess
@@ -123,17 +132,61 @@ func (s *Builder) RebuildDocumentGraph(ctx context.Context, documentId, taskId, 
 	return result, nil
 }
 
-// enforceLimits 成本闸门：实体/关系超上限时按 PageRank 降序 + entity_key 升序全序截断，
-// 并同步过滤端点被裁剪的关系。
+// projectTypedChunks M3 图卡片投影：图提交成功后把实体/关系/社区卡向量化写入向量库。
+// 未装配向量索引器 / 投影关闭 / 图非空时跳过；写入失败仅告警（增强依赖）。
+func (s *Builder) projectTypedChunks(ctx context.Context, snapshot *entity.GraphSnapshot) {
+	if s.vectorIndexer == nil || !s.config.TypedChunkProjectionEnabled || snapshot == nil || len(snapshot.Nodes) == 0 {
+		return
+	}
+	cards := GenerateTypedCards(snapshot, s.config.TypedCardTopK)
+	if len(cards) == 0 {
+		return
+	}
+	if err := s.vectorIndexer.BuildVectors(ctx, cards); err != nil {
+		logx.Warnf("图卡片投影失败（增强依赖，不阻断）: documentId=%d, err=%v", snapshot.DocumentId, err)
+		return
+	}
+	logx.Infof("图卡片投影完成: documentId=%d, cards=%d", snapshot.DocumentId, len(cards))
+}
+
+// enhanceCommunitySummaries M3 LLM 社区报告：仅对前 CommunityReportTopN 个重要社区生成 LLM 摘要
+// （预算闸门，0 关闭）。任何单社区失败均告警并保留抽取式摘要，不阻断后续环节。
+func (s *Builder) enhanceCommunitySummaries(ctx context.Context, nodes []*entity.GraphNode, communities []*entity.GraphCommunity) {
+	if s.reporter == nil || len(communities) == 0 {
+		return
+	}
+	communities = utils.Limit(communities, s.config.CommunityReportTopN)
+	if len(communities) == 0 {
+		return
+	}
+	byKey := make(map[string]*entity.GraphNode, len(nodes))
+	for _, n := range nodes {
+		byKey[n.EntityKey] = n
+	}
+	for _, c := range communities {
+		members := utils.FilterLimit(c.MemberKeys, maxReportMembers, func(key string) bool {
+			return byKey[key] != nil
+		})
+		memberNodes := utils.Map(members, func(key string) *entity.GraphNode { return byKey[key] })
+		summary, err := s.reporter.Report(ctx, c, memberNodes)
+		if err != nil || summary == "" {
+			logx.Warnf("LLM 社区报告失败，回退抽取式摘要: community_no=%d, err=%v", c.CommunityNo, err)
+			continue
+		}
+		c.Summary = summary
+	}
+}
+
+// enforceLimits 成本闸门：实体/关系超上限时按 PageRank 降序 + entity_key 升序全序截断，并同步过滤端点被裁剪的关系。
 func enforceLimits(nodes []*entity.GraphNode, edges []*entity.GraphEdge, maxEntities, maxRelations int, documentId int64) ([]*entity.GraphNode, []*entity.GraphEdge) {
 	if maxEntities > 0 && len(nodes) > maxEntities {
 		ranked := make([]*entity.GraphNode, len(nodes))
 		copy(ranked, nodes)
-		sort.Slice(ranked, func(i, j int) bool {
-			if ranked[i].PageRank != ranked[j].PageRank {
-				return ranked[i].PageRank > ranked[j].PageRank
+		slices.SortFunc(ranked, func(a, b *entity.GraphNode) int {
+			if c := cmp.Compare(b.PageRank, a.PageRank); c != 0 {
+				return c
 			}
-			return ranked[i].EntityKey < ranked[j].EntityKey
+			return cmp.Compare(a.EntityKey, b.EntityKey)
 		})
 		kept := ranked[:maxEntities]
 		keySet := make(map[string]struct{}, len(kept))
@@ -142,23 +195,23 @@ func enforceLimits(nodes []*entity.GraphNode, edges []*entity.GraphEdge, maxEnti
 		}
 		edges = filterEdgesByKeys(edges, keySet)
 		nodes = kept
-		sort.Slice(nodes, func(i, j int) bool { return nodes[i].EntityKey < nodes[j].EntityKey })
+		slices.SortFunc(nodes, func(a, b *entity.GraphNode) int { return cmp.Compare(a.EntityKey, b.EntityKey) })
 		logx.Warnf("实体成本闸门截断: documentId=%d, 保留 %d/%d", documentId, len(nodes), maxEntities)
 	}
 	if maxRelations > 0 && len(edges) > maxRelations {
 		ranked := make([]*entity.GraphEdge, len(edges))
 		copy(ranked, edges)
-		sort.Slice(ranked, func(i, j int) bool {
-			if ranked[i].RankBoost != ranked[j].RankBoost {
-				return ranked[i].RankBoost > ranked[j].RankBoost
+		slices.SortFunc(ranked, func(a, b *entity.GraphEdge) int {
+			if c := cmp.Compare(b.RankBoost, a.RankBoost); c != 0 {
+				return c
 			}
-			if ranked[i].SourceKey != ranked[j].SourceKey {
-				return ranked[i].SourceKey < ranked[j].SourceKey
+			if c := cmp.Compare(a.SourceKey, b.SourceKey); c != 0 {
+				return c
 			}
-			if ranked[i].TargetKey != ranked[j].TargetKey {
-				return ranked[i].TargetKey < ranked[j].TargetKey
+			if c := cmp.Compare(a.TargetKey, b.TargetKey); c != 0 {
+				return c
 			}
-			return ranked[i].RelationType < ranked[j].RelationType
+			return cmp.Compare(a.RelationType, b.RelationType)
 		})
 		edges = ranked[:maxRelations]
 		logx.Warnf("关系成本闸门截断: documentId=%d, 保留 %d/%d", documentId, len(edges), maxRelations)
@@ -173,16 +226,6 @@ func filterEdgesByKeys(edges []*entity.GraphEdge, keySet map[string]struct{}) []
 		_, tOK := keySet[e.TargetKey]
 		return sOK && tOK
 	})
-}
-
-func enforceCommunityLimit(communities []*entity.GraphCommunity, maxCommunities int, documentId int64) []*entity.GraphCommunity {
-	if maxCommunities <= 0 || len(communities) <= maxCommunities {
-		return communities
-	}
-	// BuildCommunities 已按 RankBoost 降序，直接截断前 N 个即可
-	communities = communities[:maxCommunities]
-	logx.Warnf("社区成本闸门截断: documentId=%d, 保留 %d 个社区", documentId, len(communities))
-	return communities
 }
 
 // writeBackGraphMetrics 写回算法指标：节点 pagerank/rank_boost/degree，关系 rank_boost=两端均值
@@ -207,8 +250,4 @@ func writeBackGraphMetrics(nodes []*entity.GraphNode, edges []*entity.GraphEdge,
 			e.RankBoost = (s.PageRank + t.PageRank) / 2
 		}
 	}
-}
-
-func countEvidence(edges []*entity.GraphEdge) int {
-	return utils.Reduce(edges, func(n int, e *entity.GraphEdge) int { return n + len(e.ChunkIds) }, 0)
 }

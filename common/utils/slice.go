@@ -3,9 +3,17 @@ package utils
 import (
 	"slices"
 
-	"github.com/duke-git/lancet/v2/maputil"
 	"github.com/duke-git/lancet/v2/slice"
 )
+
+// IndexBy 构建元素到其下标的映射（同键以后者为准）
+func IndexBy[T any, K comparable](slice []T, keyFunc func(T) K) map[K]int {
+	out := make(map[K]int, len(slice))
+	for i, item := range slice {
+		out[keyFunc(item)] = i
+	}
+	return out
+}
 
 // MapBy 映射切片
 func MapBy[T any, K comparable, V any](slice []T, keyFunc func(T) (K, V)) map[K]V {
@@ -205,16 +213,6 @@ func Copy[T comparable](src []T) []T {
 	dest := make([]T, len(src))
 	copy(dest, src)
 	return dest
-}
-
-// MapValues 获取 map 的所有值
-func MapValues[K comparable, V any](m map[K]V) []V {
-	return maputil.Values(m)
-}
-
-// MapKeys 获取 map 的所有键
-func MapKeys[K comparable, V any](m map[K]V) []K {
-	return maputil.Keys(m)
 }
 
 // ForEach 遍历切片
