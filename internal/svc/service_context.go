@@ -3,6 +3,7 @@ package svc
 import (
 	"context"
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/cloudwego/eino-ext/components/model/ark"
@@ -45,19 +46,18 @@ func NewServiceContext(c *config.Config) *ServiceContext {
 		Config:    c,
 		Validate:  validator.New(),
 		Rdb:       redisClient,
-		Db:        NewMySQLDB(c),
-		Minio:     NewMinioClient(c),
+		Db:        NewMySQLDB(c.Mysql),
+		Minio:     NewMinioClient(c.Minio),
 		RedSync:   NewRedSync(redisClient),
 		ChatModel: NewArkChatModel(ctx, c.ChatModel["Ark"]),
-		Milvus:    NewMilvusClient(ctx, c),
+		Milvus:    NewMilvusClient(ctx, c.Milvus),
 		Neo4j:     NewNeo4jClient(c.Neo4j),
 	}
 }
 
 // NewMySQLDB 创建 MySQL 数据库连接
-func NewMySQLDB(c *config.Config) *gorm.DB {
-	m := c.Mysql
-	dsn := fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8mb4&parseTime=True&loc=Local", m.Username, m.Password, m.Endpoint, m.DbName)
+func NewMySQLDB(c config.MysqlConf) *gorm.DB {
+	dsn := fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8mb4&parseTime=True&loc=Local", c.Username, c.Password, c.Addr, c.DbName)
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
 		//Logger:         logger.Default.LogMode(logger.Info),
 		NamingStrategy: schema.NamingStrategy{SingularTable: true},
@@ -82,13 +82,10 @@ func NewRedisClient(c *config.Config) *redis.Client {
 }
 
 // NewMinioClient 创建 Minio 客户端
-func NewMinioClient(c *config.Config) *minio.Client {
-	endpoint := c.Minio.Addr
-	accessKeyID := c.Minio.AccessKeyID
-	accessKey := c.Minio.SecretAccessKey
-	minioClient, err := minio.New(endpoint, &minio.Options{
-		Creds:  credentials.NewStaticV4(accessKeyID, accessKey, ""),
-		Secure: c.Minio.UseSSL,
+func NewMinioClient(c config.MinioConf) *minio.Client {
+	minioClient, err := minio.New(c.Addr, &minio.Options{
+		Creds:  credentials.NewStaticV4(c.AccessKeyID, c.SecretAccessKey, ""),
+		Secure: c.UseSSL,
 	})
 
 	if err != nil {
@@ -117,9 +114,9 @@ func NewArkChatModel(ctx context.Context, c *config.LLMConf) *ark.ChatModel {
 	return chatModel
 }
 
-func NewMilvusClient(ctx context.Context, c *config.Config) *milvusclient.Client {
+func NewMilvusClient(ctx context.Context, c config.MilvusConf) *milvusclient.Client {
 	client, err := milvusclient.New(ctx, &milvusclient.ClientConfig{
-		Address: c.Milvus.Addr,
+		Address: c.Addr,
 	})
 	if err != nil {
 		panic(err)
@@ -127,16 +124,20 @@ func NewMilvusClient(ctx context.Context, c *config.Config) *milvusclient.Client
 	return client
 }
 
-// NewNeo4jClient 创建 Neo4j 驱动；未启用或连接失败均返回 nil（不阻断主流程）
+// NewNeo4jClient 创建 Neo4j 驱动并自动应用约束；未启用或连接失败均返回 nil（不阻断主流程）
 func NewNeo4jClient(c config.Neo4jConf) neo4j.DriverWithContext {
 	if !c.Enabled {
 		return nil
 	}
+
+	// 创建驱动
 	driver, err := neo4j.NewDriverWithContext(c.Uri, neo4j.BasicAuth(c.Username, c.Password, ""))
 	if err != nil {
 		logx.Errorf("neo4j 驱动初始化失败: %v", err)
 		return nil
 	}
+
+	// 验证连通性
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	if err = driver.VerifyConnectivity(ctx); err != nil {
@@ -144,5 +145,24 @@ func NewNeo4jClient(c config.Neo4jConf) neo4j.DriverWithContext {
 		_ = driver.Close(ctx)
 		return nil
 	}
+
+	// 读取约束脚本
+	cypherBytes, err := os.ReadFile("etc/neo4j/constraints.cypher")
+	if err != nil {
+		logx.Errorf("读取 Neo4j 约束文件失败: %v", err)
+		return driver // 文件缺失不影响已建立的连接，直接返回 driver
+	}
+
+	// 应用约束
+	execCtx, execCancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer execCancel()
+
+	session := driver.NewSession(execCtx, neo4j.SessionConfig{DatabaseName: c.Database})
+	defer session.Close(execCtx)
+
+	if _, err = session.Run(execCtx, string(cypherBytes), nil); err != nil {
+		logx.Errorf("应用 Neo4j 约束失败: %v", err)
+	}
+
 	return driver
 }

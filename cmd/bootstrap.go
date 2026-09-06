@@ -1,11 +1,6 @@
 package main
 
 import (
-	"context"
-	"os"
-
-	"github.com/zeromicro/go-zero/core/logx"
-
 	"github.com/swiftbit/know-agent/internal/config"
 	"github.com/swiftbit/know-agent/internal/domain/chat/adapter"
 	"github.com/swiftbit/know-agent/internal/domain/chat/adapter/model"
@@ -31,8 +26,7 @@ import (
 	"github.com/swiftbit/know-agent/internal/domain/document/logic/process/chunk/semantic"
 	"github.com/swiftbit/know-agent/internal/domain/document/logic/process/index"
 	graphbuild "github.com/swiftbit/know-agent/internal/domain/document/logic/process/index/graph"
-	extract "github.com/swiftbit/know-agent/internal/domain/document/logic/process/index/graph/extract"
-	merge "github.com/swiftbit/know-agent/internal/domain/document/logic/process/index/graph/merge"
+	"github.com/swiftbit/know-agent/internal/domain/document/logic/process/index/graph/extract"
 	"github.com/swiftbit/know-agent/internal/domain/document/model/enum"
 	knowlogic "github.com/swiftbit/know-agent/internal/domain/knowledge/logic"
 	knowroute "github.com/swiftbit/know-agent/internal/domain/knowledge/logic/route"
@@ -45,7 +39,6 @@ import (
 	portconfig "github.com/swiftbit/know-agent/internal/infrastructure/port/config"
 	"github.com/swiftbit/know-agent/internal/infrastructure/port/emb"
 	"github.com/swiftbit/know-agent/internal/infrastructure/port/gateway"
-	"github.com/swiftbit/know-agent/internal/infrastructure/port/keyword"
 	"github.com/swiftbit/know-agent/internal/infrastructure/port/llm"
 	"github.com/swiftbit/know-agent/internal/infrastructure/port/lock"
 	"github.com/swiftbit/know-agent/internal/infrastructure/port/mq"
@@ -53,7 +46,6 @@ import (
 	"github.com/swiftbit/know-agent/internal/infrastructure/port/rerank"
 	"github.com/swiftbit/know-agent/internal/infrastructure/port/storage"
 	"github.com/swiftbit/know-agent/internal/infrastructure/port/tokenize"
-	"github.com/swiftbit/know-agent/internal/infrastructure/port/vector"
 	"github.com/swiftbit/know-agent/internal/server"
 	"github.com/swiftbit/know-agent/internal/svc"
 	"github.com/swiftbit/know-agent/internal/trigger/consumer"
@@ -66,8 +58,7 @@ func bootstrap(c *config.Config) *server.Server {
 	embedder := emb.NewOllamaEmbedder(svcCtx)
 	checkPointStore := check.NewMemoryCheckPointStore()
 	localConfig := portconfig.NewLocalConfig(svcCtx)
-	milvusKeyword := keyword.NewMilvusKeyword(svcCtx)
-	milvusVector := vector.NewMilvusVector(svcCtx, embedder)
+	milvusStorage := storage.NewMilvusStorage(svcCtx, embedder)
 	rocketMQMessageProducer := mq.NewRocketMQMessageProducer(svcCtx)
 	redisMutexLock := lock.NewRedisMutexLock(svcCtx)
 	chatModel := llm.NewChatModelImpl(svcCtx)
@@ -78,28 +69,15 @@ func bootstrap(c *config.Config) *server.Server {
 	elasticStorage := storage.NewElasticStorage(svcCtx)
 	gseTokenizer := tokenize.NewGseTokenizer(svcCtx)
 	semanticCacheStore := cache.NewSemanticCache(svcCtx, embedder)
-	semanticCacheWriteConsumer := consumer.NewSemanticCacheWriteConsumer(svcCtx, semanticCacheStore)
+	neo4jStore := storage.NewNeo4jGraphStore(svcCtx, gseTokenizer)
 
-	documentRepo := persistence.NewDocumentRepository(svcCtx, minioStorage, milvusVector)
+	documentRepo := persistence.NewDocumentRepository(svcCtx, minioStorage, milvusStorage)
 	tableRepo := persistence.NewTableRepository(svcCtx)
 	chatRepo := persistence.NewChatRepository(svcCtx)
 	knowledgeRepo := persistence.NewKnowledgeRepository(svcCtx)
 	documentForKnowledge := gateway.NewDocumentAdapterForKnowledge(documentRepo)
 	documentForChat := gateway.NewDocumentAdapterForChat(documentRepo)
 
-	// GraphRAG（M1）：Neo4j 图谱存储 + 构建服务 + 检索网关
-	var graphGateway adapter.GraphGateway
-	var graphBuildService index.GraphRagBuilder
-	if svcCtx.Neo4j != nil {
-		neo4jStore := storage.NewNeo4jGraphStore(svcCtx, &svcCtx.Config.Chat.Rag.GraphRag)
-		if cypher, e := os.ReadFile("etc/neo4j/constraints.cypher"); e == nil {
-			if ae := neo4jStore.ApplyConstraints(context.Background(), string(cypher)); ae != nil {
-				logx.Errorf("应用 Neo4j 约束失败: %v", ae)
-			}
-		}
-		graphGateway = neo4jStore
-		graphBuildService = graphbuild.NewBuildService(neo4jStore, extract.NewLLMExtractor(chatModel, renderer, gseTokenizer), merge.NewResolver(), &svcCtx.Config.Chat.Rag.GraphRag)
-	}
 	observability.RegisterConversationTraceRecorder(chatRepo)
 	observability.RegisterRagEvalMetricsHandler(chatRepo)
 	observability.RegisterModelUsageHandler(svcCtx.Config.ChatModel)
@@ -118,16 +96,12 @@ func bootstrap(c *config.Config) *server.Server {
 
 	recommender := recommend.NewQuestionRecommendImpl(svcCtx, renderer, ollamaModel)
 	channels := []retrieval.Retrieval{
-		channel.NewVectorRetrievalChannel(svcCtx, milvusVector),
-		channel.NewKeywordRetrievalChannel(milvusKeyword),
+		channel.NewVectorRetrievalChannel(milvusStorage),
+		channel.NewKeywordRetrievalChannel(milvusStorage),
+		channel.NewGraphRetrievalChannel(neo4jStore),
 	}
-	if graphGateway != nil {
-		channels = append(channels, channel.NewGraphRetrievalChannel(graphGateway))
-	}
-
 	rrfFusion := fuse.NewRRFFusion()
 	retrievalEngine := retrieval.NewRetrievalEngine(svcCtx, chatRepo, dashScope, channels, documentForChat, rrfFusion)
-
 	compressionStrategy := strategy.NewSummaryCompressionStrategy(svcCtx, chatRepo, chatModel, renderer)
 	memoryManageImpl := memory.NewSessionMemoryManageImpl(compressionStrategy)
 	rewriteImpl := rewrite.NewQueryRewriteImpl(svcCtx, ollamaModel, renderer)
@@ -141,7 +115,6 @@ func bootstrap(c *config.Config) *server.Server {
 		agent.WithTools(structureTool),
 		agent.WithTools(knowledgeBaseSearchTool),
 	)
-
 	stages := []conversation.Stage{
 		conversation.NewStartStage(chatRepo, chainRuntime, redisMutexLock),
 		conversation.NewMemoryLoadStage(svcCtx, memoryManageImpl, chatRepo),
@@ -156,17 +129,21 @@ func bootstrap(c *config.Config) *server.Server {
 	}
 	chain := conversation.NewChain(chatRepo, redisMutexLock, memoryManageImpl, chainRuntime, stages)
 	conversationLogicImpl := chatlogic.NewConversationLogicImpl(chatRepo, knowledgeAdapter, memoryManageImpl, redisMutexLock, checkPointStore, chain)
-	strategyRegistry := NewChunkStrategyRegistry(svcCtx, chatModel, renderer)
 
+	reporter := graphbuild.NewLLMCommunityReporter(chatModel, renderer)
+	llmExtractor := extract.NewLLMExtractor(chatModel, renderer, gseTokenizer, svcCtx.Config.Chat.Rag.Graph.ChunkMaxChars)
+	graphBuilder := graphbuild.NewBuilder(neo4jStore, llmExtractor, svcCtx.Config.Chat.Rag.Graph, reporter, milvusStorage)
+	strategyRegistry := NewChunkStrategyRegistry(svcCtx, chatModel, renderer)
 	generateImpl := process.NewProfileGenerateImpl(documentRepo)
 	analysisChain := analysis.NewAnalysisChain(svcCtx, documentRepo, tableRepo, minioStorage, generateImpl, knowledgeAdapter)
-	indexChain := index.NewBuildIndexChain(documentRepo, minioStorage, milvusVector, milvusKeyword, strategyRegistry, knowledgeAdapter, gseTokenizer, graphBuildService)
+	indexChain := index.NewBuildIndexChain(documentRepo, minioStorage, milvusStorage, milvusStorage, strategyRegistry, knowledgeAdapter, gseTokenizer, graphBuilder)
 	asyncProcessImpl := process.NewAsyncProcessImpl(documentRepo, analysisChain, indexChain)
 	lifecycleLogicImpl := doclogic.NewLifecycleLogicImpl(svcCtx, rocketMQMessageProducer, minioStorage, documentRepo, knowledgeAdapter)
 	profileLogicImpl := doclogic.NewProfileLogicImpl(documentRepo, minioStorage, generateImpl)
+
 	parseConsumer := consumer.NewParseDocumentConsumer(svcCtx, asyncProcessImpl)
 	buildIndexConsumer := consumer.NewBuildIndexConsumer(svcCtx, asyncProcessImpl)
-
+	semanticCacheWriteConsumer := consumer.NewSemanticCacheWriteConsumer(svcCtx, semanticCacheStore)
 	chatService := handler.NewChatService(conversationLogicImpl)
 	documentService := handler.NewDocumentService(lifecycleLogicImpl, profileLogicImpl)
 	knowledgeService := handler.NewKnowledgeService(knowledgeLogicImpl, knowledgeBaseLogicImpl)

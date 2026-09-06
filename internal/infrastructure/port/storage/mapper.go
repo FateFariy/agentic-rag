@@ -1,4 +1,4 @@
-package graph
+package storage
 
 import (
 	"github.com/swiftbit/know-agent/common/utils"

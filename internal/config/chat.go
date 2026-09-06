@@ -102,19 +102,22 @@ type TableConf struct {
 
 // GraphRagConf 图RAG相关配置
 type GraphRagConf struct {
-	Enabled           bool    `json:",default=true"` // 启用开关
-	ExtractBatch      int     `json:",default=8"`    // 每批 chunk 数（抽取提示）
-	ChunkMaxChars     int     `json:",default=1200"` // 单 chunk 抽取截断字符数
-	MaxEntities       int     `json:",default=300"`  // 单文档实体上限（超限按 PageRank 截断）
-	MaxRelations      int     `json:",default=500"`  // 单文档关系上限
-	MaxCommunities    int     `json:",default=50"`   // 单文档社区上限
-	CommunityTopNodes int     `json:",default=5"`    // 社区标题/摘要取 top 实体数
-	LouvainEnabled    bool    `json:",default=true"` // 是否启用 Louvain 细化（false 时仅并查集连通分量）
-	LouvainGamma      float64 `json:",default=1.0"`  // Louvain 分辨率（γ）
-	PageRankDamping   float64 `json:",default=0.85"` // PageRank 阻尼系数
-	PageRankMaxIter   int     `json:",default=30"`   // PageRank 最大迭代轮数
-	SearchMaxHops     int     `json:",default=2"`    // 检索最大跳数（硬限 2）
-	SearchTopK        int     `json:",default=10"`   // 检索返回上限
+	Enabled                     bool    `json:",default=true"` // 启用开关
+	ExtractBatch                int     `json:",default=8"`    // 每批 chunk 数（抽取提示）
+	ChunkMaxChars               int     `json:",default=1200"` // 单 chunk 抽取截断字符数
+	MaxEntities                 int     `json:",default=300"`  // 单文档实体上限（超限按 PageRank 截断）
+	MaxRelations                int     `json:",default=500"`  // 单文档关系上限
+	MaxCommunities              int     `json:",default=50"`   // 单文档社区上限
+	CommunityTopNodes           int     `json:",default=5"`    // 社区标题/摘要取 top 实体数
+	CommunityReportTopN         int     `json:",default=12"`   // M3 LLM 社区报告预算闸门：仅前 N 个重要社区生成 LLM 摘要（0 关闭）
+	LouvainEnabled              bool    `json:",default=true"` // 是否启用 Louvain 细化（false 时仅并查集连通分量）
+	LouvainGamma                float64 `json:",default=1.0"`  // Louvain 分辨率（γ）
+	PageRankDamping             float64 `json:",default=0.85"` // PageRank 阻尼系数
+	PageRankMaxIter             int     `json:",default=30"`   // PageRank 最大迭代轮数
+	SearchMaxHops               int     `json:",default=2"`    // 检索最大跳数（硬限 2）
+	SearchTopK                  int     `json:",default=10"`   // 检索返回上限
+	TypedChunkProjectionEnabled bool    `json:",default=true"` // M3 Typed chunk 投影：图卡片写入向量库（增强依赖）
+	TypedCardTopK               int     `json:",default=100"`  // M3 图卡片总预算（实体:关系:社区 = 2:5:3 分配）
 }
 
 type RaptorConf struct {
