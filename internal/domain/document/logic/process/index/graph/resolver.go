@@ -1,4 +1,4 @@
-package merge
+package graph
 
 import (
 	"cmp"
@@ -19,17 +19,7 @@ type GraphData struct {
 	Edges []*entity.GraphEdge
 }
 
-// Resolver 实体规范化与关系合并（消解键 = entity_key）
-type Resolver interface {
-	Resolve(raws []*extract.RawGraph) *GraphData
-}
-
-type graphResolver struct{}
-
-// NewResolver 创建合并解析器
-func NewResolver() Resolver {
-	return &graphResolver{}
-}
+type Resolver struct{}
 
 // canonical 实体名规范化：去首尾空格 + 全角转半角 + ASCII 大写，作为 normalized_name
 func canonical(name string) string {
@@ -67,7 +57,7 @@ type edgeKey struct {
 // Resolve 两轮完成实体消解与关系合并：
 // 第一轮收集实体并归一化（全半角/大小写/别名累积/mention 计数）；
 // 第二轮合并关系（源/目标必须是已抽实体，自环丢弃，同 (src,tgt,type) 权重累加）。
-func (r *graphResolver) Resolve(raws []*extract.RawGraph) *GraphData {
+func (r *Resolver) Resolve(raws []*extract.RawGraph) *GraphData {
 	entMap := make(map[string]*entAcc)
 	canonToKeys := make(map[string][]string)
 

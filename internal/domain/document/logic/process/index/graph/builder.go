@@ -12,8 +12,6 @@ import (
 	"github.com/swiftbit/know-agent/internal/domain/document/adapter"
 	"github.com/swiftbit/know-agent/internal/domain/document/logic/process/index/graph/community"
 	"github.com/swiftbit/know-agent/internal/domain/document/logic/process/index/graph/extract"
-	"github.com/swiftbit/know-agent/internal/domain/document/logic/process/index/graph/merge"
-	"github.com/swiftbit/know-agent/internal/domain/document/logic/process/index/graph/rank"
 	"github.com/swiftbit/know-agent/internal/domain/document/model/entity"
 	"github.com/swiftbit/know-agent/internal/domain/document/model/enum"
 	"github.com/swiftbit/know-agent/internal/domain/document/model/vo"
@@ -23,19 +21,18 @@ import (
 type Builder struct {
 	store         adapter.GraphStore
 	extractor     Extractor
-	resolver      merge.Resolver
+	resolver      Resolver
 	config        *config.GraphRagConf
 	reporter      CommunityReporter     // M3：可选 LLM 社区报告器（nil 时使用抽取式摘要）
 	vectorIndexer adapter.VectorIndexer // M3：可选图卡片向量化投影（nil 时关闭）
 }
 
-// NewBuildService 创建图谱构建服务
-func NewBuildService(store adapter.GraphStore, extractor Extractor, resolver merge.Resolver,
-	cfg *config.GraphRagConf, reporter CommunityReporter, vectorIndexer adapter.VectorIndexer) *Builder {
+// NewBuilder 创建图谱构建器
+func NewBuilder(store adapter.GraphStore, extractor Extractor, cfg *config.GraphRagConf, reporter CommunityReporter, vectorIndexer adapter.VectorIndexer) *Builder {
 	return &Builder{
 		store:         store,
 		extractor:     extractor,
-		resolver:      resolver,
+		resolver:      Resolver{},
 		config:        cfg,
 		reporter:      reporter,
 		vectorIndexer: vectorIndexer,
@@ -77,7 +74,7 @@ func (s *Builder) RebuildDocumentGraph(ctx context.Context, documentId, taskId, 
 		return result, nil
 	}
 	// 3. PageRank（全图重要性，作为成本闸门截断依据）
-	ranks := rank.PageRank(data.Nodes, data.Edges, s.config.PageRankDamping, s.config.PageRankMaxIter)
+	ranks := PageRank(data.Nodes, data.Edges, s.config.PageRankDamping, s.config.PageRankMaxIter)
 	// 4. 成本闸门：超限按重要性截断，避免 LLM 费用与图谱体积失控
 	nodes, edges := enforceLimits(data.Nodes, data.Edges, s.config.MaxEntities, s.config.MaxRelations, documentId)
 	if len(nodes) == 0 {
@@ -125,9 +122,7 @@ func (s *Builder) RebuildDocumentGraph(ctx context.Context, documentId, taskId, 
 	result.RelationCount = len(edges)
 	result.EvidenceCount = utils.Reduce(edges, func(n int, e *entity.GraphEdge) int { return n + len(e.ChunkIds) }, 0)
 	result.CommunityCount = len(communities)
-	if result.GraphPersistenceOutcome == "" {
-		result.GraphPersistenceOutcome = enum.GraphPersistenceOutcomeSuccess
-	}
+	result.GraphPersistenceOutcome = enum.GraphPersistenceOutcomeSuccess
 	result.KgCommitted = true
 	return result, nil
 }

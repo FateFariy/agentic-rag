@@ -1,4 +1,4 @@
-package rank
+package graph
 
 import (
 	"github.com/swiftbit/know-agent/common/utils"

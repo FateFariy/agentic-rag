@@ -61,8 +61,9 @@ type PromptRenderer interface {
 
 // GraphStore 知识图谱存储（Neo4j 等图数据库）
 type GraphStore interface {
-	// ApplyConstraints 执行图谱约束/索引脚本
-	ApplyConstraints(ctx context.Context, cypher string) error
-	// CommitGraph 写入（覆盖）单篇文档的图谱
-	CommitGraph(ctx context.Context, snapshot *entity.GraphSnapshot) error
+	// ReplaceDocumentGraph 事务化全删全插（按 document_id + task_id 幂等）
+	ReplaceDocumentGraph(ctx context.Context, snapshot *entity.GraphSnapshot) error
+
+	// DeleteDocumentGraph 删除文档全量图谱
+	DeleteDocumentGraph(ctx context.Context, documentId int64) error
 }

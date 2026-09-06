@@ -72,7 +72,7 @@ func NewMilvusStorage(svcCtx *svc.ServiceContext, embedder embedding.Embedder) *
 		ClientConfig: &milvusclient.ClientConfig{
 			Address: svcCtx.Config.Milvus.Addr,
 		},
-		Collection: svcCtx.Config.Milvus.Collection,
+		Collection: collection,
 		Vector: &indexmilvus.VectorConfig{
 			Dimension:    int64(svcCtx.Config.Embedding.Dimensions),
 			MetricType:   indexmilvus.MetricType(strings.ToUpper(svcCtx.Config.Milvus.MetricType)),

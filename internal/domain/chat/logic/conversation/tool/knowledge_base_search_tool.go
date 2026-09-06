@@ -20,26 +20,26 @@ type SearchKnowledgeBaseInput struct {
 	QueryType        enum.QueryType         `json:"query_type" jsonschema_description:"用户原始问题类型，用于标识问题的分类以便采用不同的处理策略（如文档问答、跟进提问、结构导航等）" jsonschema:"enum=document_qa,enum=follow_up,enum=structure_navigation,enum=table_query,enum=graph_relation,enum=global_summary,enum=capability_query,required"`
 	SubQuestions     []string               `json:"subquestions" jsonschema_description:"待检索的子问题字符串数组：若原问题包含多个独立子问题，可拆分后一次传入；每一项必须是一句完整的自然语言问句（含主谓宾、必要上下文与问号），而非一组关键词碎片" jsonschema:"required"`
 	RetrievalIntents []enum.RetrievalIntent `json:"retrieval_intents" jsonschema_description:"检索意图列表，用于指定工具应以何种方式检索知识库（如通用检索、表格检索、图谱检索等）" jsonschema:"enum=general,enum=table,enum=graph_rag,enum=raptor,enum=structure,required"`
-	// todo 暂未启用，可忽略
-	//Entities         []string                      `json:"entities,omitempty"`
-	//TargetEntities   []string                      `json:"targetEntities,omitempty"`
-	//ExcludedEntities []string                      `json:"excludedEntities,omitempty"`
-	//TableOps         []string                      `json:"tableOps,omitempty"`
-	//AnswerShapePlan  []enum.AnswerShapeRequirement `json:"answerShapePlan,omitempty"`
-	//Reason           string                        `json:"reason,omitempty"`
+	Entities         []string               `json:"entities,omitempty" jsonschema_description:"问题涉及的相关实体名称列表"`
 }
 
 // KnowledgeBaseSearchTool 知识库检索工具
 type KnowledgeBaseSearchTool struct {
 	retriever        Retriever
 	evidenceRenderer *EvidenceRenderer
+	graphMaxHops     int
 }
 
 // NewKnowledgeBaseSearchTool 创建知识库检索工具
 func NewKnowledgeBaseSearchTool(svcCtx *svc.ServiceContext, retriever Retriever) *KnowledgeBaseSearchTool {
+	graphMaxHops := 2
+	if svcCtx.Config.Chat.Rag.Graph != nil && svcCtx.Config.Chat.Rag.Graph.SearchMaxHops > 0 {
+		graphMaxHops = svcCtx.Config.Chat.Rag.Graph.SearchMaxHops
+	}
 	return &KnowledgeBaseSearchTool{
 		retriever:        retriever,
 		evidenceRenderer: NewEvidenceRenderer(svcCtx),
+		graphMaxHops:     graphMaxHops,
 	}
 }
 
@@ -73,6 +73,7 @@ func (t *KnowledgeBaseSearchTool) Invoke(ctx context.Context, input *SearchKnowl
 	retrievalPlan := execPlan.RetrievalPlan
 	retrievalPlan.QuestionPlan = newQuestionPlan(execPlan, input)
 	retrievalPlan.SuggestedIntents = input.RetrievalIntents
+	retrievalPlan.GraphIntent = input.toGraphIntent(t.graphMaxHops)
 	result, err := t.retriever.Retrieve(ctx, retrievalPlan)
 	if err != nil {
 		ctx = vo.OnError(ctx, "知识库检索失败", err)
@@ -181,59 +182,57 @@ func (i *SearchKnowledgeBaseInput) Normalize(question string) {
 	}
 }
 
-//func (i *SearchKnowledgeBaseInput) ToTableIntent() *vo.TableIntent {
-//	if i == nil {
+// toGraphIntent 构建图谱检索意图软信号：
+// Agent 声明 graph_rag 检索意图或问题类型为 graph_relation 时启用图谱通道
+func (i *SearchKnowledgeBaseInput) toGraphIntent(maxHops int) *vo.GraphIntent {
+	if !i.channelRequested(enum.QueryTypeGraphRelation, enum.RetrievalIntentGraphRAG) {
+		return nil
+	}
+	return &vo.GraphIntent{
+		Requested: true,
+		MaxHops:   utils.Ternary(maxHops <= 0, 2, maxHops),
+		Entities:  normalizeStringsLimit(i.Entities, 8),
+	}
+}
+
+// channelRequested 检查图谱通道是否被请求
+func (i *SearchKnowledgeBaseInput) channelRequested(queryType enum.QueryType, intent enum.RetrievalIntent) bool {
+	if i == nil {
+		return false
+	}
+	return i.QueryType == queryType || utils.ContainsAny(i.RetrievalIntents, intent)
+}
+
+//	func (i *SearchKnowledgeBaseInput) ToTableIntent() *vo.TableIntent {
+//		if i == nil {
+//			return &vo.TableIntent{
+//				Source: "NONE",
+//			}
+//		}
 //		return &vo.TableIntent{
-//			Source: "NONE",
+//			Requested: i.channelRequested(enum.QueryTypeTableQuery, "TABLE"),
+//			TableOps:  normalizeStringsLimit(i.TableOps, 8),
 //		}
 //	}
-//	return &vo.TableIntent{
-//		Requested: i.channelRequested(enum.QueryTypeTableQuery, "TABLE"),
-//		TableOps:  normalizeStringsLimit(i.TableOps, 8),
-//	}
-//}
-//
-//func (i *SearchKnowledgeBaseInput) ToGraphIntent(maxHops int) *vo.GraphIntent {
-//	if i == nil {
-//		return &vo.GraphIntent{
-//			MaxHops: maxHops,
-//			Source:  "NONE",
+
+//	func (i *SearchKnowledgeBaseInput) ToRaptorIntent(sourceChunkTopK int) *vo.RaptorIntent {
+//		if i == nil {
+//			return &vo.RaptorIntent{
+//				SourceChunkTopK: sourceChunkTopK,
+//			}
 //		}
-//	}
-//	return &vo.GraphIntent{
-//		Requested:      i.channelRequested("GRAPH_RELATION", "GRAPH_RAG"),
-//		Entities:       normalizeStringsLimit(i.Entities, 8),
-//		TargetEntities: normalizeStringsLimit(i.TargetEntities, 8),
-//		MaxHops:        maxHops,
-//	}
-//}
-//
-//func (i *SearchKnowledgeBaseInput) ToRaptorIntent(sourceChunkTopK int) *vo.RaptorIntent {
-//	if i == nil {
+//		requested := i.channelRequested("GLOBAL_SUMMARY", "RAPTOR")
 //		return &vo.RaptorIntent{
-//			SourceChunkTopK: sourceChunkTopK,
+//			Requested:        requested,
+//			SummaryRequested: requested,
+//			SourceChunkTopK:  sourceChunkTopK,
 //		}
 //	}
-//	requested := i.channelRequested("GLOBAL_SUMMARY", "RAPTOR")
-//	return &vo.RaptorIntent{
-//		Requested:        requested,
-//		SummaryRequested: requested,
-//		SourceChunkTopK:  sourceChunkTopK,
-//	}
-//}
 //
-//// channelRequested 检查通道是否被请求
-//func (i *SearchKnowledgeBaseInput) channelRequested(queryType, intent string) bool {
-//	if i == nil {
-//		return false
-//	}
-//	return i.QueryType == queryType || utils.ContainsAny(i.RetrievalIntents, intent)
-//}
-//
-//// normalizeStringsLimit 标准化字符串列表并限制数量
-//func normalizeStringsLimit(items []string, limit int) []string {
-//	return utils.FilterMapUniqueLimit(items, limit, func(item string) (string, string, bool) {
-//		item = utils.CompactWhitespace(item)
-//		return item, item, item != ""
-//	})
-//}
+// normalizeStringsLimit 标准化字符串列表并限制数量
+func normalizeStringsLimit(items []string, limit int) []string {
+	return utils.FilterMapUniqueLimit(items, limit, func(item string) (string, string, bool) {
+		item = utils.CompactWhitespace(item)
+		return item, item, item != ""
+	})
+}

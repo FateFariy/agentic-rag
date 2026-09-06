@@ -11,7 +11,7 @@ Auth:
   AccessExpire: 2h
 
 Mysql:
-  Endpoint: host.docker.internal:3306
+  Addr: host.docker.internal:3306
   Username: root
   Password: "123456"
   DbName: rag
@@ -127,14 +127,21 @@ Chat:
       Enabled: true
     GraphRag:
       Enabled: true
-      PageRankDamping: 0.85
-      PageRankIterations: 20
-      LouvainResolution: 1.0
-      EntityLabel: Entity
-      RelationshipType: REL
-      MaxHops: 2
-      TopK: 30
+      ExtractBatch: 8
+      ChunkMaxChars: 1200
+      MaxEntities: 300
+      MaxRelations: 500
+      MaxCommunities: 50
       CommunityTopNodes: 5
+      CommunityReportTopN: 12
+      LouvainEnabled: true
+      LouvainGamma: 1.0
+      PageRankDamping: 0.85
+      PageRankMaxIter: 30
+      SearchMaxHops: 2
+      SearchTopK: 10
+      TypedChunkProjectionEnabled: true
+      TypedCardTopK: 100
     Raptor:
       Enabled: true
       TopK: 5

@@ -19,6 +19,7 @@ require (
 	github.com/ledongthuc/pdf v0.0.0-20250511090121-5959a4027728
 	github.com/milvus-io/milvus/client/v2 v2.6.5
 	github.com/minio/minio-go/v7 v7.2.0
+	github.com/neo4j/neo4j-go-driver/v5 v5.28.0
 	github.com/redis/go-redis/v9 v9.20.0
 	github.com/yuin/goldmark v1.4.13
 	github.com/zeromicro/go-zero v1.10.2

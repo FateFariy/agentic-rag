@@ -15,6 +15,7 @@ type Input struct {
 	TopK              int                      `json:"topK"`              // 返回数量
 	Filters           *DocumentRetrieveFilters `json:"filters"`           // 过滤器
 	Hops              int                      `json:"hops"`              // 跳数
+	Entities          []string                 `json:"entities"`          // 图谱种子实体（LLM/Agent 注入，优先于 gse 匹配）
 	QueryContextHints []string                 `json:"queryContextHints"` // 查询上下文提示（暂未使用）
 }
 
@@ -46,7 +47,11 @@ func NewInput(channelName string, input *retrieval.ExecutionInput) (*Input, erro
 		QueryContextHints: input.ContextHints,
 		DocumentIds:       input.DocumentScope,
 		TaskIds:           input.TaskScope,
-		Hops:              input.GraphIntent.MaxHops,
+		Hops:              2,
+	}
+	if input.GraphIntent != nil {
+		req.Hops = input.GraphIntent.MaxHops
+		req.Entities = utils.Copy(input.GraphIntent.Entities)
 	}
 
 	// 设置过滤器
