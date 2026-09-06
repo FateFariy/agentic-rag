@@ -24,9 +24,6 @@ type Context struct {
 	ChildChunks          []*entity.DocumentChunk
 	ParentChunks         []*entity.DocumentParentChunk
 	GraphRagBuildResult  *vo.GraphRagBuildResult
-	GraphFinalization    *vo.GraphRagFinalization
-	RaptorBuildResult    *vo.RaptorBuildResult
-	GraphTypedChunkList  []vo.TypedChunk
 	ResumeCommittedGraph bool
 }
 
@@ -49,4 +46,16 @@ type GraphRagBuilder interface {
 type Tokenizer interface {
 	// SegmentWords 返回词文本列表，适用于搜索索引等场景
 	SegmentWords(text string) []string
+}
+
+// CrossDocumentIndexer 跨文档索引器
+type CrossDocumentIndexer interface {
+	// RebuildAll 重建所有跨文档索引
+	RebuildAll(ctx context.Context, documentId, taskId int64) error
+}
+
+// RaptorBuilder RAPTOR 层级摘要树构建器
+type RaptorBuilder interface {
+	// RebuildDocumentTree 重建文档树
+	RebuildDocumentTree(ctx context.Context, documentId, taskId int64, chunks []*entity.DocumentChunk) (*vo.RaptorBuildResult, error)
 }

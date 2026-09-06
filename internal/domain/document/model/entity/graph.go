@@ -1,6 +1,6 @@
 package entity
 
-// 图模型对齐《GraphRAG-简化落地方案》§5.1：
+// 图模型对齐
 //   (:Entity)      -[受控关系类型]-> (:Entity)      语义关系（证据内联为数组属性）
 //   (:Entity)      -[:IN_COMMUNITY]-> (:Community)  社区归属
 // 血缘按 (document_id, task_id) 冻结，落库采用全删全插实现幂等。

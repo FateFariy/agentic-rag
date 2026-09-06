@@ -45,7 +45,6 @@ func (s *graphRagStage) Execute(ctx context.Context, buildCtx *Context) error {
 			buildCtx.DocumentId, buildCtx.TaskId)
 		return nil
 	}
-
 	kbId := int64(0)
 	if buildCtx.Document != nil {
 		kbId = buildCtx.Document.KnowledgeBaseId
@@ -79,11 +78,10 @@ func (s *graphRagStage) Execute(ctx context.Context, buildCtx *Context) error {
 	result, err := s.builder.RebuildDocumentGraph(ctx, buildCtx.DocumentId, buildCtx.TaskId, kbId, buildCtx.ChildChunks)
 	costMillis := time.Since(graphStartedTime).Milliseconds()
 	if err != nil {
-		if result == nil {
-			result = &vo.GraphRagBuildResult{}
+		result = &vo.GraphRagBuildResult{
+			GraphPersistenceOutcome: enum.GraphPersistenceOutcomeFailed,
+			GraphPersistenceReason:  err.Error(),
 		}
-		result.GraphPersistenceOutcome = enum.GraphPersistenceOutcomeFailed
-		result.GraphPersistenceReason = err.Error()
 		buildCtx.GraphRagBuildResult = result
 		graphFailDetail, _ := json.Marshal(map[string]any{
 			"costMillis":        costMillis,
@@ -103,11 +101,6 @@ func (s *graphRagStage) Execute(ctx context.Context, buildCtx *Context) error {
 		logx.Warnf("GraphRAG 构建失败，按降级策略继续完成索引任务: documentId=%d, taskId=%d, err=%v",
 			buildCtx.DocumentId, buildCtx.TaskId, err)
 		return errorx.ErrGraphRagBuildFailed
-	}
-	if result == nil {
-		logx.Warnf("GraphRAG builder 未返回结果，跳过本次图谱构建: documentId=%d, taskId=%d",
-			buildCtx.DocumentId, buildCtx.TaskId)
-		return nil
 	}
 	buildCtx.GraphRagBuildResult = result
 

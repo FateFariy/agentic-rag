@@ -21,31 +21,31 @@ func NewCompletionStage(repo adapter.DocumentRepository) *CompletionStage {
 	return &CompletionStage{repo: repo}
 }
 
-func (p *CompletionStage) Name() string {
+func (s *CompletionStage) Name() string {
 	return "完成阶段"
 }
 
-func (p *CompletionStage) Execute(ctx context.Context, buildCtx *Context) error {
+func (s *CompletionStage) Execute(ctx context.Context, buildCtx *Context) error {
 	totalCostMillis := time.Since(buildCtx.BuildStartedTime).Milliseconds()
 
 	// 事务性最终状态更新
 	finalizeTx := func(txCtx context.Context) error {
 		// 任务阶段推进到"存储完成"
-		if err := p.repo.UpdateTaskById(txCtx, &entity.DocumentTask{
+		if err := s.repo.UpdateTaskById(txCtx, &entity.DocumentTask{
 			ID:           buildCtx.TaskId,
 			CurrentStage: enum.TaskStageStoreComplete,
 		}); err != nil {
 			return err
 		}
 		// 方案状态标记为已执行
-		if err := p.repo.UpdatePlanById(txCtx, &entity.DocumentStrategyPlan{
+		if err := s.repo.UpdatePlanById(txCtx, &entity.DocumentStrategyPlan{
 			ID:         buildCtx.PlanId,
 			PlanStatus: enum.PlanStatusExecuted,
 		}); err != nil {
 			return err
 		}
 		// 文档索引状态更新为构建成功
-		if err := p.repo.UpdateDocumentById(txCtx, &entity.Document{
+		if err := s.repo.UpdateDocumentById(txCtx, &entity.Document{
 			ID:              buildCtx.DocumentId,
 			IndexStatus:     enum.IndexStatusBuildSuccess,
 			LastIndexTaskId: buildCtx.TaskId,
@@ -62,15 +62,14 @@ func (p *CompletionStage) Execute(ctx context.Context, buildCtx *Context) error 
 			ErrorCode:    utils.Pointer(""),
 			ErrorMsg:     utils.Pointer(""),
 		}
-		if err := p.repo.UpdateTaskById(txCtx, completeTask); err != nil {
+		if err := s.repo.UpdateTaskById(txCtx, completeTask); err != nil {
 			return err
 		}
 		// 索引构建完成日志
 		buildCompleteDetail, _ := json.Marshal(map[string]any{
-			"parentBlockCount":     len(buildCtx.ParentChunks),
-			"chunkCount":           len(buildCtx.ChildChunks),
-			"graphTypedChunkCount": len(buildCtx.GraphTypedChunkList),
-			"costMillis":           totalCostMillis,
+			"parentBlockCount": len(buildCtx.ParentChunks),
+			"chunkCount":       len(buildCtx.ChildChunks),
+			"costMillis":       totalCostMillis,
 		})
 		buildCompleteLog := &entity.DocumentTaskLog{
 			TaskId:       buildCtx.TaskId,
@@ -82,11 +81,11 @@ func (p *CompletionStage) Execute(ctx context.Context, buildCtx *Context) error 
 			Content:      "索引构建完成",
 			DetailJson:   string(buildCompleteDetail),
 		}
-		_ = p.repo.InsertTaskLog(txCtx, buildCompleteLog)
+		_ = s.repo.InsertTaskLog(txCtx, buildCompleteLog)
 
 		return nil
 	}
-	if err := p.repo.Do(ctx, finalizeTx); err != nil {
+	if err := s.repo.Do(ctx, finalizeTx); err != nil {
 		return err
 	}
 
