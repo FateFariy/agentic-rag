@@ -26,6 +26,7 @@ import (
 	"github.com/swiftbit/know-agent/internal/domain/document/logic/process/chunk/semantic"
 	"github.com/swiftbit/know-agent/internal/domain/document/logic/process/index"
 	graphbuild "github.com/swiftbit/know-agent/internal/domain/document/logic/process/index/graph"
+	"github.com/swiftbit/know-agent/internal/domain/document/logic/process/index/graph/community"
 	"github.com/swiftbit/know-agent/internal/domain/document/logic/process/index/graph/extract"
 	"github.com/swiftbit/know-agent/internal/domain/document/model/enum"
 	knowlogic "github.com/swiftbit/know-agent/internal/domain/knowledge/logic"
@@ -130,7 +131,7 @@ func bootstrap(c *config.Config) *server.Server {
 	chain := conversation.NewChain(chatRepo, redisMutexLock, memoryManageImpl, chainRuntime, stages)
 	conversationLogicImpl := chatlogic.NewConversationLogicImpl(chatRepo, knowledgeAdapter, memoryManageImpl, redisMutexLock, checkPointStore, chain)
 
-	reporter := graphbuild.NewLLMCommunityReporter(chatModel, renderer)
+	reporter := community.NewLLMCommunityReporter(chatModel, renderer)
 	llmExtractor := extract.NewLLMExtractor(chatModel, renderer, gseTokenizer, svcCtx.Config.Chat.Rag.Graph.ChunkMaxChars)
 	graphBuilder := graphbuild.NewBuilder(neo4jStore, llmExtractor, svcCtx.Config.Chat.Rag.Graph, reporter, milvusStorage)
 	strategyRegistry := NewChunkStrategyRegistry(svcCtx, chatModel, renderer)

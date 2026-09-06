@@ -159,7 +159,7 @@ func (s *Builder) enhanceCommunitySummaries(ctx context.Context, nodes []*entity
 		byKey[n.EntityKey] = n
 	}
 	for _, c := range communities {
-		members := utils.FilterLimit(c.MemberKeys, maxReportMembers, func(key string) bool {
+		members := utils.Filter(c.MemberKeys, func(key string) bool {
 			return byKey[key] != nil
 		})
 		memberNodes := utils.Map(members, func(key string) *entity.GraphNode { return byKey[key] })
