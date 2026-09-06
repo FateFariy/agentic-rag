@@ -233,7 +233,7 @@ func (s *Neo4jGraphStore) expandRelationalEvidence(ctx context.Context, document
 	session := s.driver.NewSession(ctx, neo4j.SessionConfig{DatabaseName: s.db})
 	defer session.Close(ctx)
 	result, err := session.ExecuteRead(ctx, func(tx neo4j.ManagedTransaction) (any, error) {
-		res, e := tx.Run(ctx, relationPathCypher(hops), map[string]any{
+		res, e := tx.Run(ctx, fmt.Sprintf(relationPathCypher, hops), map[string]any{
 			"docIds":   documentIds,
 			"seedKeys": seedKeys,
 			"maxHops":  hops,
@@ -398,18 +398,17 @@ RETURN e.entity_key AS key, e.name AS name, e.normalized_name AS normalized,
        e.document_id AS document_id, e.task_id AS task_id, e.kb_id AS kb_id
 LIMIT 2000`
 
-func relationPathCypher(hops int) string {
-	return fmt.Sprintf(`MATCH (seed:Entity)
+// relationPathCypher 多跳关系路径召回
+const relationPathCypher = `MATCH (seed:Entity)
 WHERE seed.document_id IN $docIds AND seed.entity_key IN $seedKeys
-MATCH path = (seed)-[rels*1..%d]-(linked:Entity)
+MATCH path = (seed)-[r*1..%d]-(linked:Entity)
 WHERE linked.document_id IN $docIds
-WITH nodes(path) AS ns, rels(path) AS rs
+WITH nodes(path) AS ns, relationships(path) AS rs
 UNWIND range(1, size(ns)-1) AS i
 WITH ns[i-1] AS a, rs[i-1] AS rel, ns[i] AS b
 RETURN rel AS rel, a.name AS source, b.name AS target,
        a.document_id AS document_id, a.task_id AS task_id, a.kb_id AS kb_id
-LIMIT $limit`, hops)
-}
+LIMIT $limit`
 
 const communityMatchCypher = `MATCH (c:Community)-[:IN_COMMUNITY]-(e:Entity)
 WHERE c.document_id IN $docIds

@@ -103,8 +103,9 @@ func BuildCommunities(nodes []*entity.GraphNode, commIDs []int, ranks map[string
 	}
 	communities := make([]*entity.GraphCommunity, 0, len(groups))
 	for _, members := range groups {
+		// a、b 即 members 的元素（节点下标），直接按 PageRank 降序排，不可用 members[a]/members[b] 二次下标
 		slices.SortFunc(members, func(a, b int) int {
-			return cmp.Compare(ranks[nodes[members[b]].EntityKey], ranks[nodes[members[a]].EntityKey])
+			return cmp.Compare(ranks[nodes[b].EntityKey], ranks[nodes[a].EntityKey])
 		})
 		names := make([]string, 0, len(members))
 		memberKeys := make([]string, 0, len(members))

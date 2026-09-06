@@ -16,8 +16,8 @@ export type AnswerShapeType =
   | 'JUDGMENT'
   | 'FACT'
   | 'UNKNOWN'
-export type ChannelType = 'keyword' | 'vector' | 'rerank' | 'hybrid' | 'web-search'
-export type ToolType = 'tavily_search' | 'keyword' | 'vector' | 'rerank'
+export type ChannelType = 'keyword' | 'vector' | 'rerank' | 'hybrid' | 'web-search' | 'graph_rag'
+export type ToolType = 'tavily_search' | 'keyword' | 'vector' | 'rerank' | 'graph_rag'
 
 export interface TextBlock {
   label: string

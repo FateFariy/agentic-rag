@@ -217,70 +217,6 @@ export const useChatStore = defineStore('chat', () => {
     selectedKnowledgeBaseIds.value = ids ?? []
   }
 
-  // ====== 流式响应辅助 ======
-  function appendStreamContent(delta: string) {
-    if (!delta) return
-    const shouldFinalizeThinking = thinkingStartAt.value != null
-    const duration = computeThinkingDuration(thinkingStartAt.value)
-    if (shouldFinalizeThinking) {
-      thinkingStartAt.value = null
-    }
-    messages.value = messages.value.map((m) => {
-      if (m.id !== streamingMessageId.value) return m
-      if (m.status === 'cancelled' || m.status === 'error') return m
-      return {
-        ...m,
-        content: m.content + delta,
-        isThinking: shouldFinalizeThinking ? false : m.isThinking,
-        thinkingDuration: shouldFinalizeThinking && !m.thinkingDuration ? duration : m.thinkingDuration
-      }
-    })
-  }
-
-  function appendThinkingContent(delta: string) {
-    if (!delta) return
-    if (thinkingStartAt.value == null) {
-      thinkingStartAt.value = Date.now()
-    }
-    messages.value = messages.value.map((m) => {
-      if (m.id !== streamingMessageId.value) return m
-      if (m.status === 'cancelled' || m.status === 'error') return m
-      return {
-        ...m,
-        thinking: `${m.thinking ?? ''}${delta}`,
-        isThinking: true
-      }
-    })
-  }
-
-  /** 累加 references */
-  function appendReferences(items: SearchReference[]) {
-    if (!items?.length) return
-    messages.value = messages.value.map((m) => {
-      if (m.id !== streamingMessageId.value) return m
-      if (m.status === 'cancelled' || m.status === 'error') return m
-      return { ...m, references: [...(m.references || []), ...items] }
-    })
-  }
-
-  /** 覆盖式更新推荐问题（finish 时一次性下发）。 */
-  function setRecommendations(items: string[]) {
-    if (!items?.length) return
-    messages.value = messages.value.map((m) => {
-      if (m.id !== streamingMessageId.value) return m
-      if (m.status === 'cancelled' || m.status === 'error') return m
-      return { ...m, recommendations: items }
-    })
-  }
-
-  /** 更新当前阶段。 */
-  function setStage(stage: string) {
-    messages.value = messages.value.map((m) => {
-      if (m.id !== streamingMessageId.value) return m
-      return { ...m, stage }
-    })
-  }
-
   function cancelGeneration() {
     if (!isStreaming.value) return
     const targetId = streamingMessageId.value
@@ -390,63 +326,135 @@ export const useChatStore = defineStore('chat', () => {
         : undefined
     }
 
+    // 直接持有流式消息的响应式引用，原地累加内容，避免每个 token 都重建整个 messages 数组。
+    const streamingMsg = messages.value.find((m) => m.id === assistantId)
+    // 高频 token 先写入本地缓冲，再按帧(requestAnimationFrame)合并刷新，
+    // 把每帧响应式更新压缩到最多一次，避免流式阶段主线程被反复重渲染拖垮。
+    let textBuf = ''
+    let thinkingBuf = ''
+    let refBuf: SearchReference[] = []
+    let stageBuf: string | undefined
+    let recBuf: string[] | undefined
+    let frameScheduled = false
+
+    function finalizeSession(id: string, title: string | undefined) {
+      const cid = currentSessionId.value
+      if (!cid) return
+      const lastTime = new Date().toISOString()
+      const existing = sessions.value.find((s) => s.id === cid)
+      const nextTitle = title || existing?.title || '新对话'
+      sessions.value = sessions.value.map((s) =>
+        s.id === cid ? { ...s, title: nextTitle, lastTime, running: false } : s
+      )
+    }
+
+    function applyStreamBuffer() {
+      frameScheduled = false
+      // 已结束/已取消：丢弃残余缓冲，避免写入已脱离数组的旧对象。
+      if (streamingMessageId.value !== assistantId || !streamingMsg) {
+        textBuf = ''
+        thinkingBuf = ''
+        refBuf = []
+        stageBuf = undefined
+        recBuf = undefined
+        return
+      }
+      if (thinkingBuf) {
+        if (thinkingStartAt.value == null) thinkingStartAt.value = Date.now()
+        streamingMsg.thinking = `${streamingMsg.thinking ?? ''}${thinkingBuf}`
+        streamingMsg.isThinking = true
+        thinkingBuf = ''
+      }
+      if (textBuf) {
+        if (thinkingStartAt.value != null) {
+          streamingMsg.thinkingDuration = streamingMsg.thinkingDuration || computeThinkingDuration(thinkingStartAt.value)
+          thinkingStartAt.value = null
+          streamingMsg.isThinking = false
+        }
+        streamingMsg.content += textBuf
+        textBuf = ''
+      }
+      if (stageBuf !== undefined) {
+        streamingMsg.stage = stageBuf
+        stageBuf = undefined
+      }
+      if (refBuf.length) {
+        streamingMsg.references = [...(streamingMsg.references ?? []), ...refBuf]
+        refBuf = []
+      }
+      if (recBuf) {
+        streamingMsg.recommendations = recBuf
+        recBuf = undefined
+      }
+    }
+
+    function scheduleFlush() {
+      if (frameScheduled) return
+      frameScheduled = true
+      requestAnimationFrame(applyStreamBuffer)
+    }
+
     const handlers: StreamHandlers = {
       onText: (payload) => {
-        appendStreamContent(payload.content)
+        textBuf += payload.content
+        scheduleFlush()
       },
       onThinking: (payload) => {
-        appendThinkingContent(payload.content)
+        thinkingBuf += payload.content
+        scheduleFlush()
       },
       onStatus: (payload) => {
-        setStage(payload.stage)
+        stageBuf = payload.stage
+        scheduleFlush()
       },
       onReference: (payload) => {
-        appendReferences(payload.items)
+        refBuf.push(...payload.items)
+        scheduleFlush()
       },
       onRecommend: (payload) => {
-        setRecommendations(payload.items)
+        recBuf = payload.items
+        scheduleFlush()
       },
       onFinish: (payload) => {
         if (streamingMessageId.value !== assistantId) return
+        applyStreamBuffer()
         const duration = computeThinkingDuration(thinkingStartAt.value)
         const finalId = payload.messageId ? String(payload.messageId) : assistantId
-        messages.value = messages.value.map((m) => {
-          if (m.id !== assistantId) return m
-          return {
-            ...m,
-            id: finalId,
-            status: 'done',
-            isThinking: false,
-            thinkingDuration: m.thinkingDuration ?? duration
-          }
-        })
-        streamingMessageId.value = finalId
-        const cid = currentSessionId.value
-        if (cid) {
-          const lastTime = new Date().toISOString()
-          const existing = sessions.value.find((s) => s.id === cid)
-          const nextTitle = payload.title || existing?.title || '新对话'
-          sessions.value = sessions.value.map((s) =>
-            s.id === cid ? { ...s, title: nextTitle, lastTime, running: false } : s
+        if (streamingMsg) {
+          streamingMsg.id = finalId
+          streamingMsg.status = 'done'
+          streamingMsg.isThinking = false
+          streamingMsg.thinkingDuration = streamingMsg.thinkingDuration ?? duration
+        } else {
+          messages.value = messages.value.map((m) =>
+            m.id === assistantId
+              ? { ...m, id: finalId, status: 'done', isThinking: false, thinkingDuration: m.thinkingDuration ?? duration }
+              : m
           )
         }
+        streamingMessageId.value = finalId
+        finalizeSession(finalId, payload.title)
       },
       onCancel: (payload) => {
         if (streamingMessageId.value !== assistantId) return
+        applyStreamBuffer()
         const duration = computeThinkingDuration(thinkingStartAt.value)
         const finalId = payload.messageId ? String(payload.messageId) : assistantId
-        messages.value = messages.value.map((m) => {
-          if (m.id !== assistantId) return m
-          const suffix = m.content.includes('（已停止生成）') ? '' : '\n\n（已停止生成）'
-          return {
-            ...m,
-            id: finalId,
-            content: m.content + suffix,
-            status: 'cancelled',
-            isThinking: false,
-            thinkingDuration: m.thinkingDuration ?? duration
+        if (streamingMsg) {
+          if (!streamingMsg.content.includes('（已停止生成）')) {
+            streamingMsg.content += '\n\n（已停止生成）'
           }
-        })
+          streamingMsg.id = finalId
+          streamingMsg.status = 'cancelled'
+          streamingMsg.isThinking = false
+          streamingMsg.thinkingDuration = streamingMsg.thinkingDuration ?? duration
+        } else {
+          messages.value = messages.value.map((m) => {
+            if (m.id !== assistantId) return m
+            const suffix = m.content.includes('（已停止生成）') ? '' : '\n\n（已停止生成）'
+            return { ...m, id: finalId, content: m.content + suffix, status: 'cancelled', isThinking: false, thinkingDuration: m.thinkingDuration ?? duration }
+          })
+        }
         isStreaming.value = false
         thinkingStartAt.value = null
         streamAbort.value = null
@@ -456,41 +464,46 @@ export const useChatStore = defineStore('chat', () => {
       onError: (error) => {
         // 后端连通失败或 SSE 解析异常时，给用户可见提示，并清掉流式占位。
         console.error('[chat] stream error', error)
-        if (streamingMessageId.value === assistantId) {
-          const duration = computeThinkingDuration(thinkingStartAt.value)
-          messages.value = messages.value.map((m) => {
-            if (m.id !== assistantId) return m
-            return {
-              ...m,
-              status: 'error',
-              isThinking: false,
-              thinkingDuration: m.thinkingDuration ?? duration
-            }
-          })
-          isStreaming.value = false
-          thinkingStartAt.value = null
-          streamAbort.value = null
-          streamingMessageId.value = null
-          cancelRequested.value = false
+        if (streamingMessageId.value !== assistantId) {
+          ElMessage.error(`对话请求失败：${error?.message || '未知错误'}`)
+          return
         }
+        applyStreamBuffer()
+        const duration = computeThinkingDuration(thinkingStartAt.value)
+        if (streamingMsg) {
+          streamingMsg.status = 'error'
+          streamingMsg.isThinking = false
+          streamingMsg.thinkingDuration = streamingMsg.thinkingDuration ?? duration
+        } else {
+          messages.value = messages.value.map((m) =>
+            m.id === assistantId
+              ? { ...m, status: 'error', isThinking: false, thinkingDuration: m.thinkingDuration ?? duration }
+              : m
+          )
+        }
+        isStreaming.value = false
+        thinkingStartAt.value = null
+        streamAbort.value = null
+        streamingMessageId.value = null
+        cancelRequested.value = false
         ElMessage.error(`对话请求失败：${error?.message || '未知错误'}`)
       },
       onClose: () => {
         if (!streamingMessageId.value) return
+        applyStreamBuffer()
         const duration = computeThinkingDuration(thinkingStartAt.value)
-        const targetId = streamingMessageId.value
-        messages.value = messages.value.map((m) => {
-          if (m.id !== targetId) return m
-          if (m.status !== 'streaming') return m
-          return { ...m, status: 'done', isThinking: false, thinkingDuration: m.thinkingDuration ?? duration }
-        })
-        const cid = currentSessionId.value
-        if (cid) {
-          const lastTime = new Date().toISOString()
-          sessions.value = sessions.value.map((s) =>
-            s.id === cid ? { ...s, lastTime, running: false } : s
+        if (streamingMsg && streamingMsg.status === 'streaming') {
+          streamingMsg.status = 'done'
+          streamingMsg.isThinking = false
+          streamingMsg.thinkingDuration = streamingMsg.thinkingDuration ?? duration
+        } else if (!streamingMsg) {
+          messages.value = messages.value.map((m) =>
+            m.id === assistantId && m.status === 'streaming'
+              ? { ...m, status: 'done', isThinking: false, thinkingDuration: m.thinkingDuration ?? duration }
+              : m
           )
         }
+        finalizeSession(streamingMsg?.id ?? assistantId, undefined)
         isStreaming.value = false
         thinkingStartAt.value = null
         streamAbort.value = null

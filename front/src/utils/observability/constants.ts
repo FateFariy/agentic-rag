@@ -70,6 +70,7 @@ export const ANSWER_SHAPE_LABELS: Record<AnswerShapeType, string> = {
 export const CHANNEL_LABELS: Record<ChannelType, string> = {
   keyword: '关键词检索',
   vector: '向量检索',
+  graph_rag: '图谱检索',
   rerank: '重排精排',
   hybrid: '融合结果',
   'web-search': '网页搜索'
@@ -86,6 +87,7 @@ export const TOOL_LABELS: Record<ToolType, string> = {
   tavily_search: 'Tavily 联网搜索',
   keyword: '关键词检索通道',
   vector: '向量检索通道',
+  graph_rag: '图谱检索通道',
   rerank: '重排精排'
 }
 

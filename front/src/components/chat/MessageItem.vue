@@ -121,7 +121,8 @@ function handleReferenceClick(index: number) {
           <span class="ai-wait__dot" />
         </div>
 
-        <!-- 正式回答：Markdown 流式 -->
+        <!-- 正式回答：流式阶段先以纯文本展示，避免逐 token 重渲染 Markdown；结束后由 MarkdownRenderer 一次性渲染 -->
+        <div v-else-if="isStreaming && hasContent" class="stream-text">{{ message.content }}<span class="stream-text__cursor" /></div>
         <MarkdownRenderer v-else-if="hasContent" :content="message.content" @reference-click="handleReferenceClick" />
         <p v-if="isError" class="message-notice message-notice--error">生成已中断。</p>
         <p v-else-if="isCancelled" class="message-notice message-notice--cancelled">（已停止生成）</p>
@@ -373,6 +374,26 @@ function handleReferenceClick(index: number) {
   50% {
     opacity: 1;
   }
+}
+
+/* 流式阶段正文：纯文本铺开，避免逐 token 重渲染 Markdown 造成卡顿 */
+.stream-text {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.7;
+  color: #1a1a1a;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.stream-text__cursor {
+  display: inline-block;
+  width: 6px;
+  height: 14px;
+  margin-left: 2px;
+  background: #3b82f6;
+  vertical-align: -2px;
+  animation: stream-blink 1s infinite;
 }
 
 .message-notice {
