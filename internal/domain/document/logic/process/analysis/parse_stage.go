@@ -124,8 +124,13 @@ func projectStructureNodes(documentTitle string, blocks entity.DocumentBlocks) [
 		return nil
 	}
 
+	type sectionStackEntry struct {
+		nodeNo       int
+		headingLevel int
+	}
+
 	var nodes entity.StructureNodes
-	var sectionStack []int // 存储 Section 节点的 NodeNo
+	var sectionStack []sectionStackEntry // 存储 Section 节点及其标题层级
 
 	// 创建根节点（文档）
 	rootNode := &entity.StructureNode{
@@ -140,7 +145,7 @@ func projectStructureNodes(documentTitle string, blocks entity.DocumentBlocks) [
 	}
 	nodes = append(nodes, rootNode)
 	currentNodeNo := 1
-	sectionStack = append(sectionStack, 1)
+	sectionStack = append(sectionStack, sectionStackEntry{nodeNo: 1, headingLevel: 0})
 
 	for _, block := range blocks {
 		if block == nil {
@@ -156,18 +161,18 @@ func projectStructureNodes(documentTitle string, blocks entity.DocumentBlocks) [
 		case enum.BlockTypeTitle:
 			// 计算标题层级
 			level := block.HeadingLevel()
-			// 弹出层级 >= 当前标题的栈顶元素
+			// 弹出标题层级 >= 当前标题的栈顶元素，确保同级或更深层节点被正确闭合
 			for len(sectionStack) > 1 {
 				topIdx := len(sectionStack) - 1
-				topNode := nodes.FindNodeByNo(sectionStack[topIdx])
-				if topNode != nil && topNode.Depth >= level {
+				top := sectionStack[topIdx]
+				if top.headingLevel >= level {
 					sectionStack = sectionStack[:topIdx]
 				} else {
 					break
 				}
 			}
 
-			parentNodeNo := sectionStack[len(sectionStack)-1]
+			parentNodeNo := sectionStack[len(sectionStack)-1].nodeNo
 			parentNode := nodes.FindNodeByNo(parentNodeNo)
 
 			currentNodeNo++
@@ -197,11 +202,11 @@ func projectStructureNodes(documentTitle string, blocks entity.DocumentBlocks) [
 				}
 			}
 			nodes = append(nodes, sectionNode)
-			sectionStack = append(sectionStack, currentNodeNo)
+			sectionStack = append(sectionStack, sectionStackEntry{nodeNo: currentNodeNo, headingLevel: level})
 
 		default:
 			// 内容块归入当前最近的 Section
-			currentSectionNo := sectionStack[len(sectionStack)-1]
+			currentSectionNo := sectionStack[len(sectionStack)-1].nodeNo
 			contentParentNo := currentSectionNo
 			contentParent := nodes.FindNodeByNo(contentParentNo)
 

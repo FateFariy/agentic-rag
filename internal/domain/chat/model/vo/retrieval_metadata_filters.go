@@ -19,10 +19,13 @@ var (
 
 // RetrievalMetadataFilters 检索元数据过滤条件
 type RetrievalMetadataFilters struct {
-	DocumentNameHints []string `json:"documentNameHints,omitempty"` // 文档名称提示
-	SectionPathHints  []string `json:"sectionPathHints,omitempty"`  // 章节路径提示
-	EntityHints       []string `json:"entityHints,omitempty"`       // 实体提示
-	YearHints         []string `json:"yearHints,omitempty"`         // 年份提示
+	DocumentNameHints    []string `json:"documentNameHints,omitempty"`    // 文档名称提示
+	SectionPathHints     []string `json:"sectionPathHints,omitempty"`     // 章节路径提示
+	EntityHints          []string `json:"entityHints,omitempty"`          // 实体提示
+	YearHints            []string `json:"yearHints,omitempty"`            // 年份提示
+	CanonicalPathHints   []string `json:"canonicalPathHints,omitempty"`   // 规范路径提示
+	StructureNodeIdHints []int64  `json:"structureNodeIdHints,omitempty"` // 结构节点ID提示
+	ItemIndexHints       []int    `json:"itemIndexHints,omitempty"`       // 条目索引提示
 }
 
 // Clone 深拷贝过滤器
@@ -31,10 +34,13 @@ func (f *RetrievalMetadataFilters) Clone() *RetrievalMetadataFilters {
 		return nil
 	}
 	return &RetrievalMetadataFilters{
-		DocumentNameHints: utils.Copy(f.DocumentNameHints),
-		SectionPathHints:  utils.Copy(f.SectionPathHints),
-		YearHints:         utils.Copy(f.YearHints),
-		EntityHints:       utils.Copy(f.EntityHints),
+		DocumentNameHints:    utils.Copy(f.DocumentNameHints),
+		SectionPathHints:     utils.Copy(f.SectionPathHints),
+		YearHints:            utils.Copy(f.YearHints),
+		EntityHints:          utils.Copy(f.EntityHints),
+		CanonicalPathHints:   utils.Copy(f.CanonicalPathHints),
+		StructureNodeIdHints: utils.Copy(f.StructureNodeIdHints),
+		ItemIndexHints:       utils.Copy(f.ItemIndexHints),
 	}
 }
 

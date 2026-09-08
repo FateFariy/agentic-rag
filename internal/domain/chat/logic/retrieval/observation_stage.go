@@ -72,6 +72,10 @@ func (s *ObservationStage) recordChannelObservations(ctx context.Context, trace 
 
 	for _, result := range state.ChannelResults {
 		channelName := result.Name
+		count := len(docMap[channelName])
+		if channelName == enum.RetrievalChannelKeyword || channelName == enum.RetrievalChannelVector {
+			count += len(docMap["hybrid"])
+		}
 		execution := &entity.ChatChannelExecution{
 			ConversationId:     trace.ConversationId(),
 			ExchangeId:         trace.ExchangeId(),
@@ -85,7 +89,7 @@ func (s *ObservationStage) recordChannelObservations(ctx context.Context, trace 
 			ExecutionState:     1,
 			RecalledCount:      len(result.RawDocuments),
 			AcceptedCount:      len(result.AcceptedDocuments),
-			FinalSelectedCount: len(docMap[channelName]),
+			FinalSelectedCount: count,
 		}
 		execution.SetScores(result.RawDocuments)
 		executions = append(executions, execution)

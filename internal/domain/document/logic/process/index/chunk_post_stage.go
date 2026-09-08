@@ -103,8 +103,7 @@ func (p *ChunkPostStage) buildParentChildEntities(buildCtx *Context) ([]*entity.
 		for _, child := range candidate.ChildChunks {
 			if child != nil && child.Text != "" {
 				globalChunkNo++
-				// 子块检索文本注入层级路径（section_path）前缀（文档标题 | 章 | 节 | 条 ...），并提升短文本区分度
-				chunkText := child.BuildChunkTextWithSection()
+				chunkText := child.Text
 				childChunks = append(childChunks, &entity.DocumentChunk{
 					ID:                utils.GetSnowflakeNextID(),
 					DocumentId:        buildCtx.DocumentId,

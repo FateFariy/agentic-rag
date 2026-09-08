@@ -1,9 +1,6 @@
 package entity
 
 import (
-	"cmp"
-	"slices"
-
 	"github.com/duke-git/lancet/v2/strutil"
 
 	"github.com/swiftbit/know-agent/common/utils"
@@ -103,32 +100,4 @@ func (n StructureNodes) FindChildrenByNo(parentNodeNo int) []int {
 		}
 	}
 	return children
-}
-
-// RebuildSectionPaths 根据 ParentNodeId 逐层重建完整 SectionPath（"文档标题 | 章 | 节 | 条"）
-func (n StructureNodes) RebuildSectionPaths() {
-	idToNode := make(map[int64]*StructureNode, len(n))
-	for _, node := range n {
-		if node != nil {
-			idToNode[node.ID] = node
-		}
-	}
-
-	slices.SortFunc(n, func(a, b *StructureNode) int { return cmp.Compare(a.ID, b.ID) })
-	for _, node := range n {
-		if node == nil || node.Depth <= 0 {
-			continue
-		}
-		title := strutil.Trim(node.Title)
-		if title == "" {
-			continue
-		}
-		parentPath := ""
-		if parent := idToNode[node.ParentNodeId]; parent != nil {
-			parentPath = strutil.Trim(parent.SectionPath)
-		}
-		if parentPath != "" {
-			node.SectionPath = parentPath + " | " + node.SectionPath
-		}
-	}
 }

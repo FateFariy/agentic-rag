@@ -57,9 +57,12 @@ func NewInput(channelName string, input *retrieval.ExecutionInput) (*Input, erro
 	// 设置过滤器
 	if input.Filters != nil {
 		req.Filters = &DocumentRetrieveFilters{
-			DocumentNameHints: input.Filters.DocumentNameHints,
-			SectionPathHints:  input.Filters.SectionPathHints,
-			YearHints:         input.Filters.YearHints,
+			DocumentNameHints:    input.Filters.DocumentNameHints,
+			SectionPathHints:     input.Filters.SectionPathHints,
+			YearHints:            input.Filters.YearHints,
+			CanonicalPathHints:   input.Filters.CanonicalPathHints,
+			StructureNodeIdHints: input.Filters.StructureNodeIdHints,
+			ItemIndexHints:       input.Filters.ItemIndexHints,
 		}
 	}
 

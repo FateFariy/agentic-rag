@@ -23,6 +23,13 @@ import (
 	errorx "github.com/swiftbit/know-agent/internal/error"
 )
 
+const (
+	// minChildChunkChars 子块文本字数低于该阈值时，与相邻子块合并为同一子块，避免产生过碎的检索子块
+	minChildChunkChars = 40
+	// childChunkMergeSeparator 短子块与相邻子块合并时使用的文本分隔符
+	childChunkMergeSeparator = "\n\n"
+)
+
 // ChunkingStage 切块阶段：执行切块流水线、构建父子块实体、持久化
 type ChunkingStage struct {
 	repo      adapter.DocumentRepository
@@ -151,8 +158,6 @@ func (p *ChunkingStage) BuildParentChunks(ctx context.Context, buildCtx *Context
 		if err != nil {
 			return nil, err
 		}
-		// 按 parent_node_id 回溯重建"文档标题 | 章 | 节 | 条"完整 SectionPath
-		nodes.RebuildSectionPaths()
 	}
 
 	options := p.resolver.Resolve(ctx, document)
@@ -166,6 +171,7 @@ func (p *ChunkingStage) BuildParentChunks(ctx context.Context, buildCtx *Context
 		if parentSeed != nil && strutil.IsNotBlank(parentSeed.Text) {
 			childSeedList := p.buildChildSeedList(ctx, parentSeed, childSteps, blockMap, options)
 			finalChildren := childSeedList.NormalizeAndDeduplicate()
+			finalChildren = p.mergeShortChildChunks(finalChildren)
 
 			trim := strutil.Trim(parentSeed.Text)
 			if len(finalChildren) == 0 {
@@ -326,7 +332,8 @@ func (p *ChunkingStage) buildBlockChildSeeds(parentSeed *vo.ChunkCandidate, bloc
 		} else {
 			child = p.toBlockChunkCandidate(block)
 		}
-		child.SectionPath = utils.BlankToDefault(child.SectionPath, parentSeed.SectionPath)
+		// 子块的 SectionPath 优先继承父种子的完整层级链（已从 StructureNode 重建）
+		child.SectionPath = utils.BlankToDefault(parentSeed.SectionPath, child.SectionPath)
 		child.StructureNodeId = parentSeed.StructureNodeId
 		child.StructureNodeType = parentSeed.StructureNodeType
 		child.CanonicalPath = utils.BlankToDefault(child.CanonicalPath, parentSeed.CanonicalPath)
@@ -384,6 +391,85 @@ func (p *ChunkingStage) buildBlockWindowParentSeeds(blocks entity.DocumentBlocks
 	}
 
 	return seeds
+}
+
+// mergeShortChildChunks 将文本字数低于阈值的子块与相邻子块合并。
+// 规则：
+//  1. 连续短块先合并成一组（短并短）
+//  2. 短块组总长度 ≤ 阈值 → 归并到相邻长块；否则独立
+func (p *ChunkingStage) mergeShortChildChunks(children []*vo.ChunkCandidate) []*vo.ChunkCandidate {
+	if len(children) <= 1 {
+		return children
+	}
+
+	type item struct {
+		candidate *vo.ChunkCandidate
+		rawLen    int
+	}
+
+	// ========== 第一遍：连续短块合并为一组 ==========
+	items := make([]item, 0, len(children))
+	for i := 0; i < len(children); {
+		child := children[i]
+		if child == nil || strings.TrimSpace(child.Text) == "" {
+			i++
+			continue
+		}
+		child.Text = strings.TrimSpace(child.Text)
+		childLen := utils.Len(child.Text)
+
+		if childLen >= minChildChunkChars {
+			// 长块，直接保留
+			items = append(items, item{candidate: child, rawLen: childLen})
+			i++
+		} else {
+			// 收集连续短块
+			texts := []string{child.Text}
+			totalLen := childLen
+			j := i + 1
+			for j < len(children) {
+				if children[j] == nil || strings.TrimSpace(children[j].Text) == "" {
+					j++
+					continue
+				}
+				t := strings.TrimSpace(children[j].Text)
+				tLen := utils.Len(t)
+				if tLen >= minChildChunkChars {
+					break
+				}
+				texts = append(texts, t)
+				totalLen += tLen
+				j++
+			}
+			items = append(items, item{
+				candidate: p.cloneChunkCandidate(child, strings.Join(texts, childChunkMergeSeparator)),
+				rawLen:    totalLen,
+			})
+			i = j
+		}
+	}
+
+	// ========== 第二遍：短块组归并到相邻长块 ==========
+	result := make([]*vo.ChunkCandidate, 0, len(items))
+	for i := 0; i < len(items); i++ {
+		if items[i].rawLen < minChildChunkChars {
+			if len(result) > 0 {
+				// 优先合并到前一个长块
+				result[len(result)-1].Text += childChunkMergeSeparator + items[i].candidate.Text
+			} else if i+1 < len(items) {
+				// 开头短块组，合并到后一个长块
+				items[i+1].candidate.Text = items[i].candidate.Text + childChunkMergeSeparator + items[i+1].candidate.Text
+			} else {
+				// 全是短块，直接保留
+				result = append(result, items[i].candidate)
+			}
+		} else {
+			// 长块，独立追加
+			result = append(result, items[i].candidate)
+		}
+	}
+
+	return result
 }
 
 // cloneChunkCandidate 克隆 ChunkCandidate

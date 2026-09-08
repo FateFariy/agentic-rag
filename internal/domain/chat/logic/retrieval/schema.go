@@ -72,6 +72,27 @@ func newRetrievalExecutionInput(plan *vo.RetrievalPlan, query *vo.RetrievalExecu
 		RaptorIntent:     plan.RaptorIntent.Clone(),
 	}
 
+	// 将文档结构路由（route_document_structure）产生的锚点注入检索过滤器，
+	// 使"第X条/第X章"等带结构指向的问题能精确命中对应结构节点而非泛检索。
+	if plan.StructureAnchor != nil || plan.ItemAnchor != nil {
+		filters := input.Filters
+		if filters == nil {
+			filters = &vo.RetrievalMetadataFilters{}
+			input.Filters = filters
+		}
+		if anchor := plan.StructureAnchor; anchor != nil {
+			if anchor.StructureNodeId > 0 {
+				filters.StructureNodeIdHints = append(filters.StructureNodeIdHints, anchor.StructureNodeId)
+			}
+			if anchor.CanonicalPath != "" {
+				filters.CanonicalPathHints = append(filters.CanonicalPathHints, anchor.CanonicalPath)
+			}
+		}
+		if item := plan.ItemAnchor; item != nil && item.ItemIndex > 0 {
+			filters.ItemIndexHints = append(filters.ItemIndexHints, item.ItemIndex)
+		}
+	}
+
 	if err = input.validate(); err != nil {
 		return nil, err
 	}
