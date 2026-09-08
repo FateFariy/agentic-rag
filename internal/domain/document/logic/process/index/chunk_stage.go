@@ -144,13 +144,15 @@ func (p *ChunkingStage) BuildParentChunks(ctx context.Context, buildCtx *Context
 	blockMap := blocks.ToMap()
 
 	// 加载已解析的文档结构节点（用于结构切块策略）
-	var nodes []*entity.StructureNode
+	var nodes entity.StructureNodes
 	var err error
 	if document != nil {
 		nodes, err = p.repo.SelectStructureNodeListByTask(ctx, document.ID, document.LastParseTaskId)
 		if err != nil {
 			return nil, err
 		}
+		// 按 parent_node_id 回溯重建"文档标题 | 章 | 节 | 条"完整 SectionPath
+		nodes.RebuildSectionPaths()
 	}
 
 	options := p.resolver.Resolve(ctx, document)
@@ -308,6 +310,11 @@ func (p *ChunkingStage) buildBlockChildSeeds(parentSeed *vo.ChunkCandidate, bloc
 	for _, blockID := range sourceBlockIds {
 		block, exists := blockMap[blockID]
 		if !exists || block == nil {
+			continue
+		}
+
+		// 纯标题块不单独生成检索子块（避免白占索引、在 BM25 短文本归一化中截胡正文）
+		if block.IsTitleBlock() {
 			continue
 		}
 
@@ -499,6 +506,9 @@ func (p *ChunkingStage) toParentSeed(blocks entity.DocumentBlocks, nodes entity.
 		candidate.StructureNodeType = node.NodeType
 		candidate.ItemIndex = node.ItemIndex
 		candidate.CanonicalPath = utils.BlankToDefault(node.CanonicalPath, canonicalPath)
+		// 使用 StructureNode 从 parent_node_id 回溯重建的完整层级路径，
+		// 覆盖 blocks 中原本单级的 SectionPath（document_block 是解析产物，不在其内部改写）。
+		candidate.SectionPath = utils.BlankToDefault(node.SectionPath, sectionPath)
 	}
 	if len(blocks) > 0 {
 		candidate.BboxJson = blocks[0].BboxJson
@@ -534,6 +544,7 @@ func (p *ChunkingStage) toSplitBlockSeed(block *entity.DocumentBlock, nodes enti
 		candidate.StructureNodeType = node.NodeType
 		candidate.ItemIndex = node.ItemIndex
 		candidate.CanonicalPath = utils.BlankToDefault(node.CanonicalPath, clone.CanonicalPath)
+		candidate.SectionPath = utils.BlankToDefault(node.SectionPath, clone.SectionPath)
 	}
 
 	return candidate

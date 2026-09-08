@@ -7,6 +7,7 @@ import (
 	"github.com/swiftbit/know-agent/common/utils"
 	"github.com/swiftbit/know-agent/internal/domain/document/logic/process/parse"
 	"github.com/swiftbit/know-agent/internal/domain/document/model/entity"
+	"github.com/swiftbit/know-agent/internal/domain/document/model/enum"
 )
 
 const Text = "txt"
@@ -27,7 +28,7 @@ func (p *TextParser) Parse(_ context.Context, sourceText []byte) (entity.Documen
 	for _, paragraph := range splitParagraphs(text) {
 		blockType := classifyTextBlock(paragraph)
 		// 去除标题标记（如 # 开头）
-		if blockType == "TITLE" {
+		if blockType == enum.BlockTypeTitle {
 			// 移除可能的前导 # 标记（最多6个）
 			paragraph = titleRegex.ReplaceAllString(paragraph, "")
 			paragraph = strings.TrimSpace(paragraph)

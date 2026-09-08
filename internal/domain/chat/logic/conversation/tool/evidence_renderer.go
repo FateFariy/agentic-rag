@@ -52,10 +52,6 @@ func (r *EvidenceRenderer) renderSubQuestionReferences(references []*vo.SearchRe
 			continue
 		}
 		if _, exists := renderedKeys[ref.UniqueKey()]; exists {
-			reuse := fmt.Sprintf("- 复用证据 [%s]\n", utils.Trim(ref.ReferenceId))
-			if budget.tryConsume(utils.Len(reuse)) {
-				b.WriteString(reuse)
-			}
 			continue
 		}
 

@@ -74,18 +74,29 @@ func (c *ChunkCandidate) ExtractContentWithWeight(keywords []string, parserWeigh
 	return seed.Build()
 }
 
+// BuildChunkTextWithSection 为子块检索文本注入层级路径前缀，格式：section_path | 正文。
+// 正文子块仍携带"文档标题 | 章 | 节 | 条"等层级出处锚点，可被向量与 BM25 直接命中，命中结果也能直接展示出处，无需回查父块拼装。
+func (c *ChunkCandidate) BuildChunkTextWithSection() string {
+	section := strings.TrimSpace(c.SectionPath)
+	text := strings.TrimSpace(c.Text)
+	if section == "" || text == "" {
+		return c.Text
+	}
+	return section + " | " + text
+}
+
 // ParentChunkCandidate 父块候选
 type ParentChunkCandidate struct {
-	SectionPath       string            // 章节路径
-	StructureNodeId   int64             // 结构体节点ID
-	StructureNodeType int               // 结构体节点类型
-	CanonicalPath     string            // 标准路径
-	ItemIndex         int               // 项目索引
-	Text              string            // 文本内容
-	SourceType        int               // 来源类型
-	PageRange         string            // 页码范围
-	SourceBlockIds    string            // 源ID列表
-	ChildChunks       []*ChunkCandidate // 子块列表
+	SectionPath       string          // 章节路径
+	StructureNodeId   int64           // 结构体节点ID
+	StructureNodeType int             // 结构体节点类型
+	CanonicalPath     string          // 标准路径
+	ItemIndex         int             // 项目索引
+	Text              string          // 文本内容
+	SourceType        int             // 来源类型
+	PageRange         string          // 页码范围
+	SourceBlockIds    string          // 源ID列表
+	ChildChunks       ChunkCandidates // 子块列表
 }
 
 type DocumentStrategyStepDrafts []*DocumentStrategyStepDraft
