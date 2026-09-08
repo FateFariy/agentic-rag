@@ -107,5 +107,5 @@ func (m *ContextInjectMiddleware) buildCacheEvidenceHint(convCtx *conversation.C
 	if evidence == "" {
 		return ""
 	}
-	return "已检索到相关知识库结果。如果检索结果可以直接回答，请直接使用下述内容回答，无需再调用重复检索:\n\n" + evidence
+	return "已检索到相关结果。如果检索结果可以直接回答，请直接使用下述内容回答，无需再调用重复检索:\n\n" + evidence
 }
