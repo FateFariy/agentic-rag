@@ -2965,10 +2965,6 @@
                   "description": "消息",
                   "type": "string"
                 },
-                "removedCheckpointCount": {
-                  "description": "移除检查点数",
-                  "type": "integer"
-                },
                 "removedDialogueCount": {
                   "description": "移除对话数",
                   "type": "integer"

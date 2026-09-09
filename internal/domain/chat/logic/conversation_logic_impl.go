@@ -28,7 +28,6 @@ type ConversationLogicImpl struct {
 	baseGateway     adapter.KnowledgeBaseGateway
 	memoryManager   conversation.SessionMemoryManager
 	distributedLock adapter.DistributedLock
-	checkPointStore adapter.CheckPointStore
 	chain           *conversation.Chain
 }
 
@@ -37,13 +36,12 @@ var _ ConversationLogic = (*ConversationLogicImpl)(nil)
 // NewConversationLogicImpl 创建聊天逻辑实例
 func NewConversationLogicImpl(repo adapter.ChatRepository, baseGateway adapter.KnowledgeBaseGateway,
 	memoryManager conversation.SessionMemoryManager, distributedLock adapter.DistributedLock,
-	checkPointStore adapter.CheckPointStore, chain *conversation.Chain) *ConversationLogicImpl {
+	chain *conversation.Chain) *ConversationLogicImpl {
 	return &ConversationLogicImpl{
 		repo:            repo,
 		baseGateway:     baseGateway,
 		memoryManager:   memoryManager,
 		distributedLock: distributedLock,
-		checkPointStore: checkPointStore,
 		chain:           chain,
 	}
 }
@@ -160,18 +158,15 @@ func (c *ConversationLogicImpl) ResetConversation(ctx context.Context, conversat
 	if err = c.repo.Do(ctx, fn); err != nil {
 		return nil, err
 	}
-	// 删除检查点
-	count, err := c.checkPointStore.Delete(ctx, conversationId)
 	if err != nil {
 		return nil, err
 	}
 	return &vo.ConversationReset{
-		ConversationId:         conversationId,
-		StoppedRunningTask:     stoped,
-		RemovedDialogueCount:   int(dialogueCount),
-		RemovedExchangeCount:   int(exchangeCount),
-		RemovedCheckpointCount: count,
-		Message:                "会话已重置",
+		ConversationId:       conversationId,
+		StoppedRunningTask:   stoped,
+		RemovedDialogueCount: int(dialogueCount),
+		RemovedExchangeCount: int(exchangeCount),
+		Message:              "会话已重置",
 	}, nil
 }
 

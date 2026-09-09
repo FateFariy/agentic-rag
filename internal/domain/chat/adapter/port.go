@@ -6,21 +6,6 @@ import (
 	"github.com/swiftbit/know-agent/internal/domain/chat/model/vo"
 )
 
-// CheckPointStore 检查点存储器
-type CheckPointStore interface {
-	// Get 获取检查点
-	Get(ctx context.Context, checkPointId string) ([]byte, bool, error)
-
-	// Set 设置检查点
-	Set(ctx context.Context, checkPointId string, checkPoint []byte) error
-
-	// Count 检查点数量
-	Count(ctx context.Context, checkPointId string) (int, error)
-
-	// Delete 删除检查点
-	Delete(ctx context.Context, checkPointId string) (int, error)
-}
-
 type DistributedLock interface {
 	// TryLock 尝试获取锁
 	TryLock(ctx context.Context, name string) error

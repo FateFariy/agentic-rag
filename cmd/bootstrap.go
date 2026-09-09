@@ -35,7 +35,6 @@ import (
 	"github.com/swiftbit/know-agent/internal/infrastructure/observability"
 	"github.com/swiftbit/know-agent/internal/infrastructure/persistence"
 	"github.com/swiftbit/know-agent/internal/infrastructure/port/agent"
-	"github.com/swiftbit/know-agent/internal/infrastructure/port/agent/check"
 	"github.com/swiftbit/know-agent/internal/infrastructure/port/cache"
 	portconfig "github.com/swiftbit/know-agent/internal/infrastructure/port/config"
 	"github.com/swiftbit/know-agent/internal/infrastructure/port/emb"
@@ -57,7 +56,6 @@ func bootstrap(c *config.Config) *server.Server {
 	svcCtx := svc.NewServiceContext(c)
 
 	embedder := emb.NewOllamaEmbedder(svcCtx)
-	checkPointStore := check.NewMemoryCheckPointStore()
 	localConfig := portconfig.NewLocalConfig(svcCtx)
 	milvusStorage := storage.NewMilvusStorage(svcCtx, embedder)
 	rocketMQMessageProducer := mq.NewRocketMQMessageProducer(svcCtx)
@@ -129,7 +127,7 @@ func bootstrap(c *config.Config) *server.Server {
 		conversation.NewEndStage(chatRepo),
 	}
 	chain := conversation.NewChain(chatRepo, redisMutexLock, memoryManageImpl, chainRuntime, stages)
-	conversationLogicImpl := chatlogic.NewConversationLogicImpl(chatRepo, knowledgeAdapter, memoryManageImpl, redisMutexLock, checkPointStore, chain)
+	conversationLogicImpl := chatlogic.NewConversationLogicImpl(chatRepo, knowledgeAdapter, memoryManageImpl, redisMutexLock, chain)
 
 	reporter := community.NewLLMCommunityReporter(ollamaModel, renderer)
 	llmExtractor := extract.NewLLMExtractor(ollamaModel, renderer, gseTokenizer, svcCtx.Config.Chat.Rag.Graph.ChunkMaxChars)

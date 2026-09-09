@@ -68,10 +68,13 @@ func (p *VectorizeStage) Execute(ctx context.Context, buildCtx *Context) error {
 	}
 	_ = p.repo.InsertTaskLog(ctx, vectorStartLog)
 
-	// 批量向量化
+	// 分批向量化
 	vectorStartedTime := time.Now()
-	if err := p.indexer.BuildVectors(ctx, buildCtx.ChildChunks); err != nil {
-		return err
+	for i := 0; i < vectorSize; i += embeddingBatch {
+		end := min(i+embeddingBatch, vectorSize)
+		if err := p.indexer.BuildVectors(ctx, buildCtx.ChildChunks[i:end]); err != nil {
+			return err
+		}
 	}
 
 	// 回写向量状态

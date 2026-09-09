@@ -333,7 +333,6 @@ func ToConversationResetResp(source *vo.ConversationReset) *chat.ConversationRes
 		chatConversationResetResp.ConversationId = (*source).ConversationId
 		chatConversationResetResp.RemovedDialogueCount = (*source).RemovedDialogueCount
 		chatConversationResetResp.RemovedExchangeCount = (*source).RemovedExchangeCount
-		chatConversationResetResp.RemovedCheckpointCount = (*source).RemovedCheckpointCount
 		chatConversationResetResp.Message = (*source).Message
 		pChatConversationResetResp = &chatConversationResetResp
 	}

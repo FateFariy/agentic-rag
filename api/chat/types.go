@@ -155,12 +155,11 @@ type ConversationMemorySummaryResp struct {
 }
 
 type ConversationResetResp struct {
-	ConversationId         string `json:"conversationId"`         // 会话ID
-	Stopped                bool   `json:"stopped"`                // 是否停止
-	RemovedDialogueCount   int    `json:"removedDialogueCount"`   // 移除对话数
-	RemovedExchangeCount   int    `json:"removedExchangeCount"`   // 移除交换数
-	RemovedCheckpointCount int    `json:"removedCheckpointCount"` // 移除检查点数
-	Message                string `json:"message"`                // 消息
+	ConversationId       string `json:"conversationId"`       // 会话ID
+	Stopped              bool   `json:"stopped"`              // 是否停止
+	RemovedDialogueCount int    `json:"removedDialogueCount"` // 移除对话数
+	RemovedExchangeCount int    `json:"removedExchangeCount"` // 移除交换数
+	Message              string `json:"message"`              // 消息
 }
 
 type ConversationSessionListReq struct {
