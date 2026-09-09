@@ -103,7 +103,8 @@ type TableConf struct {
 // GraphRagConf 图RAG相关配置
 type GraphRagConf struct {
 	Enabled                     bool    `json:",default=true"` // 启用开关
-	ExtractBatch                int     `json:",default=8"`    // 每批 chunk 数（抽取提示）
+	ExtractBatch                int     `json:",default=1"`    // 每批 chunk 数（抽取提示）
+	ExtractConcurrency          int     `json:",default=4"`    // 抽取并发批次数（1 表示串行）
 	ChunkMaxChars               int     `json:",default=1200"` // 单 chunk 抽取截断字符数
 	MaxEntities                 int     `json:",default=300"`  // 单文档实体上限（超限按 PageRank 截断）
 	MaxRelations                int     `json:",default=500"`  // 单文档关系上限

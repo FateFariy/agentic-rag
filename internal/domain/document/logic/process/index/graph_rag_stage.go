@@ -29,6 +29,9 @@ func NewGraphRagStage(repo adapter.DocumentRepository, builder GraphRagBuilder) 
 
 func (s *graphRagStage) Name() string { return "图谱构建阶段" }
 
+// TaskStage 图谱构建阶段的任务阶段编码：任务阶段越过图谱构建说明图谱已构建
+func (s *graphRagStage) TaskStage() enum.TaskStage { return enum.TaskStageGraphRag }
+
 // Execute 执行 GraphRAG 构建。
 // 图谱为增强依赖：未装配 builder / 无子块 / 已提交过图谱（断点恢复）时直接跳过；
 // 构建失败记录 FAILED 结果并返回 ErrGraphRagBuildFailed，由责任链按降级语义 continue，
@@ -38,11 +41,6 @@ func (s *graphRagStage) Execute(ctx context.Context, buildCtx *Context) error {
 		return nil
 	}
 	if buildCtx == nil || len(buildCtx.ChildChunks) == 0 {
-		return nil
-	}
-	if buildCtx.ResumeCommittedGraph {
-		logx.Infof("从已提交 GraphRAG outcome 恢复索引任务，跳过图谱构建，documentId=%d, taskId=%d",
-			buildCtx.DocumentId, buildCtx.TaskId)
 		return nil
 	}
 	kbId := int64(0)
@@ -82,7 +80,6 @@ func (s *graphRagStage) Execute(ctx context.Context, buildCtx *Context) error {
 			GraphPersistenceOutcome: enum.GraphPersistenceOutcomeFailed,
 			GraphPersistenceReason:  err.Error(),
 		}
-		buildCtx.GraphRagBuildResult = result
 		graphFailDetail, _ := json.Marshal(map[string]any{
 			"costMillis":        costMillis,
 			"degradationReason": result.GraphPersistenceReason,
@@ -102,7 +99,6 @@ func (s *graphRagStage) Execute(ctx context.Context, buildCtx *Context) error {
 			buildCtx.DocumentId, buildCtx.TaskId, err)
 		return errorx.ErrGraphRagBuildFailed
 	}
-	buildCtx.GraphRagBuildResult = result
 
 	// 记录完成日志
 	graphEndDetail, _ := json.Marshal(map[string]any{

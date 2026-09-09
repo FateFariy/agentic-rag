@@ -25,6 +25,11 @@ func (s *CompletionStage) Name() string {
 	return "完成阶段"
 }
 
+// TaskStage 完成阶段负责收尾，每次执行都必须落库最终状态，不参与跳过判定
+func (s *CompletionStage) TaskStage() enum.TaskStage {
+	return StageSkipNone
+}
+
 func (s *CompletionStage) Execute(ctx context.Context, buildCtx *Context) error {
 	totalCostMillis := time.Since(buildCtx.BuildStartedTime).Milliseconds()
 

@@ -1,15 +1,11 @@
 package entity
 
 import (
-	"encoding/json"
 	"time"
 
 	"github.com/duke-git/lancet/v2/slice"
-	"github.com/duke-git/lancet/v2/strutil"
 
-	"github.com/swiftbit/know-agent/common/logx"
 	"github.com/swiftbit/know-agent/internal/domain/document/model/enum"
-	"github.com/swiftbit/know-agent/internal/domain/document/model/vo"
 )
 
 // DocumentTask 文档任务实体
@@ -46,19 +42,4 @@ func (t *DocumentTask) FillEnumNames() {
 	slice.ForEach(t.Logs, func(index int, log *DocumentTaskLog) {
 		log.FillEnumNames()
 	})
-}
-
-// ReadGraphRagBuildResult 从任务扩展 JSON 读取 GraphRAG 构建结果
-func (t *DocumentTask) ReadGraphRagBuildResult() *vo.GraphRagBuildResult {
-	if t == nil || strutil.IsBlank(t.ExtJson) {
-		return nil
-	}
-	var wrapper struct {
-		Result *vo.GraphRagBuildResult `json:"graphRagBuild"`
-	}
-	if err := json.Unmarshal([]byte(t.ExtJson), &wrapper); err != nil {
-		logx.Warnf("Ignoring unreadable GraphRAG outcome checkpoint: taskId=%d, message=%v", t.ID, err)
-		return nil
-	}
-	return wrapper.Result
 }

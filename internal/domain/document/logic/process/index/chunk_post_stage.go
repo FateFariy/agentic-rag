@@ -22,12 +22,12 @@ func (p *ChunkPostStage) Name() string {
 	return "切块后处理阶段"
 }
 
-func (p *ChunkPostStage) Execute(ctx context.Context, buildCtx *Context) error {
-	// 检查是否需要从已提交 GraphRAG 结果恢复
-	if buildCtx.ResumeCommittedGraph {
-		return nil
-	}
+// TaskStage 切块后处理阶段：任务阶段越过切块后处理执行说明本阶段已把父子块落库（未落库时由责任链回退阶段重跑）
+func (p *ChunkPostStage) TaskStage() enum.TaskStage {
+	return enum.TaskStageChunkPostProcess
+}
 
+func (p *ChunkPostStage) Execute(ctx context.Context, buildCtx *Context) error {
 	buildCtx.Task.CurrentStage = enum.TaskStageChunkPostProcess
 	if err := p.repo.UpdateTaskById(ctx, &entity.DocumentTask{
 		ID:           buildCtx.Task.ID,

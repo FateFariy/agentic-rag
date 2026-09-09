@@ -52,15 +52,13 @@ func (p *ChunkingStage) Name() string {
 	return "切块阶段"
 }
 
-func (p *ChunkingStage) Execute(ctx context.Context, buildCtx *Context) error {
-	// 检查是否需要从已提交 GraphRAG 结果恢复
-	documentId := buildCtx.DocumentId
-	if buildCtx.ResumeCommittedGraph {
-		logx.Infof("从已提交 GraphRAG outcome 恢复索引任务，跳过切块流水线: documentId=%d, taskId=%d",
-			documentId, buildCtx.TaskId)
-		return nil
-	}
+// TaskStage 切块阶段的任务阶段编码：任务阶段越过切块执行（进入切块后处理及之后）说明切块产物已就绪
+func (p *ChunkingStage) TaskStage() enum.TaskStage {
+	return enum.TaskStageChunkExecute
+}
 
+func (p *ChunkingStage) Execute(ctx context.Context, buildCtx *Context) error {
+	documentId := buildCtx.DocumentId
 	// 查询结构化解析 blocks
 	blocks, err := p.repo.SelectDocumentBlocksByTask(ctx, documentId, buildCtx.Task.SourceParseTaskId)
 	if err != nil {

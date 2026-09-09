@@ -5,12 +5,10 @@ import (
 	"errors"
 	"time"
 
-	"github.com/swiftbit/know-agent/common/logx"
 	"github.com/swiftbit/know-agent/common/utils"
 	"github.com/swiftbit/know-agent/internal/domain/document/adapter"
 	"github.com/swiftbit/know-agent/internal/domain/document/model/entity"
 	"github.com/swiftbit/know-agent/internal/domain/document/model/enum"
-	errorx "github.com/swiftbit/know-agent/internal/error"
 )
 
 // PreparationStage 准备阶段：加载策略步骤、推进任务状态
@@ -30,31 +28,29 @@ func (p *PreparationStage) Name() string {
 	return "准备阶段"
 }
 
+// TaskStage 准备阶段负责加载断点恢复标记、下载原文与推进任务状态，每次恢复都需执行，不参与跳过判定
+func (p *PreparationStage) TaskStage() enum.TaskStage {
+	return StageSkipNone
+}
+
 func (p *PreparationStage) Execute(ctx context.Context, buildCtx *Context) error {
-	// 读取已有的 GraphRAG 构建结果（用于断点恢复）
-	buildCtx.GraphRagBuildResult = buildCtx.Task.ReadGraphRagBuildResult()
-
-	// 检查是否需要直接失败
-	buildCtx.ResumeCommittedGraph = buildCtx.GraphRagBuildResult.IsCommittedGraph()
-
-	if buildCtx.ResumeCommittedGraph {
-		return errorx.ErrGraphRagBuildFailed
-	}
-
 	sourceParseTaskId := p.requireSourceParseTaskId(ctx, buildCtx)
 	if sourceParseTaskId == 0 {
 		return errors.New("索引任务缺少有效且已冻结的源解析任务")
 	}
 
-	// 下载原始文件内容
-	rawFileBytes, err := p.storage.DownloadObject(ctx, buildCtx.Document.ObjectName)
-	if err != nil {
-		return err
+	// 断点恢复且已越过切块阶段时，无需重新下载原始文件
+	if !buildCtx.ShouldSkip(enum.TaskStageChunkExecute) {
+		rawFileBytes, err := p.storage.DownloadObject(ctx, buildCtx.Document.ObjectName)
+		if err != nil {
+			return err
+		}
+		buildCtx.RawFileBytes = rawFileBytes
 	}
-	buildCtx.RawFileBytes = rawFileBytes
+	buildCtx.BuildStartedTime = time.Now()
 
-	// 推进任务状态到"切块执行中"
-	buildCtx.Task.CurrentStage = enum.TaskStageChunkExecute
+	// 向前推进任务状态到"切块执行中"，断点恢复时不回退已完成的阶段
+	buildCtx.Task.CurrentStage = max(buildCtx.Task.CurrentStage, enum.TaskStageChunkExecute)
 	buildCtx.Task.TaskStatus = enum.TaskStatusRunning
 	buildCtx.Task.StartTime = utils.Pointer(buildCtx.StartTime)
 
@@ -70,7 +66,7 @@ func (p *PreparationStage) Execute(ctx context.Context, buildCtx *Context) error
 		task := &entity.DocumentTask{
 			ID:           buildCtx.TaskId,
 			TaskStatus:   enum.TaskStatusRunning,
-			CurrentStage: enum.TaskStageChunkExecute,
+			CurrentStage: buildCtx.Task.CurrentStage,
 			StartTime:    utils.Pointer(buildCtx.StartTime),
 		}
 		return p.repo.UpdateTaskById(txCtx, task)
@@ -100,39 +96,4 @@ func (p *PreparationStage) requireSourceParseTaskId(ctx context.Context, buildCt
 		return 0
 	}
 	return sourceParseTask.ID
-}
-
-// applyGraphFailureDisposition 应用图谱失败处置
-func (p *PreparationStage) applyGraphFailureDisposition(ctx context.Context, buildCtx *Context, cause error) {
-	failedStage := enum.TaskStageGraphRag
-	if buildCtx.Task.CurrentStage != 0 {
-		failedStage = buildCtx.Task.CurrentStage
-	}
-	errMsg := "Graph build failed"
-	if cause != nil {
-		errMsg = utils.BlankToDefault(cause.Error(), "Graph build failed")
-	}
-
-	markFailureTx := func(txCtx context.Context) error {
-		if err := p.repo.UpdateDocumentById(txCtx, &entity.Document{
-			ID: buildCtx.DocumentId, IndexStatus: enum.IndexStatusBuildFailed,
-		}); err != nil {
-			return err
-		}
-		if err := p.repo.UpdateStepExecuteStatus(txCtx, buildCtx.PlanId, enum.StrategyExecuteStatusExecuteFailed); err != nil {
-			return err
-		}
-		return p.repo.UpdateTaskById(txCtx, &entity.DocumentTask{
-			ID:           buildCtx.TaskId,
-			TaskStatus:   enum.TaskStatusFailed,
-			CurrentStage: failedStage,
-			FinishTime:   utils.Pointer(time.Now()),
-			CostMillis:   time.Since(buildCtx.StartTime).Milliseconds(),
-			ErrorCode:    utils.Pointer("TASK_FAILED"),
-			ErrorMsg:     utils.Pointer(errMsg),
-		})
-	}
-	if err := p.repo.Do(ctx, markFailureTx); err != nil {
-		logx.Warnf("图谱失败时收尾失败: taskId=%d, err=%v", buildCtx.Task.ID, err)
-	}
 }

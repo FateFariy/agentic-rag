@@ -13,11 +13,6 @@ type GraphRagBuildResult struct {
 	KgCommitted             bool                         `json:"kgCommitted"`             // 图谱是否已提交
 }
 
-// IsCommittedGraph 检查图谱是否已提交（断点恢复语义：已提交则跳过重构建）
-func (p *GraphRagBuildResult) IsCommittedGraph() bool {
-	return p != nil && p.KgCommitted && p.GraphPersistenceOutcome != ""
-}
-
 // RaptorBuildResult RAPTOR 构建结果
 type RaptorBuildResult struct {
 	NodeCount           int    `json:"nodeCount"`

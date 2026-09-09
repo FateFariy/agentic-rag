@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"time"
 
-	"github.com/swiftbit/know-agent/common/logx"
 	"github.com/swiftbit/know-agent/internal/domain/document/adapter"
 	"github.com/swiftbit/know-agent/internal/domain/document/model/entity"
 	"github.com/swiftbit/know-agent/internal/domain/document/model/enum"
@@ -30,11 +29,12 @@ func (p *VectorizeStage) Name() string {
 	return "向量化阶段"
 }
 
+// TaskStage 向量化阶段的任务阶段编码：任务阶段越过向量化说明子块向量已写入
+func (p *VectorizeStage) TaskStage() enum.TaskStage {
+	return enum.TaskStageVectorize
+}
+
 func (p *VectorizeStage) Execute(ctx context.Context, buildCtx *Context) error {
-	if buildCtx.ResumeCommittedGraph {
-		logx.Infof("从已提交 GraphRAG outcome 恢复索引任务，跳过构建向量，documentId=%d, taskId=%d", buildCtx.DocumentId, buildCtx.TaskId)
-		return nil
-	}
 	buildCtx.Task.CurrentStage = enum.TaskStageVectorize
 
 	task := &entity.DocumentTask{
@@ -67,6 +67,7 @@ func (p *VectorizeStage) Execute(ctx context.Context, buildCtx *Context) error {
 		DetailJson:   string(vectorStartDetail),
 	}
 	_ = p.repo.InsertTaskLog(ctx, vectorStartLog)
+	_ = p.indexer.DeleteByDocumentId(ctx, buildCtx.DocumentId)
 
 	// 分批向量化
 	vectorStartedTime := time.Now()

@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"slices"
+	"sync"
 
 	"github.com/swiftbit/know-agent/common/logx"
 	"github.com/swiftbit/know-agent/common/utils"
@@ -57,24 +58,16 @@ func (s *Builder) RebuildDocumentGraph(ctx context.Context, documentId, taskId, 
 		result.GraphPersistenceReason = "没有可构建图谱的文档块"
 		return result, nil
 	}
-	// 1. 逐块抽取（LLM 调用失败仅告警跳过该块，保留其余）
+	// 1. 并发分批抽取（LLM 调用失败仅告警跳过该块，保留其余）
 	entityTypes, relationTypes := s.resolveGraphTypes(ctx, knowledgeBaseId)
 	keyFunc := func(s string) (string, struct{}) { return s, struct{}{} }
 	entityWhitelist := utils.MapBy(entityTypes, keyFunc)
 	relationWhitelist := utils.MapBy(relationTypes, keyFunc)
-	var raws []*extract.RawGraph
+	raws := s.extractAll(ctx, chunks, entityTypes, relationTypes)
 	droppedEntity, droppedRelation := 0, 0
-	for _, ch := range chunks {
-		rg, err := s.extractor.Extract(ctx, ch, entityTypes, relationTypes)
-		if err != nil {
-			logx.Warnf("抽取文档块图谱失败 chunkId=%d: %v", ch.ID, err)
-			continue
-		}
-		if rg != nil {
-			raws = append(raws, rg)
-			droppedEntity += rg.DroppedEntities
-			droppedRelation += rg.DroppedRelations
-		}
+	for _, rg := range raws {
+		droppedEntity += rg.DroppedEntities
+		droppedRelation += rg.DroppedRelations
 	}
 	if droppedEntity > 0 || droppedRelation > 0 {
 		logx.Infof("grounding 校验丢弃不可信抽取: documentId=%d, 实体=%d, 关系=%d", documentId, droppedEntity, droppedRelation)
@@ -138,6 +131,47 @@ func (s *Builder) RebuildDocumentGraph(ctx context.Context, documentId, taskId, 
 	result.GraphPersistenceOutcome = enum.GraphPersistenceOutcomeSuccess
 	result.KgCommitted = true
 	return result, nil
+}
+
+// extractAll 并发分批抽取：ExtractBatch 控制每批 chunk 数，ExtractConcurrency 控制并发批次数。
+// 单块抽取失败仅告警跳过；结果按 chunk 顺序归集，保证下游消解与图算法结果稳定。
+func (s *Builder) extractAll(ctx context.Context, chunks []*entity.DocumentChunk, entityTypes, relationTypes []string) []*extract.RawGraph {
+	concurrency := max(s.config.ExtractConcurrency, 1)
+	batchSize := s.config.ExtractBatch
+	if batchSize <= 0 {
+		batchSize = len(chunks)
+	}
+
+	raws := make([]*extract.RawGraph, len(chunks))
+	sem := make(chan struct{}, concurrency)
+	var wg sync.WaitGroup
+	for start := 0; start < len(chunks); start += batchSize {
+		end := min(start+batchSize, len(chunks))
+		select {
+		case sem <- struct{}{}:
+		case <-ctx.Done():
+			wg.Wait()
+			return utils.Filter(raws, func(rg *extract.RawGraph) bool { return rg != nil })
+		}
+		wg.Add(1)
+		go func(offset int, batch []*entity.DocumentChunk) {
+			defer wg.Done()
+			defer func() { <-sem }()
+			for i, chunk := range batch {
+				if ctx.Err() != nil {
+					return
+				}
+				rg, err := s.extractor.Extract(ctx, chunk, entityTypes, relationTypes)
+				if err != nil {
+					logx.Warnf("抽取文档块图谱失败 chunkId=%d: %v", chunk.ID, err)
+					continue
+				}
+				raws[offset+i] = rg
+			}
+		}(start, chunks[start:end])
+	}
+	wg.Wait()
+	return utils.Filter(raws, func(rg *extract.RawGraph) bool { return rg != nil })
 }
 
 // projectTypedChunks M3 图卡片投影：图提交成功后把实体/关系/社区卡向量化写入向量库。

@@ -9,11 +9,13 @@ import (
 	"github.com/swiftbit/know-agent/common/logx"
 	"github.com/swiftbit/know-agent/internal/domain/document/adapter"
 	"github.com/swiftbit/know-agent/internal/domain/document/logic/process/chunk"
+	"github.com/swiftbit/know-agent/internal/domain/document/model/enum"
 	errorx "github.com/swiftbit/know-agent/internal/error"
 )
 
 // BuildIndexChain 阶段责任链
 type BuildIndexChain struct {
+	repo   adapter.DocumentRepository
 	stages []Stage
 }
 
@@ -36,27 +38,59 @@ func NewBuildIndexChain(
 		NewGraphRagStage(repo, builder),                       // 6. GraphRAG 构建阶段：构建实体关系图谱
 		NewCompletionStage(repo),                              // 7. 完成阶段：事务性更新任务/方案/文档状态
 	}
-	return &BuildIndexChain{stages: stages}
+	return &BuildIndexChain{repo: repo, stages: stages}
 }
 
 // Run 执行责任链
 func (c *BuildIndexChain) Run(ctx context.Context, buildCtx *Context) error {
-	for _, phase := range c.stages {
-		phaseName := phase.Name()
-		startTime := time.Now()
-		logx.Infof("[BuildIndexChain] 开始执行阶段: %s, documentId=%d, taskId=%d", phaseName, buildCtx.DocumentId, buildCtx.TaskId)
+	// 断点恢复：先还原上一轮已落库的切块产物，保证被跳过的阶段之后续阶段仍有数据可用
+	if err := c.restoreChunks(ctx, buildCtx); err != nil {
+		return fmt.Errorf("恢复已落库分块失败: %w", err)
+	}
 
-		if err := phase.Execute(ctx, buildCtx); err != nil {
+	for _, stage := range c.stages {
+		stageName := stage.Name()
+		if buildCtx.ShouldSkip(stage.TaskStage()) {
+			logx.Infof("[BuildIndexChain] 断点恢复跳过已执行阶段: %s, currentStage=%d(%s), documentId=%d, taskId=%d",
+				stageName, buildCtx.Task.CurrentStage, enum.TaskStageName(buildCtx.Task.CurrentStage), buildCtx.DocumentId, buildCtx.TaskId)
+			continue
+		}
+		startTime := time.Now()
+		logx.Infof("[BuildIndexChain] 开始执行阶段: %s, documentId=%d, taskId=%d", stageName, buildCtx.DocumentId, buildCtx.TaskId)
+
+		if err := stage.Execute(ctx, buildCtx); err != nil {
 			if errors.Is(err, errorx.ErrGraphRagBuildFailed) {
 				// 图谱构建为增强依赖：失败仅降级告警，不阻断后续阶段（其余阶段含 ResumeCommittedGraph 幂等跳过判断，完成阶段正常收尾）
-				logx.Warnf("[BuildIndexChain] 阶段 %s 执行失败(降级处理，继续后续阶段): %v", phaseName, err)
+				logx.Warnf("[BuildIndexChain] 阶段 %s 执行失败(降级处理，继续后续阶段): %v", stageName, err)
 				continue
 			}
-			logx.Errorf("[BuildIndexChain] 阶段 %s 执行失败: %v", phaseName, err)
-			return fmt.Errorf("阶段 %s 执行失败: %w", phaseName, err)
+			logx.Errorf("[BuildIndexChain] 阶段 %s 执行失败: %v", stageName, err)
+			return fmt.Errorf("阶段 %s 执行失败: %w", stageName, err)
 		}
 
-		logx.Infof("[BuildIndexChain] 阶段 %s 执行成功, costMillis=%d", phaseName, time.Since(startTime).Milliseconds())
+		logx.Infof("[BuildIndexChain] 阶段 %s 执行成功, costMillis=%d", stageName, time.Since(startTime).Milliseconds())
 	}
+	return nil
+}
+
+// restoreChunks 断点恢复：任务阶段已越过切块后处理执行时，从库中恢复上一轮已落库的父子块。
+// 未查到已落库分块说明切块产物尚未提交，回退任务阶段到切块执行，按首次执行重跑切块流程。
+func (c *BuildIndexChain) restoreChunks(ctx context.Context, buildCtx *Context) error {
+	if !buildCtx.ShouldSkip(enum.TaskStageChunkPostProcess) {
+		return nil
+	}
+	chunks, err := c.repo.SelectChunks(ctx, map[string]any{
+		"document_id": buildCtx.DocumentId,
+		"task_id":     buildCtx.TaskId,
+	})
+	if err != nil {
+		return err
+	}
+	if len(chunks) == 0 {
+		return nil
+	}
+	buildCtx.ChildChunks = chunks
+	logx.Infof("[BuildIndexChain] 断点恢复已落库分块: documentId=%d, taskId=%d, chunkCount=%d",
+		buildCtx.DocumentId, buildCtx.TaskId, len(chunks))
 	return nil
 }
