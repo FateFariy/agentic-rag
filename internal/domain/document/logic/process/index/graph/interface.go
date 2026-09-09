@@ -9,7 +9,9 @@ import (
 
 // Extractor 图谱抽取器
 type Extractor interface {
-	Extract(ctx context.Context, chunk *entity.DocumentChunk) (*extract.RawGraph, error)
+	// Extract 抽取单个块；entityTypes/relationTypes 为该知识库允许的实体/关系类型白名单，
+	// 为空时由实现回退到全局默认白名单。
+	Extract(ctx context.Context, chunk *entity.DocumentChunk, entityTypes, relationTypes []string) (*extract.RawGraph, error)
 }
 
 // CommunityReporter 社区摘要增强（M3：LLM 社区报告）。

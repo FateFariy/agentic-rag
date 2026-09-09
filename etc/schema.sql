@@ -628,6 +628,8 @@ CREATE TABLE IF NOT EXISTS `knowledge_base`
     `graph_rag_config_json` JSON COMMENT '图谱RAG配置JSON',
     `raptor_config_json`    JSON COMMENT 'Raptor配置JSON',
     `metadata_filter_json`  JSON COMMENT '元数据过滤JSON',
+    `entity_types`          JSON COMMENT '图谱实体类型白名单',
+    `relation_types`        JSON COMMENT '图谱关系类型白名单',
     `is_default`            TINYINT COMMENT '是否默认',
     `sort_order`            INT          NOT NULL DEFAULT 0 COMMENT '排序顺序',
     `create_time`           DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',

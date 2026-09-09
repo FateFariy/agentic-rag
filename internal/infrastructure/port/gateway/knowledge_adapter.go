@@ -76,6 +76,15 @@ func (r *KnowledgeAdapter) RequireEnabled(ctx context.Context, knowledgeBaseId i
 	}, nil
 }
 
+// GraphTypes 实现图谱构建器的类型白名单提供者：返回知识库配置的实体/关系类型白名单（nil 表示回退全局默认）。
+func (r *KnowledgeAdapter) GraphTypes(ctx context.Context, knowledgeBaseId int64) ([]string, []string, error) {
+	base, err := r.repo.SelectKnowledgeBaseById(ctx, knowledgeBaseId)
+	if err != nil {
+		return nil, nil, err
+	}
+	return base.EntityTypes, base.RelationTypes, nil
+}
+
 func ToRouteContext(input *conversation.KnowledgeRouteInput) *route.Context {
 	routeCtx := route.NewRouteContext(input.Question, input.RewriteQuestion, input.SelectedKnowledgeBaseIds, input.AllowedDocumentIds)
 	routeCtx.ConversationId = input.ConversationId

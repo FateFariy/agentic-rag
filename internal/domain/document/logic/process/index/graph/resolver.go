@@ -57,7 +57,7 @@ type edgeKey struct {
 // Resolve 两轮完成实体消解与关系合并：
 // 第一轮收集实体并归一化（全半角/大小写/别名累积/mention 计数）；
 // 第二轮合并关系（源/目标必须是已抽实体，自环丢弃，同 (src,tgt,type) 权重累加）。
-func (r *Resolver) Resolve(raws []*extract.RawGraph) *GraphData {
+func (r *Resolver) Resolve(raws []*extract.RawGraph, entityWhitelist, relationWhitelist map[string]struct{}) *GraphData {
 	entMap := make(map[string]*entAcc)
 	canonToKeys := make(map[string][]string)
 
@@ -70,7 +70,7 @@ func (r *Resolver) Resolve(raws []*extract.RawGraph) *GraphData {
 			if normalized == "" {
 				continue
 			}
-			etype := enum.NormalizeEntityType(e.Type)
+			etype := enum.NormalizeEntityType(e.Type, entityWhitelist)
 			key := mergeKey(normalized, etype)
 			acc, ok := entMap[key]
 			if !ok {
@@ -121,7 +121,7 @@ func (r *Resolver) Resolve(raws []*extract.RawGraph) *GraphData {
 			if srcKey == "" || tgtKey == "" || srcKey == tgtKey {
 				continue
 			}
-			relType := enum.NormalizeRelationType(strings.TrimSpace(rel.RelationType))
+			relType := enum.NormalizeRelationType(strings.TrimSpace(rel.RelationType), relationWhitelist)
 			ek := edgeKey{srcKey, tgtKey, relType}
 			acc, ok := edgeMap[ek]
 			if !ok {

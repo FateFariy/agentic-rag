@@ -30,9 +30,13 @@ var GraphRagRelationWhitelist = map[string]struct{}{
 }
 
 // NormalizeRelationType 归一化关系类型：白名单内原样返回，否则落 相关于 兜底
-func NormalizeRelationType(rt string) string {
+// whitelist 为允许的关系类型集合；为空时回退到 GraphRagRelationWhitelist 默认白名单
+func NormalizeRelationType(rt string, whitelist map[string]struct{}) string {
 	if rt != "" {
-		if _, ok := GraphRagRelationWhitelist[rt]; ok {
+		if len(whitelist) == 0 {
+			whitelist = GraphRagRelationWhitelist
+		}
+		if _, ok := whitelist[rt]; ok {
 			return rt
 		}
 	}
@@ -40,9 +44,13 @@ func NormalizeRelationType(rt string) string {
 }
 
 // NormalizeEntityType 实体类型受控归一：白名单内原样返回，未命中归入"概念"防类型爆炸
-func NormalizeEntityType(t string) string {
+// whitelist 为允许的实体类型集合；为空时回退到 GraphRagEntityTypes 默认白名单
+func NormalizeEntityType(t string, whitelist map[string]struct{}) string {
 	if t = strings.TrimSpace(t); t != "" {
-		if _, ok := GraphRagEntityTypes[t]; ok {
+		if len(whitelist) == 0 {
+			whitelist = GraphRagEntityTypes
+		}
+		if _, ok := whitelist[t]; ok {
 			return t
 		}
 	}

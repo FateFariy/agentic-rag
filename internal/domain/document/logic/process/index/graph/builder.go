@@ -17,6 +17,13 @@ import (
 	"github.com/swiftbit/know-agent/internal/domain/document/model/vo"
 )
 
+// GraphTypeProvider 提供知识库自定义的图谱实体/关系类型白名单。
+// 由调用方注入（通常包装 KnowledgeRepository），避免 document 域直接依赖 knowledge 域。
+type GraphTypeProvider interface {
+	// GraphTypes 返回指定知识库允许的实体类型与关系类型；缺省返回 nil，调用方回退到全局默认白名单。
+	GraphTypes(ctx context.Context, knowledgeBaseId int64) (entityTypes, relationTypes []string, err error)
+}
+
 // Builder 实现 index.GraphRagBuilder：编排 抽取→消解合并→成本闸门→PageRank→社区发现→LLM 社区报告→事务化全删全插→图卡片投影（M1+M3）
 type Builder struct {
 	store         adapter.GraphStore
@@ -25,10 +32,11 @@ type Builder struct {
 	config        *config.GraphRagConf
 	reporter      CommunityReporter     // M3：可选 LLM 社区报告器（nil 时使用抽取式摘要）
 	vectorIndexer adapter.VectorIndexer // M3：可选图卡片向量化投影（nil 时关闭）
+	typesProvider GraphTypeProvider     // 按知识库动态提供图谱类型白名单（nil 时回退全局默认）
 }
 
 // NewBuilder 创建图谱构建器
-func NewBuilder(store adapter.GraphStore, extractor Extractor, cfg *config.GraphRagConf, reporter CommunityReporter, vectorIndexer adapter.VectorIndexer) *Builder {
+func NewBuilder(store adapter.GraphStore, extractor Extractor, cfg *config.GraphRagConf, reporter CommunityReporter, vectorIndexer adapter.VectorIndexer, typesProvider GraphTypeProvider) *Builder {
 	return &Builder{
 		store:         store,
 		extractor:     extractor,
@@ -36,6 +44,7 @@ func NewBuilder(store adapter.GraphStore, extractor Extractor, cfg *config.Graph
 		config:        cfg,
 		reporter:      reporter,
 		vectorIndexer: vectorIndexer,
+		typesProvider: typesProvider,
 	}
 }
 
@@ -49,10 +58,14 @@ func (s *Builder) RebuildDocumentGraph(ctx context.Context, documentId, taskId, 
 		return result, nil
 	}
 	// 1. 逐块抽取（LLM 调用失败仅告警跳过该块，保留其余）
+	entityTypes, relationTypes := s.resolveGraphTypes(ctx, knowledgeBaseId)
+	keyFunc := func(s string) (string, struct{}) { return s, struct{}{} }
+	entityWhitelist := utils.MapBy(entityTypes, keyFunc)
+	relationWhitelist := utils.MapBy(relationTypes, keyFunc)
 	var raws []*extract.RawGraph
 	droppedEntity, droppedRelation := 0, 0
 	for _, ch := range chunks {
-		rg, err := s.extractor.Extract(ctx, ch)
+		rg, err := s.extractor.Extract(ctx, ch, entityTypes, relationTypes)
 		if err != nil {
 			logx.Warnf("抽取文档块图谱失败 chunkId=%d: %v", ch.ID, err)
 			continue
@@ -67,7 +80,7 @@ func (s *Builder) RebuildDocumentGraph(ctx context.Context, documentId, taskId, 
 		logx.Infof("grounding 校验丢弃不可信抽取: documentId=%d, 实体=%d, 关系=%d", documentId, droppedEntity, droppedRelation)
 	}
 	// 2. 实体消解 + 关系合并
-	data := s.resolver.Resolve(raws)
+	data := s.resolver.Resolve(raws, entityWhitelist, relationWhitelist)
 	if len(data.Nodes) == 0 {
 		result.GraphPersistenceOutcome = enum.GraphPersistenceOutcomeEmpty
 		result.GraphPersistenceReason = "没有抽取到实体"
@@ -245,4 +258,17 @@ func writeBackGraphMetrics(nodes []*entity.GraphNode, edges []*entity.GraphEdge,
 			e.RankBoost = (s.PageRank + t.PageRank) / 2
 		}
 	}
+}
+
+// resolveGraphTypes 加载知识库自定义的图谱类型白名单（实体类型 + 关系类型）
+func (s *Builder) resolveGraphTypes(ctx context.Context, knowledgeBaseId int64) (entityTypes, relationTypes []string) {
+	if s.typesProvider == nil || knowledgeBaseId <= 0 {
+		return nil, nil
+	}
+	types, rels, err := s.typesProvider.GraphTypes(ctx, knowledgeBaseId)
+	if err != nil {
+		logx.Warnf("加载知识库图谱类型白名单失败 kbId=%d: %v，回退全局默认", knowledgeBaseId, err)
+		return nil, nil
+	}
+	return types, rels
 }

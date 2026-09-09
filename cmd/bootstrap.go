@@ -131,7 +131,7 @@ func bootstrap(c *config.Config) *server.Server {
 
 	reporter := community.NewLLMCommunityReporter(ollamaModel, renderer)
 	llmExtractor := extract.NewLLMExtractor(ollamaModel, renderer, gseTokenizer, svcCtx.Config.Chat.Rag.Graph.ChunkMaxChars)
-	graphBuilder := graphbuild.NewBuilder(neo4jStore, llmExtractor, svcCtx.Config.Chat.Rag.Graph, reporter, milvusStorage)
+	graphBuilder := graphbuild.NewBuilder(neo4jStore, llmExtractor, svcCtx.Config.Chat.Rag.Graph, reporter, milvusStorage, knowledgeAdapter)
 	strategyRegistry := NewChunkStrategyRegistry(svcCtx, chatModel, renderer)
 	generateImpl := process.NewProfileGenerateImpl(documentRepo)
 	analysisChain := analysis.NewAnalysisChain(svcCtx, documentRepo, tableRepo, minioStorage, generateImpl, knowledgeAdapter)

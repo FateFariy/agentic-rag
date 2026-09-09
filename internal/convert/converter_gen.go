@@ -1470,6 +1470,8 @@ func ToKnowledgeBaseEntity(source *model.KnowledgeBase) *entity2.KnowledgeBase {
 		entityKnowledgeBase.GraphRagConfigJson = datatypesJSONToJsonRawMessage((*source).GraphRagConfigJson)
 		entityKnowledgeBase.RaptorConfigJson = datatypesJSONToJsonRawMessage((*source).RaptorConfigJson)
 		entityKnowledgeBase.MetadataFilterJson = datatypesJSONToJsonRawMessage((*source).MetadataFilterJson)
+		entityKnowledgeBase.EntityTypes = (*source).EntityTypes
+		entityKnowledgeBase.RelationTypes = (*source).RelationTypes
 		entityKnowledgeBase.IsDefault = (*source).IsDefault
 		entityKnowledgeBase.SortOrder = (*source).SortOrder
 		pEntityKnowledgeBase = &entityKnowledgeBase
@@ -1498,6 +1500,8 @@ func ToKnowledgeBaseModel(source *entity2.KnowledgeBase) *model.KnowledgeBase {
 		modelKnowledgeBase.GraphRagConfigJson = jsonRawMessageToDatatypesJSON((*source).GraphRagConfigJson)
 		modelKnowledgeBase.RaptorConfigJson = jsonRawMessageToDatatypesJSON((*source).RaptorConfigJson)
 		modelKnowledgeBase.MetadataFilterJson = jsonRawMessageToDatatypesJSON((*source).MetadataFilterJson)
+		modelKnowledgeBase.EntityTypes = (*source).EntityTypes
+		modelKnowledgeBase.RelationTypes = (*source).RelationTypes
 		modelKnowledgeBase.IsDefault = (*source).IsDefault
 		modelKnowledgeBase.SortOrder = (*source).SortOrder
 		pModelKnowledgeBase = &modelKnowledgeBase

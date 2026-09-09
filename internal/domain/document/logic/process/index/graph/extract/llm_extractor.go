@@ -31,7 +31,7 @@ func NewLLMExtractor(chatModel model.ChatModel, renderer adapter.PromptRenderer,
 }
 
 // Extract 抽取单个块（超长块按 ChunkMaxChars 截断，控制 LLM 输入成本）
-func (e *LLMExtractor) Extract(ctx context.Context, chunk *entity.DocumentChunk) (*RawGraph, error) {
+func (e *LLMExtractor) Extract(ctx context.Context, chunk *entity.DocumentChunk, entityTypes, relationTypes []string) (*RawGraph, error) {
 	text := strings.TrimSpace(chunk.ChunkText)
 	if text == "" {
 		return &RawGraph{}, nil
@@ -39,8 +39,14 @@ func (e *LLMExtractor) Extract(ctx context.Context, chunk *entity.DocumentChunk)
 	if e.chunkMaxChars > 0 {
 		text = utils.Truncate(text, e.chunkMaxChars)
 	}
+	if len(entityTypes) == 0 {
+		entityTypes = utils.MapKeys(enum.GraphRagEntityTypes)
+	}
+	if len(relationTypes) == 0 {
+		relationTypes = utils.MapKeys(enum.GraphRagRelationWhitelist)
+	}
 
-	raw, err := e.generateAndParse(ctx, text, chunk.ID)
+	raw, err := e.generateAndParse(ctx, text, chunk.ID, entityTypes, relationTypes)
 	if err != nil {
 		return nil, err
 	}
@@ -51,7 +57,7 @@ func (e *LLMExtractor) Extract(ctx context.Context, chunk *entity.DocumentChunk)
 }
 
 // generateAndParse 渲染提示词 → 调用模型 → 解析响应
-func (e *LLMExtractor) generateAndParse(ctx context.Context, text string, chunkId int64) (*RawGraph, error) {
+func (e *LLMExtractor) generateAndParse(ctx context.Context, text string, chunkId int64, types, relations []string) (*RawGraph, error) {
 	hint := ""
 	if e.tokenizer != nil {
 		if tokens := e.tokenizer.SegmentWords(text); len(tokens) > 0 {
@@ -61,8 +67,8 @@ func (e *LLMExtractor) generateAndParse(ctx context.Context, text string, chunkI
 	userPrompt, err := e.renderer.Render(enum.GraphExtract, map[string]any{
 		"text":      text,
 		"tokenHint": hint,
-		"types":     utils.MapKeys(enum.GraphRagEntityTypes),
-		"relations": utils.MapKeys(enum.GraphRagRelationWhitelist),
+		"types":     types,
+		"relations": relations,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("render prompt: %w", err)
