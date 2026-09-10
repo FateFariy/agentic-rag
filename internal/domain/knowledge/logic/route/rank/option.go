@@ -27,12 +27,3 @@ func WithLexicalIndex(index RouteLexicalIndex) Option {
 		o.lexicalIndex = index
 	})
 }
-
-// WithScorer 注册评分器（可选）
-func WithScorer(scorer score.Scorer) Option {
-	return common.WrapImplSpecificOptFn(func(o *options) {
-		if scorer != nil {
-			o.scorer = scorer
-		}
-	})
-}

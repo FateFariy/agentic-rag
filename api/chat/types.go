@@ -30,7 +30,6 @@ type ChatDebugTrace struct {
 	ChatMode                      string                      `json:"chatMode"`                      // 聊天模式
 	OriginalQuestion              string                      `json:"originalQuestion"`              // 原始问题
 	RewriteQuestion               string                      `json:"rewriteQuestion"`               // 重写问题
-	RewriteSubQuestions           []string                    `json:"rewriteSubQuestions"`           // 重写子问题列表
 	NavigationDecision            *DocumentNavigationDecision `json:"navigationDecision"`            // 文档导航决策
 	HistorySummary                string                      `json:"historySummary"`                // 历史摘要
 	LongTermSummary               string                      `json:"longTermSummary"`               // 长期摘要
@@ -45,7 +44,6 @@ type ChatDebugTrace struct {
 	CurrentDateText               string                      `json:"currentDateText"`               // 当前日期文本
 	RequiresFreshSearch           bool                        `json:"requiresFreshSearch"`           // 需要新鲜搜索
 	RequiresCurrentDateAnchoring  bool                        `json:"requiresCurrentDateAnchoring"`  // 需要当前日期锚定
-	SubQuestions                  []string                    `json:"subQuestions"`                  // 检索子问题列表
 	SelectedDocumentId            int64                       `json:"selectedDocumentId"`            // 选中的文档ID
 	SelectedTaskId                int64                       `json:"selectedTaskId"`                // 选中的任务ID
 	RetrievalNotes                []string                    `json:"retrievalNotes"`                // 检索备注列表

@@ -55,7 +55,6 @@ const (
 type TriggerSource = int
 
 const (
-	TriggerSourceUnknown TriggerSource = iota
-	TriggerSourceSystem
+	TriggerSourceSystem = iota + 1
 	TriggerSourceUser
 )

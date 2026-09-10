@@ -203,32 +203,6 @@ func (i *SearchKnowledgeBaseInput) channelRequested(queryType enum.QueryType, in
 	return i.QueryType == queryType || utils.ContainsAny(i.RetrievalIntents, intent)
 }
 
-//	func (i *SearchKnowledgeBaseInput) ToTableIntent() *vo.TableIntent {
-//		if i == nil {
-//			return &vo.TableIntent{
-//				Source: "NONE",
-//			}
-//		}
-//		return &vo.TableIntent{
-//			Requested: i.channelRequested(enum.QueryTypeTableQuery, "TABLE"),
-//			TableOps:  normalizeStringsLimit(i.TableOps, 8),
-//		}
-//	}
-
-//	func (i *SearchKnowledgeBaseInput) ToRaptorIntent(sourceChunkTopK int) *vo.RaptorIntent {
-//		if i == nil {
-//			return &vo.RaptorIntent{
-//				SourceChunkTopK: sourceChunkTopK,
-//			}
-//		}
-//		requested := i.channelRequested("GLOBAL_SUMMARY", "RAPTOR")
-//		return &vo.RaptorIntent{
-//			Requested:        requested,
-//			SummaryRequested: requested,
-//			SourceChunkTopK:  sourceChunkTopK,
-//		}
-//	}
-//
 // normalizeStringsLimit 标准化字符串列表并限制数量
 func normalizeStringsLimit(items []string, limit int) []string {
 	return utils.FilterMapUniqueLimit(items, limit, func(item string) (string, string, bool) {

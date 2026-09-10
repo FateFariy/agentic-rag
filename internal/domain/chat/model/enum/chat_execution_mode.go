@@ -1,20 +1,5 @@
 package enum
 
-import "github.com/duke-git/lancet/v2/enum"
-
-// ============================================================
-// ExecutionMode 执行模式
-// ============================================================
-
-type ExecutionMode = *enum.Item[int]
-
-// 执行模式以 {"value":N,"name":"..."} 形式持久化在语义缓存条目中，因此取值固定不复用：
-// 2 为已下线的开放式 ReAct Agent 模式（react_agent），保留空档避免历史数据错位。
-var (
-	ExecutionModeRetrieval     = enum.NewItem(1, "retrieval")     // 知识库检索问答模式
-	ExecutionModeClarification = enum.NewItem(3, "clarification") // 澄清模式
-)
-
 // ============================================================
 // ConversationTraceStage 追踪阶段定义
 // ============================================================

@@ -160,7 +160,6 @@ export interface ChatDebugTrace {
   chatMode: string;
   originalQuestion: string;
   rewriteQuestion: string;
-  rewriteSubQuestions: string[];
   retrievalQuestion: string;
   agentQuestion: string;
   navigationDecision: DocumentNavigationDecision | null;
@@ -177,7 +176,6 @@ export interface ChatDebugTrace {
   currentDateText: string;
   requiresFreshSearch: boolean;
   requiresCurrentDateAnchoring: boolean;
-  subQuestions: string[];
   selectedDocumentId: number;
   selectedTaskId: number;
   retrievalNotes: string[];

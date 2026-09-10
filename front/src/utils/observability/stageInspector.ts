@@ -168,11 +168,6 @@ function handleRewriteStage(snapshot: Snapshot, exchange: ConversationExchange |
   pushPair(summaryItems, 'TopP', snapshot.rewriteTopP)
   pushPair(summaryItems, 'Thinking', String(snapshot.rewriteThinking) || '')
   listSections.push({
-    label: '改写拆分出的子问题',
-    items: (snapshot?.subQuestions as string[] || []),
-    ordered: true
-  })
-  listSections.push({
     label: '这一阶段的模型使用',
     items: stageUsageDetails(exchange, ['rewrite']),
     ordered: false

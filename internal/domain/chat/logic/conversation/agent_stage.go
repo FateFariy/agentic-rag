@@ -34,7 +34,7 @@ func (s *AgentStage) Order() int { return enum.ConversationTraceStageAgent.Order
 //
 // 缓存策略：
 //   - 命中「复用答案」策略且存在可复用草稿：直接发布缓存答案，不再运行 agent；
-//   - 其余情况（含「仅复用检索」）：运行 deep agent 完成决策/检索/生成。
+//   - 其余情况（含「仅复用检索」）：运行 agent 完成决策/检索/生成。
 func (s *AgentStage) Execute(ctx context.Context, convCtx *Context) error {
 	if convCtx.cache.IsCacheHit() &&
 		convCtx.cache.ReuseStrategy() == enum.ReuseAnswerAndRetrieval &&

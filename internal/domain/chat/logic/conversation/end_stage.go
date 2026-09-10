@@ -42,7 +42,6 @@ func (e *EndStage) Execute(ctx context.Context, convCtx *Context) error {
 	// 启动 finalize 与 recommendation 两个追踪阶段
 	finalizeCtx := vo.OnStart(ctx, enum.ConversationTraceStageFinalize, &vo.StageInput{SummaryText: "正在收尾已完成会话。"})
 
-	answer := convCtx.Answer()
 	uniqueReferences := convCtx.UniqueReferences()
 	recommendations := convCtx.Recommendations
 
@@ -56,7 +55,7 @@ func (e *EndStage) Execute(ctx context.Context, convCtx *Context) error {
 			"recommendationCount": len(recommendations),
 			"recommendations":     recommendations,
 			"referenceCount":      len(uniqueReferences),
-			"answerLength":        len(answer),
+			"answerLength":        convCtx.AnswerLength(),
 		}
 		_ = vo.OnEnd(finalizeCtx, &vo.StageOutput{SummaryText: "会话已按完成状态收尾。", Snapshot: snapshot})
 	} else {

@@ -13,26 +13,24 @@ import (
 	"github.com/swiftbit/know-agent/internal/svc"
 )
 
-// QueryRewriteStage 问题改写阶段，负责对所有问题进行改写，生成检索友好的问题表达和子问题拆分
+// QueryRewriteStage 问题改写阶段，负责对所有问题进行改写，生成检索友好的问题表达
 type QueryRewriteStage struct {
-	rewriter        QueryRewriter
-	enabled         bool
-	ragEnabled      bool
-	maxSubQuestions int
-	temperature     float32
-	topP            float32
-	thinking        bool
+	rewriter    QueryRewriter
+	enabled     bool
+	ragEnabled  bool
+	temperature float32
+	topP        float32
+	thinking    bool
 }
 
 func NewQueryRewriteStage(svcCtx *svc.ServiceContext, rewriter QueryRewriter) *QueryRewriteStage {
 	return &QueryRewriteStage{
-		rewriter:        rewriter,
-		enabled:         svcCtx.Config.Chat.Rewrite.Enabled,
-		ragEnabled:      svcCtx.Config.Chat.Rag.Enabled,
-		maxSubQuestions: svcCtx.Config.Chat.Rewrite.MaxSubQuestions,
-		temperature:     svcCtx.Config.Chat.Rewrite.Temperature,
-		thinking:        svcCtx.Config.Chat.Rewrite.Thinking,
-		topP:            svcCtx.Config.Chat.Rewrite.TopP,
+		rewriter:    rewriter,
+		enabled:     svcCtx.Config.Chat.Rewrite.Enabled,
+		ragEnabled:  svcCtx.Config.Chat.Rag.Enabled,
+		temperature: svcCtx.Config.Chat.Rewrite.Temperature,
+		thinking:    svcCtx.Config.Chat.Rewrite.Thinking,
+		topP:        svcCtx.Config.Chat.Rewrite.TopP,
 	}
 }
 
@@ -69,7 +67,7 @@ func (q *QueryRewriteStage) Execute(ctx context.Context, convCtx *Context) error
 	}
 	ctx = vo.OnStart(ctx, enum.ConversationTraceStageRewrite, input)
 
-	// 调用改写逻辑（原始问题 + 历史摘要 → 改写问题 + 子问题）
+	// 调用改写逻辑（原始问题 + 历史摘要 → 改写问题）
 	rewriteResult, err := q.rewriter.Rewrite(ctx, question, historySummary)
 	if err != nil {
 		ctx = vo.OnError(ctx, "问题改写失败。", err)
@@ -78,10 +76,6 @@ func (q *QueryRewriteStage) Execute(ctx context.Context, convCtx *Context) error
 
 	// 更新执行计划
 	execPlan.RewriteQuestion = utils.BlankToDefault(rewriteResult.RewrittenQuestion, question)
-	execPlan.RewriteSubQuestions = rewriteResult.SubQuestions
-	if len(rewriteResult.SubQuestions) == 0 {
-		execPlan.RewriteSubQuestions = []string{rewriteResult.RewrittenQuestion}
-	}
 	convCtx.SetExecutePlan(execPlan)
 
 	// 提交改写追踪（包含改写结果快照以便离线分析）
@@ -91,8 +85,7 @@ func (q *QueryRewriteStage) Execute(ctx context.Context, convCtx *Context) error
 	}
 	ctx = vo.OnEnd(ctx, output)
 
-	logx.Infof("问题改写完成: question='%s', rewritten='%s', subQuestions=%v",
-		question, rewriteResult.RewrittenQuestion, rewriteResult.SubQuestions)
+	logx.Infof("问题改写完成: question='%s', rewritten='%s'", question, rewriteResult.RewrittenQuestion)
 
 	return nil
 }
@@ -106,7 +99,6 @@ func (q *QueryRewriteStage) buildRewriteStageSnapshot(question, historySummary s
 	// 仅当改写结果存在时追加输出相关字段
 	if rewriteResult != nil {
 		snapshot["rewriteQuestion"] = strutil.Trim(rewriteResult.RewrittenQuestion)
-		snapshot["subQuestions"] = rewriteResult.SubQuestions
 		snapshot["rawModelOutput"] = strutil.Trim(rewriteResult.RawModelOutput)
 	}
 	// 追加当前配置的改写参数（便于离线分析参数影响）

@@ -67,7 +67,6 @@ func (s *MemoryLoadStage) load(ctx context.Context, convCtx *Context) (*aggregat
 		ChatMode:                    convCtx.ChatMode,
 		OriginalQuestion:            question,
 		RewriteQuestion:             question,
-		RewriteSubQuestions:         []string{question},
 		HistorySummary:              historySummary,
 		LongTermSummary:             memoryContext.LongTermSummary,
 		HistoryPlanningContext:      historyPlanningContext,

@@ -11,7 +11,6 @@ type ConversationExecutionPlan struct {
 	ChatMode                     enum.ChatQueryMode          // 对话模式/查询模式
 	OriginalQuestion             string                      // 原始问题
 	RewriteQuestion              string                      // 问题改写结果
-	RewriteSubQuestions          []string                    // 问题改写子问题列表
 	HistorySummary               string                      // 历史摘要
 	LongTermSummary              string                      // 长期摘要
 	HistoryPlanningContext       *HistoryPlanningContext     // 历史规划上下文

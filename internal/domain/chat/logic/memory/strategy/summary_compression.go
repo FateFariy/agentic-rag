@@ -34,7 +34,7 @@ const (
 )
 
 var (
-	retrievalHintPattern = regexp.MustCompile(`[a-zA-Z0-9._-]{2,}|[\p{Han}]{2,12}`)
+	retrievalHintPattern = regexp.MustCompile(`[a-zA-Z0-9._-]{2,}|\p{Han}{2,12}`)
 )
 
 // SummaryCompressionStrategy 摘要压缩策略实现

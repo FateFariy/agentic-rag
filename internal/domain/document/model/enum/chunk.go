@@ -7,8 +7,7 @@ package enum
 type ChunkSourceType = int
 
 const (
-	ChunkSourceTypeUnknown ChunkSourceType = iota
-	ChunkSourceTypeText
+	ChunkSourceTypeText = iota + 1
 	ChunkSourceTypeTable
 	ChunkSourceTypeImage
 	ChunkSourceTypeGraphRag
@@ -87,5 +86,4 @@ type VectorStoreType = int
 
 const (
 	VectorStoreTypeMilvus VectorStoreType = iota + 1
-	VectorStoreTypePgVector
 )

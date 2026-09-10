@@ -23,7 +23,6 @@ type RetrievalPlan struct {
 	ItemAnchor                *ConversationItemAnchor      // 会话条目锚点
 	TableIntent               *TableIntent                 // 表格检索意图
 	GraphIntent               *GraphIntent                 // 图谱检索意图
-	RaptorIntent              *RaptorIntent                // RAPTOR检索意图
 	RankFeatures              *RankFeatureBundle           // 排序特征包
 	CandidateTopK             int                          // 候选窗口大小
 	RerankTopK                int                          // 重排序窗口大小

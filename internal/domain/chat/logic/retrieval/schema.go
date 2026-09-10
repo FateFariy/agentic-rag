@@ -26,9 +26,8 @@ type ExecutionInput struct {
 	TaskScope        []int64
 	Filters          *vo.RetrievalMetadataFilters
 	Channels         []*vo.RetrievalChannelPlan
-	TableIntent      *vo.TableIntent  // 表格意图（暂未使用）
-	GraphIntent      *vo.GraphIntent  // 图意图
-	RaptorIntent     *vo.RaptorIntent // Raptor意图（暂未使用）
+	TableIntent      *vo.TableIntent // 表格意图（暂未使用）
+	GraphIntent      *vo.GraphIntent // 图意图
 }
 
 // newRetrievalExecutionInput 从 RetrievalPlan 和 RetrievalExecutionQuery 编译检索执行请求
@@ -69,7 +68,6 @@ func newRetrievalExecutionInput(plan *vo.RetrievalPlan, query *vo.RetrievalExecu
 		Channels:         channelPlans,
 		TableIntent:      plan.TableIntent.Clone(),
 		GraphIntent:      plan.GraphIntent.Clone(),
-		RaptorIntent:     plan.RaptorIntent.Clone(),
 	}
 
 	// 将文档结构路由（route_document_structure）产生的锚点注入检索过滤器，
@@ -136,6 +134,7 @@ func (r *ExecutionInput) RequireChannel(channelName string) (*vo.RetrievalChanne
 	return nil, fmt.Errorf("retrieval channel is absent from execution input: %s", channelName)
 }
 
+// EnableChannels 返回启用的通道名称列表
 func (r *ExecutionInput) EnableChannels() []string {
 	if r == nil {
 		return nil

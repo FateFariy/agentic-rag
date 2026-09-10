@@ -70,23 +70,6 @@ const (
 	StrategyExecuteStatusSkipped
 )
 
-func StrategyExecuteStatusName(status StrategyExecuteStatus) string {
-	switch status {
-	case StrategyExecuteStatusWaitExecute:
-		return "待执行"
-	case StrategyExecuteStatusExecuting:
-		return "执行中"
-	case StrategyExecuteStatusExecuteSuccess:
-		return "执行成功"
-	case StrategyExecuteStatusExecuteFailed:
-		return "执行失败"
-	case StrategyExecuteStatusSkipped:
-		return "已跳过"
-	default:
-		return ""
-	}
-}
-
 // ============================================================
 // StrategyPipelineType 策略流水线类型
 // ============================================================
@@ -97,17 +80,6 @@ const (
 	StrategyPipelineTypeParent StrategyPipelineType = "PARENT"
 	StrategyPipelineTypeChild  StrategyPipelineType = "CHILD"
 )
-
-func StrategyPipelineTypeName(pipelineType StrategyPipelineType) string {
-	switch pipelineType {
-	case StrategyPipelineTypeParent:
-		return "父块流水线"
-	case StrategyPipelineTypeChild:
-		return "子块流水线"
-	default:
-		return ""
-	}
-}
 
 // ============================================================
 // StrategyRole 策略角色

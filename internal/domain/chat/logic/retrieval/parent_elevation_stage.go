@@ -59,10 +59,10 @@ func (s *ParentElevationStage) elevateToParentChunks(ctx context.Context, childD
 			fallbackDocuments = append(fallbackDocuments, childDocument)
 			continue
 		}
-		childGroupsByParent[parentChunkId] = append(childGroupsByParent[parentChunkId], childDocument)
-		if _, exists := childGroupsByParent[parentChunkId]; exists {
+		if _, exists := childGroupsByParent[parentChunkId]; !exists {
 			parentChunkIds = append(parentChunkIds, parentChunkId)
 		}
+		childGroupsByParent[parentChunkId] = append(childGroupsByParent[parentChunkId], childDocument)
 	}
 
 	if len(childGroupsByParent) == 0 {

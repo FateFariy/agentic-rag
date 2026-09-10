@@ -35,21 +35,6 @@ const (
 	PlanStatusExecuted    // 已执行
 )
 
-func PlanStatusName(status PlanStatus) string {
-	switch status {
-	case PlanStatusConfirmed:
-		return "已确认"
-	case PlanStatusDiscarded:
-		return "已废弃"
-	case PlanStatusWaitConfirm:
-		return "待确认"
-	case PlanStatusExecuted:
-		return "已执行"
-	default:
-		return ""
-	}
-}
-
 // ============================================================
 // TaskEventType 任务事件类型
 // ============================================================

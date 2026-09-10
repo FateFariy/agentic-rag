@@ -3,7 +3,6 @@ package consumer
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"os"
 	"os/signal"
 	"syscall"
@@ -16,7 +15,6 @@ import (
 
 	"github.com/swiftbit/know-agent/internal/domain/document/logic/process"
 	"github.com/swiftbit/know-agent/internal/domain/document/model/vo"
-	errorx "github.com/swiftbit/know-agent/internal/error"
 	"github.com/swiftbit/know-agent/internal/svc"
 )
 
@@ -56,11 +54,11 @@ func (b *BuildIndexConsumer) Start() {
 			var msg vo.DocumentIndexBuildMessage
 			for i := range msgs {
 				_ = json.Unmarshal(msgs[i].Body, &msg)
-				err := b.l.HandleIndexBuild(ctx, msg.DocumentId, msg.TaskId, msg.PlanId)
-				if err != nil && !errors.Is(err, errorx.ErrDocumentNotFound) {
-					logx.Errorf("构建索引失败: %s\n", err)
-					return consumer.ConsumeRetryLater, err
-				}
+				go func() {
+					if err := b.l.HandleIndexBuild(ctx, msg.DocumentId, msg.TaskId, msg.PlanId); err != nil {
+						logx.Errorf("构建索引失败: %s\n", err)
+					}
+				}()
 			}
 
 			// 返回消费成功状态

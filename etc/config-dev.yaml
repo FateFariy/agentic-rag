@@ -79,14 +79,10 @@ Milvus:
   MetricType: COSINE
 
 Chat:
-  RewriteEnabled: true
-  RecommendationEnabled: true
   Memory:
     StrategyType: summary_compression
     RecentTranscriptMaxChars: 1024
     QuestionHistoryMaxChars: 512
-    RewriteEnabled: true
-    MaxSubQuestions: 5
     HistorySummary:
       Enabled: true
       HistoryTurns: 6
@@ -96,7 +92,6 @@ Chat:
       RecentTranscriptMaxChars: 2200
   Rewrite:
     Enabled: true
-    MaxSubQuestions: 5
     Temperature: 0.1
     TopP: 0.3
     Thinking: false

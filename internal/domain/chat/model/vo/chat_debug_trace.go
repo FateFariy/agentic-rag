@@ -15,7 +15,6 @@ type ChatDebugTrace struct {
 	ChatMode                        enum.ChatQueryMode                    `json:"chatMode"`                        // 聊天模式
 	OriginalQuestion                string                                `json:"originalQuestion"`                // 原始问题
 	RewriteQuestion                 string                                `json:"rewriteQuestion"`                 // 重写问题
-	RewriteSubQuestions             []string                              `json:"rewriteSubQuestions"`             // 重写子问题列表
 	NavigationDecision              *DocumentNavigationDecision           `json:"navigationDecision"`              // 文档导航决策
 	HistorySummary                  string                                `json:"historySummary"`                  // 历史摘要
 	LongTermSummary                 string                                `json:"longTermSummary"`                 // 长期摘要
@@ -30,7 +29,6 @@ type ChatDebugTrace struct {
 	CurrentDateText                 string                                `json:"currentDateText"`                 // 当前日期文本
 	RequiresRealTimeSearch          bool                                  `json:"requiresRealTimeSearch"`          // 需要实时搜索
 	RequiresCurrentDateAnchoring    bool                                  `json:"requiresCurrentDateAnchoring"`    // 需要当前日期锚定
-	SubQuestions                    []string                              `json:"subQuestions"`                    // 检索子问题列表（别名：subQuestions）
 	SelectedDocumentId              int64                                 `json:"selectedDocumentId"`              // 选中的文档ID
 	SelectedTaskId                  int64                                 `json:"selectedTaskId"`                  // 选中的任务ID
 	RetrievalNotes                  []string                              `json:"retrievalNoteList"`               // 检索备注列表
@@ -100,7 +98,6 @@ func NewChatDebugTrace(execPlan *ConversationExecutionPlan) *ChatDebugTrace {
 	// 问题相关
 	trace.OriginalQuestion = execPlan.OriginalQuestion
 	trace.RewriteQuestion = execPlan.RewriteQuestion
-	trace.RewriteSubQuestions = append(trace.RewriteSubQuestions, execPlan.RewriteSubQuestions...)
 	trace.NavigationDecision = execPlan.NavigationDecision
 
 	// 历史摘要
@@ -119,9 +116,6 @@ func NewChatDebugTrace(execPlan *ConversationExecutionPlan) *ChatDebugTrace {
 	trace.CurrentDateText = execPlan.CurrentDateText
 	trace.RequiresRealTimeSearch = execPlan.RequiresRealTimeSearch
 	trace.RequiresCurrentDateAnchoring = execPlan.RequiresCurrentDateAnchoring
-
-	// 检索子问题
-	trace.SubQuestions = append(trace.SubQuestions, execPlan.RewriteSubQuestions...)
 
 	return trace
 }

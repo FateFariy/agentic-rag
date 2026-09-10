@@ -66,47 +66,6 @@ func Convert[T any](v any) T {
 	return val
 }
 
-// CastSliceTo 将 any 转换为 []T；失败返回空切片（零值兜底）
-// 支持：[]T、[]any（逐元素断言）、单个 T（自动包装为切片）
-func CastSliceTo[T any](v any) []T {
-	result, _ := MustCastSliceTo[T](v)
-	return result
-}
-
-// MustCastSliceTo 将 any 转换为 []T；失败返回错误
-func MustCastSliceTo[T any](v any) ([]T, error) {
-	if v == nil {
-		return nil, fmt.Errorf("value is nil")
-	}
-
-	// 1. 直接就是 []T
-	if slice, ok := v.([]T); ok {
-		return slice, nil
-	}
-
-	// 2. 是 []any，逐元素断言
-	if slice, ok := v.([]any); ok {
-		result := make([]T, 0, len(slice))
-		for i, item := range slice {
-			if val, ok := item.(T); ok {
-				result = append(result, val)
-			} else {
-				var zero T
-				return nil, fmt.Errorf("index %d: cannot cast %T to %T", i, item, zero)
-			}
-		}
-		return result, nil
-	}
-
-	// 3. 单个元素，自动包装成切片
-	var zero T
-	if val, ok := v.(T); ok {
-		return []T{val}, nil
-	}
-
-	return nil, fmt.Errorf("cannot cast %T to []%T", v, zero)
-}
-
 func toInt(v any) (int, error) {
 	switch val := v.(type) {
 	case int:
@@ -124,9 +83,7 @@ func toInt(v any) (int, error) {
 	case float64:
 		return int(val), nil
 	case string:
-		var i int
-		_, err := fmt.Sscanf(val, "%d", &i)
-		return i, err
+		return strconv.Atoi(val)
 	}
 	return 0, fmt.Errorf("cannot convert %T to int", v)
 }
@@ -158,9 +115,8 @@ func toInt32(v any) (int32, error) {
 	case float64:
 		return int32(val), nil
 	case string:
-		var i int32
-		_, err := fmt.Sscanf(val, "%d", &i)
-		return i, err
+		i, err := strconv.ParseInt(val, 10, 32)
+		return int32(i), err
 	}
 	return 0, fmt.Errorf("cannot convert %T to int32", v)
 }
@@ -182,9 +138,7 @@ func toInt64(v any) (int64, error) {
 	case float64:
 		return int64(val), nil
 	case string:
-		var i int64
-		_, err := fmt.Sscanf(val, "%d", &i)
-		return i, err
+		return strconv.ParseInt(val, 10, 64)
 	}
 	return 0, fmt.Errorf("cannot convert %T to int64", v)
 }
@@ -202,9 +156,8 @@ func toFloat32(v any) (float32, error) {
 	case int64:
 		return float32(val), nil
 	case string:
-		var f float32
-		_, err := fmt.Sscanf(val, "%f", &f)
-		return f, err
+		f, err := strconv.ParseFloat(val, 32)
+		return float32(f), err
 	}
 	return 0, fmt.Errorf("cannot convert %T to float32", v)
 }
@@ -222,9 +175,7 @@ func toFloat64(v any) (float64, error) {
 	case int64:
 		return float64(val), nil
 	case string:
-		var f float64
-		_, err := fmt.Sscanf(val, "%f", &f)
-		return f, err
+		return strconv.ParseFloat(val, 64)
 	}
 	return 0, fmt.Errorf("cannot convert %T to float64", v)
 }

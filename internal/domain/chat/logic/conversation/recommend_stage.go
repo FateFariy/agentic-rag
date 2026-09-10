@@ -70,7 +70,7 @@ func (r *RecommendStage) Execute(ctx context.Context, convCtx *Context) error {
 
 	// 向客户端流补发推荐事件
 	if len(recommendations) > 0 {
-		if err = convCtx.Sink.Recommendations(recommendations, convCtx.ConversationId, convCtx.ExchangeId); err != nil {
+		if err = convCtx.PublishRecommendations(recommendations); err != nil {
 			logx.Warnf("发送推荐事件失败, conversationId=%s, exchangeId=%d, err=%v", convCtx.ConversationId, convCtx.ExchangeId, err)
 		}
 	}

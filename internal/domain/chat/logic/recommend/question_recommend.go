@@ -4,9 +4,6 @@ import (
 	"context"
 	"strings"
 
-	"github.com/duke-git/lancet/v2/stream"
-	"github.com/duke-git/lancet/v2/strutil"
-
 	"github.com/swiftbit/know-agent/common/logx"
 	"github.com/swiftbit/know-agent/common/utils"
 	"github.com/swiftbit/know-agent/internal/domain/chat/adapter"
@@ -37,24 +34,13 @@ func NewQuestionRecommendImpl(svcCtx *svc.ServiceContext, promptTemplate adapter
 
 // Generate 生成推荐追问
 func (r *QuestionRecommendImpl) Generate(ctx context.Context, question, answer string, recentExchanges []*entity.ChatExchange) ([]string, error) {
-	if strutil.IsBlank(answer) {
-		return []string{}, nil
+	if utils.IsBlank(answer) {
+		return nil, nil
 	}
-	result, err := r.generateRecommendations(ctx, question, answer, recentExchanges)
-	if err != nil {
-		return nil, err
-	}
-	return result, nil
-}
-
-// generateRecommendations 生成推荐追问
-func (r *QuestionRecommendImpl) generateRecommendations(ctx context.Context, question, answer string, recentExchanges []*entity.ChatExchange) ([]string, error) {
-	// 构建最近上下文
-	recentContext := r.buildRecentContext(recentExchanges)
 
 	// 渲染提示词模板
 	userPrompt, err := r.promptTemplate.Render(enum.RecommendationUser, map[string]any{
-		"recentContext": recentContext,
+		"recentContext": r.buildRecentContext(recentExchanges),
 		"question":      question,
 		"answer":        answer,
 	})
@@ -64,8 +50,11 @@ func (r *QuestionRecommendImpl) generateRecommendations(ctx context.Context, que
 
 	// 调用LLM生成推荐
 	content, err := r.chatModel.GenerateWithTrace(ctx, enum.ChatStageRecommend, "", userPrompt, model.WithThink(false))
-	if strutil.IsBlank(content) {
+	if err != nil {
 		return nil, err
+	}
+	if utils.IsBlank(content) {
+		return nil, nil
 	}
 
 	// 解析JSON数组
@@ -76,10 +65,9 @@ func (r *QuestionRecommendImpl) generateRecommendations(ctx context.Context, que
 	}
 
 	// 去重并限制数量
-	result = stream.FromSlice(result).
-		Filter(func(item string) bool { return strutil.IsNotBlank(item) }).
-		Map(func(item string) string { return strutil.Trim(item) }).
-		Distinct().Limit(maxRecommendations).ToSlice()
+	result = utils.FilterMapUniqueLimit(result, maxRecommendations, func(item string) (string, string, bool) {
+		return item, utils.Trim(item), utils.IsNotBlank(item)
+	})
 
 	return result, nil
 }
@@ -98,12 +86,12 @@ func (r *QuestionRecommendImpl) buildRecentContext(recentExchanges []*entity.Cha
 		sb.WriteString("用户：")
 		sb.WriteString(exchange.Question)
 		sb.WriteString("\n")
-		if strutil.IsNotBlank(exchange.Answer) {
+		if utils.IsNotBlank(exchange.Answer) {
 			sb.WriteString("助手：")
 			sb.WriteString(exchange.Answer)
 			sb.WriteString("\n")
 		}
 	}
 
-	return strutil.Trim(sb.String())
+	return utils.Trim(sb.String())
 }

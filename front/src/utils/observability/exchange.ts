@@ -87,9 +87,6 @@ export function buildExchangeStages(session: ConversationSessionResp | null, exc
   pushTextBlock(planningPrimaryBlocks, '检索锚点主问题', trace?.retrievalAnchorResolvedQuestion)
 
   const planningPrimaryLists: ListBlock[] = []
-  if ((trace?.subQuestions || []).length > 1) {
-    pushListBlock(planningPrimaryLists, '最终检索子问题', trace?.subQuestions || [], {ordered: true})
-  }
 
   const planningAdvancedBlocks: TextBlock[] = []
   pushTextBlock(planningAdvancedBlocks, 'Rewrite 独立问题', trace?.rewriteQuestion)
@@ -102,7 +99,6 @@ export function buildExchangeStages(session: ConversationSessionResp | null, exc
   pushTextBlock(planningAdvancedBlocks, '编号项文本', trace?.retrievalAnchorItemText)
 
   const planningAdvancedLists: ListBlock[] = []
-  pushListBlock(planningAdvancedLists, 'Rewrite 子问题拆分', trace?.rewriteSubQuestions, {ordered: true})
   pushListBlock(planningAdvancedLists, '软章节提示', intent?.softSectionHints)
   pushListBlock(planningAdvancedLists, '上下文提示词', intent?.queryContextHints)
 

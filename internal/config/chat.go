@@ -3,14 +3,12 @@ package config
 import "time"
 
 type ChatConf struct {
-	RewriteEnabled        bool               `json:",default=true"` // 是否启用问题改写
-	RecommendationEnabled bool               `json:",default=true"` // 是否启用推荐追问
-	Memory                MemoryConf         // 记忆配置
-	Rewrite               RewriteConf        // 问题改写配置
-	Recommendation        RecommendationConf // 推荐配置
-	Rag                   RagConf            // RAG配置
-	SemanticCache         SemanticCacheConf  // 语义缓存配置
-	Agent                 AgentConf          // Agent配置
+	Memory         MemoryConf         // 记忆配置
+	Rewrite        RewriteConf        // 问题改写配置
+	Recommendation RecommendationConf // 推荐配置
+	Rag            RagConf            // RAG配置
+	SemanticCache  SemanticCacheConf  // 语义缓存配置
+	Agent          AgentConf          // Agent配置
 }
 
 // RecommendationConf 推荐追问配置
@@ -25,8 +23,6 @@ type MemoryConf struct {
 	StrategyType             string             `json:",default=summary_compression"` // 记忆策略类型: sliding_window 或 summary_compression
 	RecentTranscriptMaxChars int                `json:",default=1024"`                // 最近对话记录最大字符数
 	QuestionHistoryMaxChars  int                `json:",default=512"`                 // 问题历史最大字符数
-	RewriteEnabled           bool               `json:",default=true"`                // 是否启用问题改写
-	MaxSubQuestions          int                `json:",default=5"`                   // 最大子问题数量
 	HistorySummary           HistorySummaryConf // 历史摘要配置
 }
 
@@ -42,11 +38,10 @@ type HistorySummaryConf struct {
 
 // RewriteConf 问题改写配置
 type RewriteConf struct {
-	Enabled         bool    `json:",default=true"`  // 是否启用问题改写
-	MaxSubQuestions int     `json:",default=5"`     // 最大子问题数量
-	Temperature     float32 `json:",default=0.1"`   // 温度参数
-	TopP            float32 `json:",default=0.3"`   // TopP参数
-	Thinking        bool    `json:",default=false"` // 是否启用思考过程
+	Enabled     bool    `json:",default=true"`  // 是否启用问题改写
+	Temperature float32 `json:",default=0.1"`   // 温度参数
+	TopP        float32 `json:",default=0.3"`   // TopP参数
+	Thinking    bool    `json:",default=false"` // 是否启用思考过程
 }
 
 // RagConf RAG配置
