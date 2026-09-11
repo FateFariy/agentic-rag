@@ -23,10 +23,6 @@ func (p *InitializationStage) Name() string {
 	return "初始化阶段"
 }
 
-func (p *InitializationStage) Order() int {
-	return 0
-}
-
 func (p *InitializationStage) Execute(ctx context.Context, parseCtx *Context) error {
 	parseCtx.Task.TaskStatus = enum.TaskStatusRunning
 	parseCtx.Task.CurrentStage = enum.TaskStageContentParse

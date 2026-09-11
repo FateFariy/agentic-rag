@@ -12,12 +12,3 @@ type GraphRagBuildResult struct {
 	GraphPersistenceReason  string                       `json:"graphPersistenceReason"`  // 结果说明/降级原因
 	KgCommitted             bool                         `json:"kgCommitted"`             // 图谱是否已提交
 }
-
-// RaptorBuildResult RAPTOR 构建结果
-type RaptorBuildResult struct {
-	NodeCount           int    `json:"nodeCount"`
-	LevelCount          int    `json:"levelCount"`
-	SourceChunkCount    int    `json:"sourceChunkCount"`
-	SourceQualityReport string `json:"sourceQualityReport"`
-	SavedQualityReport  string `json:"savedQualityReport"`
-}

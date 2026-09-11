@@ -41,7 +41,6 @@ func (p *FinalizationStage) Execute(ctx context.Context, parseCtx *Context) erro
 		if err != nil {
 			return err
 		}
-		parseCtx.PlanId = planId
 
 		// 更新文档：解析成功、策略已推荐、统计信息
 		structureNodeCount := len(parseCtx.SaveCtx.StructureNodes)
@@ -73,7 +72,7 @@ func (p *FinalizationStage) Execute(ctx context.Context, parseCtx *Context) erro
 			ErrorCode:    utils.Pointer(""),
 			ErrorMsg:     utils.Pointer(""),
 		}
-		if err = p.repo.UpdateTaskById(ctx, taskUpdate); err != nil {
+		if err = p.repo.UpdateTaskById(txCtx, taskUpdate); err != nil {
 			return err
 		}
 

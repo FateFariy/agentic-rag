@@ -1,34 +1,6 @@
 package enum
 
 // ============================================================
-// ChunkSourceType 块来源类型
-// ============================================================
-
-type ChunkSourceType = int
-
-const (
-	ChunkSourceTypeText = iota + 1
-	ChunkSourceTypeTable
-	ChunkSourceTypeImage
-	ChunkSourceTypeGraphRag
-)
-
-func ChunkSourceTypeName(cst ChunkSourceType) string {
-	switch cst {
-	case ChunkSourceTypeText:
-		return "文本"
-	case ChunkSourceTypeTable:
-		return "表格"
-	case ChunkSourceTypeImage:
-		return "图片"
-	case ChunkSourceTypeGraphRag:
-		return "图谱"
-	default:
-		return "未知"
-	}
-}
-
-// ============================================================
 // PipelineType 流水线类型
 // ============================================================
 

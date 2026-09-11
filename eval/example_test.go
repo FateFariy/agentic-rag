@@ -137,7 +137,6 @@ func buildRetrievalPlan(question string, c *config.Config) *vo.RetrievalPlan {
 		},
 		TableIntent:        &vo.TableIntent{},
 		GraphIntent:        &vo.GraphIntent{},
-		RaptorIntent:       &vo.RaptorIntent{},
 		CandidateTopK:      candidateTopK,
 		FinalTopK:          finalTopK,
 		RerankEnabled:      true,

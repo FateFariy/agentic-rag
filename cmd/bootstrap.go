@@ -28,7 +28,6 @@ import (
 	graphbuild "github.com/swiftbit/know-agent/internal/domain/document/logic/process/index/graph"
 	"github.com/swiftbit/know-agent/internal/domain/document/logic/process/index/graph/community"
 	"github.com/swiftbit/know-agent/internal/domain/document/logic/process/index/graph/extract"
-	"github.com/swiftbit/know-agent/internal/domain/document/model/enum"
 	knowlogic "github.com/swiftbit/know-agent/internal/domain/knowledge/logic"
 	knowroute "github.com/swiftbit/know-agent/internal/domain/knowledge/logic/route"
 	"github.com/swiftbit/know-agent/internal/domain/knowledge/logic/route/rank"
@@ -166,7 +165,7 @@ func NewChunkStrategyRegistry(svcCtx *svc.ServiceContext, chatModel model.ChatMo
 		),
 		// 大模型切块
 		chunkllm.NewChunker(chatModel, template,
-			chunkllm.WithLlmSplitPrompt(enum.DocumentLlmSplit),
+			chunkllm.WithEnabled(svcCtx.Config.Chunk.LlmEnabled),
 		),
 	}
 	return chunk.NewChunkStrategyRegistry(chunkers)

@@ -16,8 +16,7 @@ import (
 )
 
 const (
-	documentLlmSplit   = "document-llm-split" // 提示词模板名称
-	defaultLLMMaxChars = 3500                 // 默认大模型最大字符数
+	defaultLLMMaxChars = 3500 // 默认大模型最大字符数
 )
 
 // Chunker 大模型智能分块器
@@ -32,8 +31,7 @@ type Chunker struct {
 func NewChunker(model model.ChatModel, renderer adapter.PromptRenderer, opts ...common.Option) *Chunker {
 	return &Chunker{
 		opt: common.GetImplSpecificOptions(&options{
-			llmSplitPrompt: documentLlmSplit,
-			llmMaxChars:    defaultLLMMaxChars,
+			llmMaxChars: defaultLLMMaxChars,
 		}, opts...),
 		model:    model,
 		renderer: renderer,
@@ -72,7 +70,7 @@ func (s *Chunker) Chunk(ctx context.Context, input string, opts ...common.Option
 
 	resultList := make([]string, 0, len(sourceTextList))
 	for _, sourceText := range sourceTextList {
-		chunks, err := s.split(ctx, opt.llmSplitPrompt, sourceText)
+		chunks, err := s.split(ctx, enum.DocumentLlmSplit, sourceText)
 		if err != nil {
 			return nil, err
 		}
