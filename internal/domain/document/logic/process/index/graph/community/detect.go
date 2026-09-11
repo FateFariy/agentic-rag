@@ -41,8 +41,10 @@ func DetectUnionFind(nodes []*entity.GraphNode, edges []*entity.GraphEdge) []int
 }
 
 // DetectCommunities 两阶段社区发现（M1 保底 + 细化）：
-//  阶段一：并查集连通分量（保底，任何图都给出全量归属，孤立点独立成社区，不 panic）
-//  阶段二：对成员数不少于 minLouvainSplitSize 的连通分量，在其内部运行加权 Louvain 细化
+//
+//	阶段一：并查集连通分量（保底，任何图都给出全量归属，孤立点独立成社区，不 panic）
+//	阶段二：对成员数不少于 minLouvainSplitSize 的连通分量，在其内部运行加权 Louvain 细化
+//
 // 返回与 nodes 等长切片：节点 -> 社区编号（0..k-1，确定性编号）。
 func DetectCommunities(nodes []*entity.GraphNode, edges []*entity.GraphEdge, resolution float64) []int {
 	n := len(nodes)

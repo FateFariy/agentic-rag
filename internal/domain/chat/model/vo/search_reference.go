@@ -3,8 +3,6 @@ package vo
 import (
 	"fmt"
 
-	"github.com/duke-git/lancet/v2/strutil"
-
 	"github.com/swiftbit/know-agent/common/utils"
 )
 
@@ -53,7 +51,7 @@ func (r *SearchReference) ReferenceSummary(suffix string) string {
 	title := utils.BlankToDefault(r.DocumentName, r.Title)
 	path := utils.BlankToDefault(r.SectionPath, r.Url)
 	refId := utils.BlankToDefault(r.ReferenceId, "-")
-	if strutil.IsBlank(path) {
+	if utils.IsBlank(path) {
 		return "[" + refId + "] " + title + " | " + suffix
 	}
 	return "[" + refId + "] " + title + " | " + path + " | " + suffix
