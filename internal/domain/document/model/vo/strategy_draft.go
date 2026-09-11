@@ -74,17 +74,6 @@ func (c *ChunkCandidate) ExtractContentWithWeight(keywords []string, parserWeigh
 	return seed.Build()
 }
 
-// BuildChunkTextWithSection 为子块检索文本注入层级路径前缀，格式：section_path | 正文。
-// 正文子块仍携带"文档标题 | 章 | 节 | 条"等层级出处锚点，可被向量与 BM25 直接命中，命中结果也能直接展示出处，无需回查父块拼装。
-func (c *ChunkCandidate) BuildChunkTextWithSection() string {
-	section := strings.TrimSpace(c.SectionPath)
-	text := strings.TrimSpace(c.Text)
-	if section == "" || text == "" {
-		return c.Text
-	}
-	return section + " | " + text
-}
-
 // ParentChunkCandidate 父块候选
 type ParentChunkCandidate struct {
 	SectionPath       string          // 章节路径

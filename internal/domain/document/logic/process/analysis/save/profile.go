@@ -3,7 +3,6 @@ package save
 import (
 	"context"
 
-	"github.com/swiftbit/know-agent/internal/domain/document/adapter"
 	"github.com/swiftbit/know-agent/internal/domain/document/model/aggregate"
 	"github.com/swiftbit/know-agent/internal/domain/document/model/entity"
 )
@@ -15,15 +14,13 @@ type ProfileGenerator interface {
 
 // ProfileGeneratePhase 文档画像生成阶段
 type ProfileGeneratePhase struct {
-	repo adapter.DocumentRepository
-	gen  ProfileGenerator
+	gen ProfileGenerator
 }
 
 // NewProfileGeneratePhase 创建文档画像生成阶段
-func NewProfileGeneratePhase(repo adapter.DocumentRepository, gen ProfileGenerator) *ProfileGeneratePhase {
+func NewProfileGeneratePhase(gen ProfileGenerator) *ProfileGeneratePhase {
 	return &ProfileGeneratePhase{
-		repo: repo,
-		gen:  gen,
+		gen: gen,
 	}
 }
 

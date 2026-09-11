@@ -71,17 +71,6 @@ const (
 )
 
 // ============================================================
-// StrategyPipelineType 策略流水线类型
-// ============================================================
-
-type StrategyPipelineType = string
-
-const (
-	StrategyPipelineTypeParent StrategyPipelineType = "PARENT"
-	StrategyPipelineTypeChild  StrategyPipelineType = "CHILD"
-)
-
-// ============================================================
 // StrategyRole 策略角色
 // ============================================================
 

@@ -5,21 +5,11 @@ import (
 )
 
 type options struct {
-	llmSplitPrompt string
-	llmMaxChars    int
-	enabled        bool
+	llmMaxChars int
+	enabled     bool
 }
 
-// WithLlmSplitPrompt 设置LLM分块提示词
-func WithLlmSplitPrompt(llmSplitPrompt string) common.Option {
-	return common.WrapImplSpecificOptFn(func(o *options) {
-		if llmSplitPrompt == "" {
-			llmSplitPrompt = documentLlmSplit
-		}
-		o.llmSplitPrompt = llmSplitPrompt
-	})
-}
-
+// WithLlmMaxChars 设置LLM最大字符数
 func WithLlmMaxChars(llmMaxChars int) common.Option {
 	return common.WrapImplSpecificOptFn(func(o *options) {
 		if llmMaxChars <= 50 {

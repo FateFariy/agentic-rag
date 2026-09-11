@@ -226,7 +226,7 @@ func (d *AsyncProcessImpl) failTask(txCtx context.Context, task *entity.Document
 	task.FinishTime = utils.Pointer(time.Now())
 	task.ErrorCode = utils.Pointer("TASK_FAILED")
 	task.ErrorMsg = utils.Pointer(errorMsg)
-	if task.StartTime == nil {
+	if task.StartTime != nil {
 		task.CostMillis = time.Since(*task.StartTime).Milliseconds()
 	}
 	return d.repo.UpdateTaskById(txCtx, &entity.DocumentTask{

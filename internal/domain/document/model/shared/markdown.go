@@ -38,13 +38,3 @@ type SourceSpan struct {
 	EndLine     int // 结束行号
 	EndColumn   int // 结束列号
 }
-
-// SyntaxProvenance 语法来源信息
-type SyntaxProvenance struct {
-	SchemaVersion  string      // 语法模式版本
-	SourceHash     string      // 源文本哈希值
-	SyntaxNodeId   string      // 语法节点ID
-	SyntaxNodeType string      // 语法节点类型
-	SourceOrigin   string      // 源文本来源
-	SourceSpan     *SourceSpan // 源文本位置范围
-}

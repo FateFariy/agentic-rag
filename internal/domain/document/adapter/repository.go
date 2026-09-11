@@ -102,9 +102,6 @@ type DocumentRepository interface {
 
 	// ========== 块相关 ==========
 
-	// InsertChunk 插入块
-	InsertChunk(ctx context.Context, chunk *entity.DocumentChunk) error
-
 	// InsertChunkBatch 批量插入块
 	InsertChunkBatch(ctx context.Context, chunks []*entity.DocumentChunk) error
 
@@ -130,9 +127,6 @@ type DocumentRepository interface {
 	SelectChunks(ctx context.Context, where map[string]any) ([]*entity.DocumentChunk, error)
 
 	// ========== 父块相关 ==========
-
-	// InsertParentChunk 插入父块
-	InsertParentChunk(ctx context.Context, chunk *entity.DocumentParentChunk) error
 
 	// InsertParentChunkBatch 批量插入父块
 	InsertParentChunkBatch(ctx context.Context, chunks []*entity.DocumentParentChunk) error
@@ -160,13 +154,7 @@ type DocumentRepository interface {
 	// SelectStructureNodeListByTask 根据文档ID和任务ID查询结构节点列表
 	SelectStructureNodeListByTask(ctx context.Context, documentId, taskId int64) ([]*entity.StructureNode, error)
 
-	// CountStructureNodes 统计结构节点数量
-	CountStructureNodes(ctx context.Context, documentId, taskId int64) (int64, error)
-
 	// ========== 属性相关 ==========
-
-	// InsertProfile 插入文档属性
-	InsertProfile(ctx context.Context, profile *entity.DocumentProfile) error
 
 	// SelectProfileByDocumentId 根据文档ID查询文档属性
 	SelectProfileByDocumentId(ctx context.Context, documentId int64) (*entity.DocumentProfile, error)
@@ -201,15 +189,6 @@ type DocumentRepository interface {
 
 	// DeleteDocumentBlocksByDocumentId 根据文档ID删除文档块
 	DeleteDocumentBlocksByDocumentId(ctx context.Context, documentId int64) error
-
-	// CountDocumentBlocks 统计文档块数量
-	CountDocumentBlocks(ctx context.Context, documentId, taskId int64) (int64, error)
-
-	// SelectDocumentBlocksWithLimit 查询文档块列表（带限制）
-	SelectDocumentBlocksWithLimit(ctx context.Context, documentId, taskId int64, limit int) ([]*entity.DocumentBlock, error)
-
-	// SelectDocumentBlockPageNumbers 查询文档块中不重复的页码列表
-	SelectDocumentBlockPageNumbers(ctx context.Context, documentId, taskId int64) ([]int, error)
 
 	// ========== 知识库统计相关 ==========
 

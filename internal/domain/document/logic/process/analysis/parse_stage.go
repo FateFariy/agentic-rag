@@ -21,10 +21,11 @@ import (
 // ParseStage 解析阶段：调用文本预处理逻辑解析文件内容
 type ParseStage struct {
 	repo     adapter.DocumentRepository
+	storage  adapter.Storage
 	registry *parse.Registry
 }
 
-func NewParseStage(repo adapter.DocumentRepository) *ParseStage {
+func NewParseStage(repo adapter.DocumentRepository, storage adapter.Storage) *ParseStage {
 	fallbackParser := &parser.TextParser{}
 	parsers := []parse.Parser{
 		&parser.HTMLParser{},
@@ -34,6 +35,7 @@ func NewParseStage(repo adapter.DocumentRepository) *ParseStage {
 	}
 	return &ParseStage{
 		repo:     repo,
+		storage:  storage,
 		registry: parse.NewRegistry(fallbackParser, parsers...),
 	}
 }
@@ -81,7 +83,8 @@ func (p *ParseStage) process(ctx context.Context, parseCtx *Context) (*aggregate
 	// 1. 块解析
 	fileType := enum.FileTypeName(parseCtx.Document.FileType)
 	contentParser := p.registry.Get(fileType)
-	blocks, err := contentParser.Parse(ctx, parseCtx.RawFileBytes)
+	rawFileBytes, err := p.storage.DownloadObject(ctx, parseCtx.Document.ObjectName)
+	blocks, err := contentParser.Parse(ctx, rawFileBytes)
 	if err != nil {
 		return nil, err
 	}

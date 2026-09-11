@@ -51,7 +51,6 @@ func (p *ArtifactPersistPhase) saveBlocks(ctx context.Context, parseCtx *Context
 		if err = p.repo.InsertDocumentBlockBatch(txCtx, blocks); err != nil {
 			return err
 		}
-		// todo 待完善，保存表格
 		return nil
 	}
 

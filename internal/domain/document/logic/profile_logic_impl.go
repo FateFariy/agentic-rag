@@ -28,11 +28,6 @@ func NewProfileLogicImpl(repo adapter.DocumentRepository, storage adapter.Storag
 	}
 }
 
-// GetAllProfiles 根据文档ID获取画像
-func (p *ProfileLogicImpl) GetAllProfiles(ctx context.Context) ([]*entity.DocumentProfile, error) {
-	return p.repo.SelectDocumentProfiles(ctx)
-}
-
 // GetProfileByDocumentId 根据文档ID获取画像
 func (p *ProfileLogicImpl) GetProfileByDocumentId(ctx context.Context, documentId int64) (*entity.DocumentProfile, error) {
 	return p.repo.SelectProfileByDocumentId(ctx, documentId)

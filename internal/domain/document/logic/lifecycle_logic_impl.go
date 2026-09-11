@@ -721,11 +721,6 @@ func (d *LifecycleLogicImpl) ListRetrievableDocuments(ctx context.Context, docum
 	return d.repo.SelectRetrievableDocumentsByIds(ctx, documentIds...)
 }
 
-// QueryParentChunks 查询父块列表
-func (d *LifecycleLogicImpl) QueryParentChunks(ctx context.Context, parentIds []int64) ([]*entity.DocumentParentChunk, error) {
-	return d.repo.SelectParentChunkListByIds(ctx, parentIds)
-}
-
 // markIndexBuildSubmitFailed 标记索引构建提交失败状态
 func (d *LifecycleLogicImpl) markIndexBuildSubmitFailed(ctx context.Context, documentId, taskId, operatorId int64, err error) error {
 	logx.Errorf("索引构建消息投递失败，已标记任务失败，documentId=%d, taskId=%d, err=%v", documentId, taskId, err)

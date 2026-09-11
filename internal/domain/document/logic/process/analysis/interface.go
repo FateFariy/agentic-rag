@@ -14,7 +14,6 @@ import (
 type Context struct {
 	DocumentId        int64
 	TaskId            int64
-	PlanId            int64
 	Document          *entity.Document
 	Task              *entity.DocumentTask
 	StartTime         time.Time
@@ -30,11 +29,6 @@ type Stage interface {
 	Name() string
 	// Execute 执行阶段
 	Execute(ctx context.Context, parseCtx *Context) error
-}
-
-// StrategyRecommender 策略推荐器接口
-type StrategyRecommender interface {
-	Recommend(ctx context.Context, document *entity.Document, analysisResult *aggregate.AnalysisResult) (*vo.DocumentStrategyPlanDraft, error)
 }
 
 type IndexingConfigResolver interface {
