@@ -5,7 +5,6 @@ import (
 )
 
 type ConversationTrace struct {
-	id               int64
 	conversationId   string
 	exchangeId       int64
 	traceId          string

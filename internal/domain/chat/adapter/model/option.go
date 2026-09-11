@@ -22,13 +22,6 @@ func WithFunction(function string) Option {
 	})
 }
 
-// WithModel 设置模型名称
-func WithModel(model string) Option {
-	return common.WrapImplSpecificOptFn(func(opt *Options) {
-		opt.Model = model
-	})
-}
-
 // WithTemperature 设置温度参数（0~1，控制随机性）
 func WithTemperature(temp float32) Option {
 	return common.WrapImplSpecificOptFn(func(opt *Options) {
@@ -54,11 +47,5 @@ func WithMaxTokens(maxTokens int) Option {
 func WithThink(think bool) Option {
 	return common.WrapImplSpecificOptFn(func(opt *Options) {
 		opt.Think = think
-	})
-}
-
-func WithThinkStrength(thinkStrength string) Option {
-	return common.WrapImplSpecificOptFn(func(opt *Options) {
-		opt.ThinkStrength = thinkStrength
 	})
 }

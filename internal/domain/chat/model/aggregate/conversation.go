@@ -8,7 +8,6 @@ import (
 // Conversation 存储会话的摘要、近期对话及压缩状态信息
 type Conversation struct {
 	ConversationId           string                  // 会话ID
-	AssembledHistory         string                  // 长期摘要 + 最近窗口
 	LongTermSummary          string                  // 长期摘要，总结整个会话的主题和关键信息
 	RecentTranscript         string                  // 最近窗口（含问题和回答）
 	RecentQuestionTranscript string                  // 最近窗口（只含问题）

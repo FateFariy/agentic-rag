@@ -49,7 +49,6 @@ func (s *SlidingWindowStrategy) LoadMemoryContext(ctx context.Context, conversat
 	// 渲染最近对话记录
 	memoryCtx.RecentTranscript = s.renderRecentTranscript(recentExchanges, s.keepRecentTurns, s.recentTranscriptMaxChars)
 	memoryCtx.RecentQuestionTranscript = s.renderRecentQuestionTranscript(recentExchanges, s.keepRecentTurns, s.questionHistoryMaxChars)
-	memoryCtx.AssembledHistory = memoryCtx.RecentTranscript
 
 	return memoryCtx, nil
 }

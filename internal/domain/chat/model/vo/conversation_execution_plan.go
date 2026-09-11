@@ -1,7 +1,6 @@
 package vo
 
 import (
-	"github.com/swiftbit/know-agent/common/utils"
 	"github.com/swiftbit/know-agent/internal/domain/chat/model/enum"
 )
 
@@ -13,7 +12,6 @@ type ConversationExecutionPlan struct {
 	RewriteQuestion              string                      // 问题改写结果
 	HistorySummary               string                      // 历史摘要
 	LongTermSummary              string                      // 长期摘要
-	HistoryPlanningContext       *HistoryPlanningContext     // 历史规划上下文
 	RecentHistoryTranscript      string                      // 最近历史记录转录
 	RecentQuestionTranscript     string                      // 最近问题转录
 	QuestionHistoryContext       *QuestionHistoryContext     // 问题历史上下文
@@ -28,29 +26,4 @@ type ConversationExecutionPlan struct {
 	CurrentDateText              string                      // 当前日期文本表示
 	RequiresRealTimeSearch       bool                        // 是否需要实时搜索
 	RequiresCurrentDateAnchoring bool                        // 是否需要当前日期锚定
-	ClarificationReason          string                      // 澄清原因文本
-}
-
-// HasRetrievalQuestion 是否有检索问题
-func (p *ConversationExecutionPlan) HasRetrievalQuestion() bool {
-	if p == nil || p.RetrievalPlan == nil {
-		return false
-	}
-	questionPlan := p.RetrievalPlan.QuestionPlan
-	return questionPlan != nil && utils.IsNotBlank(questionPlan.Question)
-}
-
-// HasHistoryContext 是否有历史上下文
-func (p *ConversationExecutionPlan) HasHistoryContext() bool {
-	if p == nil || p.QuestionHistoryContext == nil {
-		return false
-	}
-	return utils.IsNotBlank(p.QuestionHistoryContext.RenderedText)
-}
-
-func (p *ConversationExecutionPlan) SubQuestions() []string {
-	if p == nil || p.RetrievalPlan == nil || p.RetrievalPlan.QuestionPlan == nil {
-		return nil
-	}
-	return p.RetrievalPlan.QuestionPlan.SubQuestions
 }

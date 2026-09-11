@@ -15,7 +15,7 @@ import (
 	"github.com/swiftbit/know-agent/common/utils"
 	"github.com/swiftbit/know-agent/internal/domain/chat/logic/conversation"
 	"github.com/swiftbit/know-agent/internal/domain/chat/logic/conversation/middleware"
-	"github.com/swiftbit/know-agent/internal/domain/chat/logic/conversation/tool"
+	"github.com/swiftbit/know-agent/internal/domain/chat/logic/conversation/tools"
 	"github.com/swiftbit/know-agent/internal/svc"
 )
 
@@ -44,29 +44,8 @@ var _ conversation.AgentRunner = (*EinoAgentRunner)(nil)
 // Option 配置 EinoAgentRunner 的函数式选项
 type Option func(*EinoAgentRunner)
 
-// WithName 设置 agent 名称与描述
-func WithName(name, description string) Option {
-	return func(r *EinoAgentRunner) {
-		if utils.IsNotBlank(name) {
-			r.name = name
-		}
-		if utils.IsNotBlank(description) {
-			r.description = description
-		}
-	}
-}
-
-// WithInstruction 覆盖默认系统指令
-func WithInstruction(instruction string) Option {
-	return func(r *EinoAgentRunner) {
-		if utils.IsNotBlank(instruction) {
-			r.instruction = instruction
-		}
-	}
-}
-
 // WithTools 追加 eino 工具
-func WithTools[I, O any](tools ...tool.Tool[I, O]) Option {
+func WithTools[I, O any](tools ...tools.Tool[I, O]) Option {
 	return func(r *EinoAgentRunner) {
 		einoTools := make([]einotool.BaseTool, 0, len(tools))
 		for _, t := range tools {
