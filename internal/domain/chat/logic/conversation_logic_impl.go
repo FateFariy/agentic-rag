@@ -158,9 +158,6 @@ func (c *ConversationLogicImpl) ResetConversation(ctx context.Context, conversat
 	if err = c.repo.Do(ctx, fn); err != nil {
 		return nil, err
 	}
-	if err != nil {
-		return nil, err
-	}
 	return &vo.ConversationReset{
 		ConversationId:       conversationId,
 		StoppedRunningTask:   stoped,

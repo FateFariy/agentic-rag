@@ -98,7 +98,6 @@ func (s *SummaryCompressionStrategy) LoadMemoryContext(ctx context.Context, conv
 	// 组装长期摘要和上下文元数据
 	if summaryState != nil {
 		memoryCtx.LongTermSummary = strutil.Trim(summaryState.SummaryText)
-		memoryCtx.AssembledHistory = utils.JoinNonBlank("\n\n", memoryCtx.LongTermSummary, memoryCtx.RecentTranscript)
 		memoryCtx.CompressionApplied = memoryCtx.LongTermSummary != ""
 		memoryCtx.CoveredExchangeId = summaryState.CoveredExchangeId
 		memoryCtx.CoveredExchangeCount = summaryState.CoveredExchangeCount

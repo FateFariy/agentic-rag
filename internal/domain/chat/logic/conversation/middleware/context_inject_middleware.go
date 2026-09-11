@@ -6,7 +6,7 @@ import (
 
 	"github.com/swiftbit/know-agent/common/utils"
 	"github.com/swiftbit/know-agent/internal/domain/chat/logic/conversation"
-	"github.com/swiftbit/know-agent/internal/domain/chat/logic/conversation/tool"
+	"github.com/swiftbit/know-agent/internal/domain/chat/logic/conversation/tools"
 	"github.com/swiftbit/know-agent/internal/svc"
 )
 
@@ -23,12 +23,12 @@ import (
 // agent 不会启动，缓存证据注入不生效；未命中缓存时按原指令透传，无副作用。
 type ContextInjectMiddleware struct {
 	BaseAgentMiddleware
-	renderer *tool.EvidenceRenderer
+	renderer *tools.EvidenceRenderer
 }
 
 // NewContextInjectMiddleware 创建动态上下文注入中间件
 func NewContextInjectMiddleware(svcCtx *svc.ServiceContext) *ContextInjectMiddleware {
-	return &ContextInjectMiddleware{renderer: tool.NewEvidenceRenderer(svcCtx)}
+	return &ContextInjectMiddleware{renderer: tools.NewEvidenceRenderer(svcCtx)}
 }
 
 // Name 中间件名称

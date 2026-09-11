@@ -7,7 +7,7 @@ import (
 	chatlogic "github.com/swiftbit/know-agent/internal/domain/chat/logic"
 	"github.com/swiftbit/know-agent/internal/domain/chat/logic/conversation"
 	"github.com/swiftbit/know-agent/internal/domain/chat/logic/conversation/middleware"
-	"github.com/swiftbit/know-agent/internal/domain/chat/logic/conversation/tool"
+	"github.com/swiftbit/know-agent/internal/domain/chat/logic/conversation/tools"
 	"github.com/swiftbit/know-agent/internal/domain/chat/logic/evaluate"
 	"github.com/swiftbit/know-agent/internal/domain/chat/logic/memory"
 	"github.com/swiftbit/know-agent/internal/domain/chat/logic/memory/strategy"
@@ -106,8 +106,8 @@ func bootstrap(c *config.Config) *server.Server {
 	chainRuntime := conversation.NewRuntimeRegistry()
 	documentRouter := route.NewDocumentRouter(documentForChat, nil)
 	contextInjectMiddleware := middleware.NewContextInjectMiddleware(svcCtx)
-	structureTool := tool.NewRouteDocumentStructureTool(documentRouter)
-	knowledgeBaseSearchTool := tool.NewKnowledgeBaseSearchTool(svcCtx, retrievalEngine)
+	structureTool := tools.NewRouteDocumentStructureTool(documentRouter)
+	knowledgeBaseSearchTool := tools.NewKnowledgeBaseSearchTool(svcCtx, retrievalEngine)
 	agentRunner := agent.NewEinoAgentRunner(svcCtx,
 		agent.WithMiddleware(contextInjectMiddleware),
 		agent.WithTools(structureTool),

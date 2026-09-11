@@ -10,7 +10,6 @@ import (
 	"github.com/cloudwego/eino-ext/components/model/ark"
 	"github.com/cloudwego/eino/components/model"
 	einoschema "github.com/cloudwego/eino/schema"
-	"github.com/go-playground/validator/v10"
 	"github.com/go-redsync/redsync/v4"
 	"github.com/go-redsync/redsync/v4/redis/goredis/v9"
 	"github.com/milvus-io/milvus/client/v2/milvusclient"
@@ -29,7 +28,6 @@ import (
 
 type ServiceContext struct {
 	Config    *config.Config
-	Validate  *validator.Validate
 	Minio     *minio.Client
 	Db        *gorm.DB
 	Rdb       *redis.Client
@@ -45,7 +43,6 @@ func NewServiceContext(c *config.Config) *ServiceContext {
 	defer cancel()
 	return &ServiceContext{
 		Config:    c,
-		Validate:  validator.New(),
 		Rdb:       redisClient,
 		Db:        NewMySQLDB(c.Mysql),
 		Minio:     NewMinioClient(c.Minio),

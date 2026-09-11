@@ -94,35 +94,6 @@ func (r *RetrievalResult) ToSnapshot(plan *RetrievalPlan) map[string]any {
 	}
 }
 
-// ValidateEvidenceBudgetScope 验证证据预算范围：子问题索引必须为正数且唯一
-func (r *RetrievalResult) ValidateEvidenceBudgetScope() error {
-	indexSet := make(map[int]struct{}, len(r.SubQuestionEvidenceList))
-	for _, sq := range r.SubQuestionEvidenceList {
-		if sq.SubQuestionIndex <= 0 {
-			return fmt.Errorf("证据预算子问题索引必须为正数: index=%d", sq.SubQuestionIndex)
-		}
-		if _, exists := indexSet[sq.SubQuestionIndex]; exists {
-			return fmt.Errorf("证据预算子问题索引必须唯一: 重复 index=%d", sq.SubQuestionIndex)
-		}
-		indexSet[sq.SubQuestionIndex] = struct{}{}
-	}
-	return nil
-}
-
-// BuildSubQuestionBudgetDetails 构建子问题预算详情列表
-func (r *RetrievalResult) BuildSubQuestionBudgetDetails(promptResult *RagPromptAssemblyResult) []map[string]any {
-	details := make([]map[string]any, len(r.SubQuestionEvidenceList))
-	for i, sq := range r.SubQuestionEvidenceList {
-		details[i] = map[string]any{
-			"subQuestionIndex": sq.SubQuestionIndex,
-			"question":         sq.SubQuestion,
-			"referenceCount":   len(sq.References),
-		}
-	}
-	_ = promptResult // 保留扩展位置
-	return details
-}
-
 // BuildSubQuestionSnapshots 构建子问题追踪快照列表
 func (r *RetrievalResult) BuildSubQuestionSnapshots() []map[string]any {
 	subQuestions := make([]map[string]any, len(r.SubQuestionEvidenceList))

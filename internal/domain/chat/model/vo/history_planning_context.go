@@ -30,8 +30,28 @@ func NewHistoryPlanningContext(summary *ConversationSummary) *HistoryPlanningCon
 	}
 }
 
-// BuildStructuredText 构建结构化历史文本（含标题和项目符号）
-func (h *HistoryPlanningContext) BuildStructuredText() string {
+// BuildPlanningText 根据预算和近期转录生成最终规划历史文本
+// 策略：近期转录占 65% 预算（保留末尾最新内容），结构化历史占剩余（保留开头）
+func (h *HistoryPlanningContext) BuildPlanningText(recentTranscript string, maxChars int) string {
+	// 拼接结构化历史（会话目标 + 三类要点提示）
+	structured := h.buildStructuredText()
+	if strutil.IsBlank(recentTranscript) {
+		return utils.ClipHead(structured, maxChars)
+	}
+	// 按 65% 预算切分近期转录（ClipTail 保留末尾最新的对话），剩余预算留给结构化历史
+	recentBudget := int(math.Round(float64(maxChars) * 0.65))
+	recentPart := utils.ClipTail(recentTranscript, recentBudget)
+
+	// 结构化历史预算 = 总预算 - 近期转录长度 - 分隔符长度
+	structuredBudget := max(0, maxChars-utils.Len(recentPart)-2)
+	structuredPart := utils.ClipHead(structured, structuredBudget)
+
+	// 合并结构化文本与近期转录（非空项以 "\n\n" 分隔）
+	return utils.JoinNonBlank("\n\n", structuredPart, recentPart)
+}
+
+// buildStructuredText 构建结构化历史文本（含标题和项目符号）
+func (h *HistoryPlanningContext) buildStructuredText() string {
 	if h == nil {
 		return ""
 	}
@@ -82,26 +102,6 @@ func (h *HistoryPlanningContext) BuildStructuredText() string {
 	appendBullet("待跟进问题", h.PendingQuestions, 5)
 	appendBullet("检索提示", h.RetrievalHints, 5)
 	return strutil.Trim(sb.String())
-}
-
-// BuildPlanningText 根据预算和近期转录生成最终规划历史文本
-// 策略：近期转录占 65% 预算（保留末尾最新内容），结构化历史占剩余（保留开头）
-func (h *HistoryPlanningContext) BuildPlanningText(recentTranscript string, maxChars int) string {
-	// 拼接结构化历史（会话目标 + 三类要点提示）
-	structured := h.BuildStructuredText()
-	if strutil.IsBlank(recentTranscript) {
-		return utils.ClipHead(structured, maxChars)
-	}
-	// 按 65% 预算切分近期转录（ClipTail 保留末尾最新的对话），剩余预算留给结构化历史
-	recentBudget := int(math.Round(float64(maxChars) * 0.65))
-	recentPart := utils.ClipTail(recentTranscript, recentBudget)
-
-	// 结构化历史预算 = 总预算 - 近期转录长度 - 分隔符长度
-	structuredBudget := max(0, maxChars-utils.Len(recentPart)-2)
-	structuredPart := utils.ClipHead(structured, structuredBudget)
-
-	// 合并结构化文本与近期转录（非空项以 "\n\n" 分隔）
-	return utils.JoinNonBlank("\n\n", structuredPart, recentPart)
 }
 
 // AppendAnchorHints 追加锚点提示，每个锚点提示包含文档 ID、章节路径、节点 ID、父块 ID、块 ID

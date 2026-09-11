@@ -106,6 +106,10 @@ func (r *RouteStage) routeAutoDocument(ctx context.Context, convCtx *Context, ex
 		convCtx.SelectedTaskId = topDocument.LastIndexTaskId
 	}
 
+	// 更新执行计划
+	execPlan = convCtx.ExecutionPlan.Load()
+	execPlan.RecentEvidenceAnchors = r.loadFollowUpAnchors(ctx, convCtx)
+
 	// 构建增强快照（含范围信息、路由状态、置信度、候选数、推荐结果）
 	snapshot := map[string]any{
 		"confidence":             routeDecision.Confidence,

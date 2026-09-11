@@ -25,11 +25,12 @@ type RecommendStage struct {
 func NewRecommendStage(svcCtx *svc.ServiceContext, repo adapter.ChatRepository,
 	manager SessionMemoryManager, recommender QuestionRecommender) *RecommendStage {
 	return &RecommendStage{
-		repo:        repo,
-		manager:     manager,
-		recommender: recommender,
-		timeout:     svcCtx.Config.Chat.Recommendation.Timeout,
-		enabled:     svcCtx.Config.Chat.Recommendation.Enabled,
+		repo:                repo,
+		manager:             manager,
+		recommender:         recommender,
+		timeout:             svcCtx.Config.Chat.Recommendation.Timeout,
+		enabled:             svcCtx.Config.Chat.Recommendation.Enabled,
+		historyPreviewTurns: svcCtx.Config.Chat.Recommendation.HistoryPreviewTurns,
 	}
 }
 

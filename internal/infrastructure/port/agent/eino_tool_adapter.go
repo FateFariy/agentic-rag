@@ -3,21 +3,22 @@ package agent
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 
 	einotool "github.com/cloudwego/eino/components/tool"
 	"github.com/cloudwego/eino/components/tool/utils"
 	"github.com/cloudwego/eino/schema"
 
-	"github.com/swiftbit/know-agent/internal/domain/chat/logic/conversation/tool"
+	"github.com/swiftbit/know-agent/internal/domain/chat/logic/conversation/tools"
 )
 
 // EinoToolAdapter 将通用 Tool 适配为 eino 的 tool.InvokableTool
 type EinoToolAdapter[I, O any] struct {
-	tool tool.Tool[I, O]
+	tool tools.Tool[I, O]
 }
 
 // NewEinoToolAdapter 以通用工具构造 eino 适配器
-func NewEinoToolAdapter[I, O any](t tool.Tool[I, O]) *EinoToolAdapter[I, O] {
+func NewEinoToolAdapter[I, O any](t tools.Tool[I, O]) *EinoToolAdapter[I, O] {
 	return &EinoToolAdapter[I, O]{tool: t}
 }
 
@@ -38,11 +39,20 @@ func (t *EinoToolAdapter[I, O]) Info(ctx context.Context) (*schema.ToolInfo, err
 // InvokableRun 以 JSON 字符串调用通用工具
 func (t *EinoToolAdapter[I, O]) InvokableRun(ctx context.Context, argumentsInJSON string, _ ...einotool.Option) (string, error) {
 	var args I
-	if err := json.Unmarshal([]byte(argumentsInJSON), &args); err != nil {
+	if argumentsInJSON != "" {
+		if err := json.Unmarshal([]byte(argumentsInJSON), &args); err != nil {
+			return "", fmt.Errorf("agent: parse tool args: %w", err)
+		}
+	}
+	result, err := t.tool.Invoke(ctx, args)
+	if err != nil {
 		return "", err
 	}
-	output, err := t.tool.Invoke(ctx, args)
-	invoke, err := json.Marshal(output)
 
-	return string(invoke), err
+	out, err := json.Marshal(result)
+	if err != nil {
+		return "", fmt.Errorf("agent: marshal tool result: %w", err)
+	}
+
+	return string(out), err
 }
