@@ -1,7 +1,7 @@
 package vo
 
 import (
-	"github.com/swiftbit/know-agent/internal/domain/knowledge/model/enum"
+	"github.com/swiftbit/know-agent/internal/domain/chat/model/enum"
 )
 
 // KnowledgeRouteDecision 知识路由决策

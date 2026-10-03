@@ -58,8 +58,14 @@ type Sink interface {
 	Finish(conversationId string, exchangeId int64) error
 }
 
+// PromptRenderer 提示词渲染端口
 type PromptRenderer interface {
 	Render(templateName string, variables map[string]any) (string, error)
+}
+
+// MessageProducer 消息生产端口
+type MessageProducer interface {
+	Send(ctx context.Context, topic, key string, message any) error
 }
 
 type KnowledgeBaseGateway interface {

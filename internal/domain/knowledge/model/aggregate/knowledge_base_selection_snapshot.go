@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"strings"
 
-	"github.com/swiftbit/know-agent/internal/domain/chat/model/enum"
 	"github.com/swiftbit/know-agent/internal/domain/knowledge/model/entity"
+	"github.com/swiftbit/know-agent/internal/domain/knowledge/model/enum"
 	"github.com/swiftbit/know-agent/internal/domain/knowledge/model/vo"
 )
 

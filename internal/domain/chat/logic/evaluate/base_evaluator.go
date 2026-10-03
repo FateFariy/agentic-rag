@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/swiftbit/know-agent/internal/domain/chat/adapter"
 	"github.com/swiftbit/know-agent/internal/domain/chat/adapter/model"
-	"github.com/swiftbit/know-agent/internal/domain/document/adapter"
 )
 
 type evaluator interface {
