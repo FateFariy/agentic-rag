@@ -1,0 +1,73 @@
+package analysis
+
+import (
+	"context"
+	"encoding/json"
+
+	"github.com/swiftbit/know-agent/pkg/utils"
+	"github.com/swiftbit/know-agent/services/document/internal/domain/adapter"
+	"github.com/swiftbit/know-agent/services/document/internal/domain/model/entity"
+	"github.com/swiftbit/know-agent/services/document/internal/domain/model/enum"
+)
+
+// InitializationStage 初始化阶段：标记任务运行中、文档解析中、写入开始日志
+type InitializationStage struct {
+	repo adapter.DocumentRepository
+}
+
+func NewInitializationStage(repo adapter.DocumentRepository) *InitializationStage {
+	return &InitializationStage{repo: repo}
+}
+
+func (p *InitializationStage) Name() string {
+	return "初始化阶段"
+}
+
+func (p *InitializationStage) Execute(ctx context.Context, parseCtx *Context) error {
+	parseCtx.Task.TaskStatus = enum.TaskStatusRunning
+	parseCtx.Task.CurrentStage = enum.TaskStageContentParse
+	parseCtx.Task.StartTime = utils.Pointer(parseCtx.StartTime)
+
+	// 事务性标记任务运行中 + 文档解析中，并写入"开始解析"日志
+	markParseStartTx := func(txCtx context.Context) error {
+		// 标记任务运行中
+		runningTask := &entity.DocumentTask{
+			ID:           parseCtx.Task.ID,
+			TaskStatus:   parseCtx.Task.TaskStatus,
+			CurrentStage: parseCtx.Task.CurrentStage,
+			StartTime:    parseCtx.Task.StartTime,
+		}
+		if err := p.repo.UpdateTaskById(txCtx, runningTask); err != nil {
+			return err
+		}
+
+		// 标记文档解析中
+		document := &entity.Document{
+			ID:          parseCtx.DocumentId,
+			ParseStatus: enum.ParseStatusParsing,
+		}
+		if err := p.repo.UpdateDocumentById(txCtx, document); err != nil {
+			return err
+		}
+
+		// 写入"开始解析文档内容"日志
+		detail, _ := json.Marshal(map[string]any{
+			"objectName": parseCtx.Document.ObjectName,
+			"fileType":   enum.FileTypeName(parseCtx.Document.FileType),
+			"fileName":   parseCtx.Document.OriginalFileName,
+		})
+		startLog := &entity.DocumentTaskLog{
+			TaskId:       parseCtx.TaskId,
+			DocumentId:   parseCtx.DocumentId,
+			StageType:    enum.TaskStageContentParse,
+			EventType:    enum.TaskEventStart,
+			LogLevel:     enum.LogLevelInfo,
+			OperatorType: enum.OperatorTypeSystem,
+			Content:      "开始解析文档内容，文档类型：" + enum.FileTypeName(parseCtx.Document.FileType),
+			DetailJson:   string(detail),
+		}
+		_ = p.repo.InsertTaskLog(txCtx, startLog)
+		return nil
+	}
+	return p.repo.Do(ctx, markParseStartTx)
+}
