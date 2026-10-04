@@ -1,0 +1,73 @@
+package channel
+
+import (
+	"cmp"
+	"context"
+	"fmt"
+	"slices"
+
+	"github.com/zeromicro/go-zero/core/logx"
+
+	"github.com/swiftbit/know-agent/pkg/utils"
+	"github.com/swiftbit/know-agent/services/chat/internal/domain/logic/retrieval"
+	"github.com/swiftbit/know-agent/services/chat/internal/domain/model/enum"
+	"github.com/swiftbit/know-agent/services/chat/internal/domain/model/vo"
+)
+
+// KeywordRetrievalChannel 关键词检索通道
+type KeywordRetrievalChannel struct {
+	retriever KeywordRetriever
+}
+
+// NewKeywordRetrievalChannel 创建关键词检索通道
+func NewKeywordRetrievalChannel(retriever KeywordRetriever) *KeywordRetrievalChannel {
+	return &KeywordRetrievalChannel{
+		retriever: retriever,
+	}
+}
+
+// Name 返回通道名称
+func (c *KeywordRetrievalChannel) Name() string {
+	return enum.RetrievalChannelKeyword
+}
+
+// Retrieve 执行关键词检索
+func (c *KeywordRetrievalChannel) Retrieve(ctx context.Context, input *retrieval.ExecutionInput) (*retrieval.RetrievalChannelResult, error) {
+	chanInput, err := NewInput(c.Name(), input)
+	if err != nil {
+		return nil, err
+	}
+
+	if !chanInput.Validate() {
+		return nil, fmt.Errorf("invaild value")
+	}
+
+	docs, err := c.retriever.SearchByKeyword(ctx, chanInput)
+	if err != nil {
+		logx.Errorf("关键词检索失败: question='%s', error=%v", chanInput.Question, err)
+		return nil, err
+	}
+
+	channel, _ := input.RequireChannel(c.Name())
+	topScore := 1.0
+	if len(docs) > 1 {
+		cmpFunc := func(a, b *vo.DocumentChunk) int { return cmp.Compare(a.Score, b.Score) }
+		topScore = slices.MaxFunc(docs, cmpFunc).Score
+	}
+	if topScore <= 0 {
+		return &retrieval.RetrievalChannelResult{
+			Name:         c.Name(),
+			RawDocuments: docs,
+		}, nil
+	}
+	acceptedFloor := topScore * channel.RelativeScoreFloor
+	accepted := utils.Filter(docs, func(doc *vo.DocumentChunk) bool {
+		return doc != nil && doc.Score >= acceptedFloor
+	})
+
+	return &retrieval.RetrievalChannelResult{
+		Name:              c.Name(),
+		RawDocuments:      docs,
+		AcceptedDocuments: accepted,
+	}, nil
+}

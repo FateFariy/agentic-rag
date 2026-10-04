@@ -1,0 +1,41 @@
+package retrieval
+
+import (
+	"context"
+
+	"github.com/swiftbit/know-agent/pkg/logx"
+	"github.com/swiftbit/know-agent/services/chat/internal/domain/adapter/rerank"
+)
+
+// RerankStage 重排序阶段，对父块提升后的文档执行重排序（如果启用）
+type RerankStage struct {
+	reranker rerank.Reranker
+}
+
+// NewRerankStage 创建重排序阶段
+func NewRerankStage(reranker rerank.Reranker) *RerankStage {
+	return &RerankStage{
+		reranker: reranker,
+	}
+}
+
+func (s *RerankStage) Name() string {
+	return "Rerank"
+}
+
+// Execute 对父块提升后的文档执行重排序，结果写入 state.RerankedDocs。
+func (s *RerankStage) Execute(ctx context.Context, state *RetrievalState) error {
+	state.RerankedDocs = state.ParentSearchDocs
+	if !state.Plan.RerankEnabled || len(state.RerankedDocs) == 0 || s.reranker == nil {
+		return nil
+	}
+
+	result, err := s.reranker.Process(ctx, state.Input.SubQuestion, state.ParentSearchDocs)
+	if err != nil {
+		logx.Warnf("重排序处理失败: subQuestion='%s', error=%v", state.Input.SubQuestion, err)
+		return err
+	}
+	state.RerankedDocs = result
+
+	return nil
+}
