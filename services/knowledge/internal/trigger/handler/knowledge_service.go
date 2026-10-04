@@ -1,0 +1,160 @@
+package handler
+
+import (
+	"context"
+
+	"google.golang.org/protobuf/types/known/emptypb"
+
+	knowledgev1 "github.com/swiftbit/know-agent/pkg/grpc/gen/proto/knowagent/knowledge/v1"
+	"github.com/swiftbit/know-agent/pkg/utils"
+	"github.com/swiftbit/know-agent/services/knowledge/api"
+	"github.com/swiftbit/know-agent/services/knowledge/internal/convert"
+	"github.com/swiftbit/know-agent/services/knowledge/internal/domain/logic"
+)
+
+// KnowledgeService 知识管理 HTTP 服务
+type KnowledgeService struct {
+	knowledgev1.UnimplementedKnowledgeServiceServer
+	l   logic.KnowledgeLogic
+	kbl logic.KnowledgeBaseLogic
+}
+
+var _ knowledgev1.KnowledgeServiceServer = (*KnowledgeService)(nil)
+var _ api.HTTPServer = (*KnowledgeService)(nil)
+
+// NewKnowledgeService 构造函数
+func NewKnowledgeService(l logic.KnowledgeLogic, kbl logic.KnowledgeBaseLogic) *KnowledgeService {
+	return &KnowledgeService{l: l, kbl: kbl}
+}
+
+// ==================== 知识范围 ====================
+
+func (k *KnowledgeService) SaveKnowledgeScope(ctx context.Context, req *api.KnowledgeScopeSaveReq) (*api.KnowledgeScopeResp, error) {
+	scopeNode := convert.FromKnowledgeScopeSaveReq(req)
+	scopeNode, err := k.l.SaveScope(ctx, scopeNode)
+	if err != nil {
+		return nil, err
+	}
+	return convert.ToKnowledgeScopeResp(scopeNode), nil
+}
+
+func (k *KnowledgeService) DeleteKnowledgeScope(ctx context.Context, req *api.KnowledgeScopeDeleteReq) (bool, error) {
+	return k.l.DeleteScope(ctx, utils.StringToInt64(req.ID), utils.StringToInt64(req.KnowledgeBaseId))
+}
+
+func (k *KnowledgeService) ListKnowledgeScope(ctx context.Context) ([]*api.KnowledgeScopeResp, error) {
+	nodes, err := k.l.ListScopes(ctx, 0)
+	if err != nil {
+		return nil, err
+	}
+	return convert.ToKnowledgeScopeRespList(nodes), nil
+}
+
+// ==================== 主题 ====================
+
+func (k *KnowledgeService) SaveKnowledgeTopic(ctx context.Context, req *api.KnowledgeTopicSaveReq) (*api.KnowledgeTopicResp, error) {
+	topicNode := convert.FromKnowledgeTopicSaveReq(req)
+	topicNode, err := k.l.SaveTopic(ctx, topicNode)
+	if err != nil {
+		return nil, err
+	}
+	return convert.ToKnowledgeTopicResp(topicNode), nil
+}
+
+func (k *KnowledgeService) DeleteKnowledgeTopic(ctx context.Context, req *api.KnowledgeTopicDeleteReq) (bool, error) {
+	return k.l.DeleteTopic(ctx, utils.StringToInt64(req.ID), utils.StringToInt64(req.KnowledgeBaseId))
+}
+
+func (k *KnowledgeService) ListKnowledgeTopic(ctx context.Context, req *api.KnowledgeTopicListReq) ([]*api.KnowledgeTopicResp, error) {
+	nodes, err := k.l.ListTopics(ctx, utils.StringToInt64(req.KnowledgeBaseId), utils.StringToInt64(req.ScopeId))
+	if err != nil {
+		return nil, err
+	}
+	return convert.ToKnowledgeTopicRespList(nodes), nil
+}
+
+// ==================== 主题-文档关联 ====================
+
+// ListTopicDocumentRelation 列表主题文档关联
+func (k *KnowledgeService) ListTopicDocumentRelation(ctx context.Context, req *api.TopicDocumentRelationListReq) ([]*api.TopicDocumentRelationResp, error) {
+	relations, err := k.l.ListTopicDocumentRelations(ctx, utils.StringToInt64(req.KnowledgeBaseId), utils.StringToInt64(req.TopicId))
+	if err != nil {
+		return nil, err
+	}
+	return convert.ToTopicDocumentRelationRespList(relations), nil
+}
+
+// SaveTopicDocumentRelation 保存主题文档关联
+func (k *KnowledgeService) SaveTopicDocumentRelation(ctx context.Context, req *api.TopicDocumentRelationSaveReq) (*api.TopicDocumentRelationResp, error) {
+	relation := convert.FromKnowledgeTopicDocumentRelationSaveReq(req)
+	relation, err := k.l.SaveTopicDocumentRelation(ctx, relation)
+	if err != nil {
+		return nil, err
+	}
+	return convert.ToTopicDocumentRelationResp(relation), nil
+}
+
+// RemoveTopicDocumentRelation 移除主题文档关联
+func (k *KnowledgeService) RemoveTopicDocumentRelation(ctx context.Context, req *api.TopicDocumentRelationRemoveReq) (bool, error) {
+	return k.l.RemoveTopicDocumentRelation(ctx,
+		utils.StringToInt64(req.KnowledgeBaseId),
+		utils.StringToInt64(req.TopicId),
+		utils.StringToInt64(req.DocumentId))
+}
+
+// ==================== 路由追踪 ====================
+
+func (k *KnowledgeService) QueryKnowledgeRouteTracePage(ctx context.Context, req *api.KnowledgeRouteTracePageReq) (*api.KnowledgeRouteTracePageResp, error) {
+	traces, total, err := k.l.QueryRouteTracePage(ctx, req.ConversationId, req.Mode, req.RouteStatus, req.PageNo, req.PageSize)
+	if err != nil {
+		return nil, err
+	}
+	result := convert.ToKnowledgeRouteTraceItemList(traces)
+	totalPages := (total + int64(req.PageSize) - 1) / int64(req.PageSize)
+	return &api.KnowledgeRouteTracePageResp{
+		PageNo:     req.PageNo,
+		PageSize:   req.PageSize,
+		Total:      total,
+		TotalPages: int(totalPages),
+		Records:    result,
+	}, nil
+}
+
+// ListKnowledgeBase 查询知识库列表
+func (k *KnowledgeService) ListKnowledgeBase(ctx context.Context) ([]*api.KnowledgeBaseItemResp, error) {
+	items, err := k.kbl.ListKnowledgeBaseItems(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return convert.ToKnowledgeBaseItemRespList(items), nil
+}
+
+func (k *KnowledgeService) DetermineKnowledgeScope(ctx context.Context, request *knowledgev1.DetermineKnowledgeScopeRequest) (*knowledgev1.KnowledgeBaseSelectionSnapshot, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (k *KnowledgeService) Route(ctx context.Context, request *knowledgev1.RouteRequest) (*knowledgev1.KnowledgeRouteDecision, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (k *KnowledgeService) RecordShadowRoute(ctx context.Context, request *knowledgev1.RecordShadowRouteRequest) (*emptypb.Empty, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (k *KnowledgeService) Resolve(ctx context.Context, request *knowledgev1.ResolveRequest) (*knowledgev1.IndexingOptions, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (k *KnowledgeService) RequireEnabled(ctx context.Context, request *knowledgev1.RequireEnabledRequest) (*knowledgev1.RequireEnabledResponse, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (k *KnowledgeService) GraphTypes(ctx context.Context, request *knowledgev1.GraphTypesRequest) (*knowledgev1.GraphTypesResponse, error) {
+	//TODO implement me
+	panic("implement me")
+}

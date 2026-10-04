@@ -1,0 +1,29 @@
+package rank
+
+import (
+	"github.com/swiftbit/know-agent/common"
+	"github.com/swiftbit/know-agent/services/knowledge/internal/domain/adapter"
+	"github.com/swiftbit/know-agent/services/knowledge/internal/domain/logic/route/score"
+)
+
+type Option = common.Option
+
+type options struct {
+	embedder     adapter.Embedder
+	lexicalIndex RouteLexicalIndex
+	scorer       score.Scorer
+}
+
+// WithEmbedding 注册嵌入模型（可选）
+func WithEmbedding(emb adapter.Embedder) Option {
+	return common.WrapImplSpecificOptFn(func(o *options) {
+		o.embedder = emb
+	})
+}
+
+// WithLexicalIndex 注册词面索引（可选）
+func WithLexicalIndex(index RouteLexicalIndex) Option {
+	return common.WrapImplSpecificOptFn(func(o *options) {
+		o.lexicalIndex = index
+	})
+}
