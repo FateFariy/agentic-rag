@@ -76,13 +76,11 @@ func (r *Resolver) parseConfig(kb *entity.KnowledgeBase) *RuntimeConfig {
 		MinVectorSimilarity:       new(float64),
 		KeywordRelativeScoreFloor: new(float64),
 		KeywordChannelEnabled:     new(bool),
-		TableChannelEnabled:       new(bool),
 		GraphRagChannelEnabled:    new(bool),
 		RaptorChannelEnabled:      new(bool),
 		Hybrid: &HybridConfig{
 			VectorWeight:        new(float64),
 			KeywordWeight:       new(float64),
-			TableWeight:         new(float64),
 			GraphRagWeight:      new(float64),
 			RaptorWeight:        new(float64),
 			RankWeight:          new(float64),
@@ -137,7 +135,6 @@ func (r *Resolver) mergeInto(target, source *RuntimeConfig) {
 	setIfNotNil(source.MinVectorSimilarity, target.MinVectorSimilarity)
 	setIfNotNil(source.KeywordRelativeScoreFloor, target.KeywordRelativeScoreFloor)
 	setIfNotNil(source.KeywordChannelEnabled, target.KeywordChannelEnabled)
-	setIfNotNil(source.TableChannelEnabled, target.TableChannelEnabled)
 	setIfNotNil(source.GraphRagChannelEnabled, target.GraphRagChannelEnabled)
 	setIfNotNil(source.RaptorChannelEnabled, target.RaptorChannelEnabled)
 
@@ -153,7 +150,6 @@ func (r *Resolver) mergeInto(target, source *RuntimeConfig) {
 func (r *Resolver) mergeHybridInto(target, source *HybridConfig) {
 	setIfNotNil(source.VectorWeight, target.VectorWeight)
 	setIfNotNil(source.KeywordWeight, target.KeywordWeight)
-	setIfNotNil(source.TableWeight, target.TableWeight)
 	setIfNotNil(source.GraphRagWeight, target.GraphRagWeight)
 	setIfNotNil(source.RaptorWeight, target.RaptorWeight)
 	setIfNotNil(source.RankWeight, target.RankWeight)
@@ -179,7 +175,6 @@ func (r *Resolver) applySingle(options *vo.RagRuntimeOptions, cfg *RuntimeConfig
 	setIfNotNil(cfg.MinVectorSimilarity, &options.MinVectorSimilarity)
 	setIfNotNil(cfg.KeywordRelativeScoreFloor, &options.KeywordRelativeScoreFloor)
 	setIfNotNil(cfg.KeywordChannelEnabled, &options.KeywordChannelEnabled)
-	setIfNotNil(cfg.TableChannelEnabled, &options.TableChannelEnabled)
 	setIfNotNil(cfg.GraphRagChannelEnabled, &options.GraphRagChannelEnabled)
 	setIfNotNil(cfg.RaptorChannelEnabled, &options.RaptorChannelEnabled)
 
@@ -195,7 +190,6 @@ func (r *Resolver) applySingle(options *vo.RagRuntimeOptions, cfg *RuntimeConfig
 func (r *Resolver) applySingleHybrid(target *vo.HybridOptions, source *HybridConfig) {
 	setIfNotNil(source.VectorWeight, &target.VectorWeight)
 	setIfNotNil(source.KeywordWeight, &target.KeywordWeight)
-	setIfNotNil(source.TableWeight, &target.TableWeight)
 	setIfNotNil(source.GraphRagWeight, &target.GraphRagWeight)
 	setIfNotNil(source.RaptorWeight, &target.RaptorWeight)
 	setIfNotNil(source.RankWeight, &target.RankWeight)
@@ -225,7 +219,6 @@ func (r *Resolver) applyMerged(options *vo.RagRuntimeOptions, configs []*Runtime
 	mergeField(configs, func(c *RuntimeConfig) *float64 { return c.MinVectorSimilarity }, func(v float64) { options.MinVectorSimilarity = v }, "minVectorSimilarity", &conflicts)
 	mergeField(configs, func(c *RuntimeConfig) *float64 { return c.KeywordRelativeScoreFloor }, func(v float64) { options.KeywordRelativeScoreFloor = v }, "keywordRelativeScoreFloor", &conflicts)
 	mergeField(configs, func(c *RuntimeConfig) *bool { return c.KeywordChannelEnabled }, func(v bool) { options.KeywordChannelEnabled = v }, "keywordChannelEnabled", &conflicts)
-	mergeField(configs, func(c *RuntimeConfig) *bool { return c.TableChannelEnabled }, func(v bool) { options.TableChannelEnabled = v }, "tableChannelEnabled", &conflicts)
 	mergeField(configs, func(c *RuntimeConfig) *bool { return c.GraphRagChannelEnabled }, func(v bool) { options.GraphRagChannelEnabled = v }, "graphRagChannelEnabled", &conflicts)
 	mergeField(configs, func(c *RuntimeConfig) *bool { return c.RaptorChannelEnabled }, func(v bool) { options.RaptorChannelEnabled = v }, "raptorChannelEnabled", &conflicts)
 
@@ -237,8 +230,6 @@ func (r *Resolver) applyMerged(options *vo.RagRuntimeOptions, configs []*Runtime
 		func(v float64) { options.Hybrid.VectorWeight = v }, "hybrid.vectorWeight", &conflicts)
 	mergeHybridField(configs, func(h *HybridConfig) *float64 { return h.KeywordWeight },
 		func(v float64) { options.Hybrid.KeywordWeight = v }, "hybrid.keywordWeight", &conflicts)
-	mergeHybridField(configs, func(h *HybridConfig) *float64 { return h.TableWeight },
-		func(v float64) { options.Hybrid.TableWeight = v }, "hybrid.tableWeight", &conflicts)
 	mergeHybridField(configs, func(h *HybridConfig) *float64 { return h.GraphRagWeight },
 		func(v float64) { options.Hybrid.GraphRagWeight = v }, "hybrid.graphRagWeight", &conflicts)
 	mergeHybridField(configs, func(h *HybridConfig) *float64 { return h.RaptorWeight },
@@ -377,7 +368,6 @@ func setIfNotNil[T any](src *T, dst *T) {
 type HybridConfig struct {
 	VectorWeight        *float64 `json:"vectorWeight,omitempty"`
 	KeywordWeight       *float64 `json:"keywordWeight,omitempty"`
-	TableWeight         *float64 `json:"tableWeight,omitempty"`
 	GraphRagWeight      *float64 `json:"graphRagWeight,omitempty"`
 	RaptorWeight        *float64 `json:"raptorWeight,omitempty"`
 	RankWeight          *float64 `json:"rankWeight,omitempty"`
@@ -402,7 +392,6 @@ type RuntimeConfig struct {
 	MinVectorSimilarity       *float64       `json:"minVectorSimilarity,omitempty"`
 	KeywordRelativeScoreFloor *float64       `json:"keywordRelativeScoreFloor,omitempty"`
 	KeywordChannelEnabled     *bool          `json:"keywordChannelEnabled,omitempty"`
-	TableChannelEnabled       *bool          `json:"tableChannelEnabled,omitempty"`
 	GraphRagChannelEnabled    *bool          `json:"graphRagChannelEnabled,omitempty"`
 	RaptorChannelEnabled      *bool          `json:"raptorChannelEnabled,omitempty"`
 	Hybrid                    *HybridConfig  `json:"hybrid,omitempty"`

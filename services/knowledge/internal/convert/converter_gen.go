@@ -5,11 +5,13 @@ package convert
 
 import (
 	"encoding/json"
-	common "github.com/swiftbit/know-agent/common"
+
+	datatypes "gorm.io/datatypes"
+
+	"github.com/swiftbit/know-agent/pkg/common"
 	api "github.com/swiftbit/know-agent/services/knowledge/api"
 	entity "github.com/swiftbit/know-agent/services/knowledge/internal/domain/model/entity"
 	model "github.com/swiftbit/know-agent/services/knowledge/internal/infrastructure/persistence/model"
-	datatypes "gorm.io/datatypes"
 )
 
 func FromKnowledgeScopeSaveReq(source *api.KnowledgeScopeSaveReq) *entity.KnowledgeScopeNode {

@@ -1,0 +1,161 @@
+package config
+
+import "time"
+
+// ChatConf 对话业务总配置（knowledge 仅使用其 Rag 段，副本以实现配置解耦）
+type ChatConf struct {
+	Memory         MemoryConf         // 记忆配置
+	Rewrite        RewriteConf        // 问题改写配置
+	Recommendation RecommendationConf // 推荐配置
+	Rag            RagConf            // RAG配置
+	SemanticCache  SemanticCacheConf  // 语义缓存配置
+	Agent          AgentConf          // Agent配置
+}
+
+// MemoryConf 记忆配置
+type MemoryConf struct {
+	RecentTranscriptMaxChars int                `json:",default=1024"` // 最近对话记录最大字符数
+	QuestionHistoryMaxChars  int                `json:",default=512"`  // 问题历史最大字符数
+	HistorySummary           HistorySummaryConf // 历史摘要配置
+}
+
+// HistorySummaryConf 历史摘要配置
+type HistorySummaryConf struct {
+	Enabled                  bool `json:",default=true"` // 是否启用摘要压缩
+	HistoryTurns             int  `json:",default=6"`    // 历史轮次
+	KeepRecentTurns          int  `json:",default=3"`    // 保留最近轮次
+	CompressionBatchTurns    int  `json:",default=3"`    // 压缩批次轮次
+	MaxChars                 int  `json:",default=1024"` // 摘要最大字符数
+	RecentTranscriptMaxChars int  `json:",default=2200"` // 最近对话记录最大字符数
+}
+
+// RewriteConf 问题改写配置
+type RewriteConf struct {
+	Enabled     bool    `json:",default=true"`  // 是否启用问题改写
+	Temperature float32 `json:",default=0.1"`   // 温度参数
+	TopP        float32 `json:",default=0.3"`   // TopP参数
+	Thinking    bool    `json:",default=false"` // 是否启用思考过程
+}
+
+// RecommendationConf 推荐追问配置
+type RecommendationConf struct {
+	Enabled             bool          `json:",default=true"` // 是否启用推荐追问
+	Timeout             time.Duration `json:",default=5s"`   // 推荐生成超时时间
+	HistoryPreviewTurns int           `json:",default=3"`    // 预览历史轮次
+}
+
+// RagConf RAG配置
+type RagConf struct {
+	Enabled                        bool          `json:",default=true"` // 是否启用RAG
+	ChannelTimeout                 time.Duration `json:",default=5s"`   // 通道超时时间
+	SubQuestionTimeout             time.Duration `json:",default=12s"`  // 子问题超时时间
+	CandidateTopK                  int           `json:",default=40"`   // 候选集TopK
+	FinalTopK                      int           `json:",default=6"`    // 最终结果TopK
+	ParentEvidenceMaxChars         int           `json:",default=2200"` // 父证据最大字符数
+	PlanningHistoryMaxChars        int           `json:",default=1600"` // 规划历史最大字符数
+	QuestionHistoryMaxChars        int           `json:",default=1000"` // 问题历史最大字符数
+	TotalEvidenceMaxChars          int           `json:",default=5200"` // 总证据最大字符数
+	PerSubQuestionEvidenceMaxChars int           `json:",default=2200"` // 每个子问题证据最大字符数
+	Keyword                        *KeywordConf  // 关键词通道
+	Vector                         *VectorConf   // 向量通道
+	Graph                          *GraphRagConf // 图RAG通道
+	Raptor                         *RaptorConf   // RAPTOR通道
+	Rerank                         *RerankConf   // 重排序通道
+	Hybrid                         *HybridConf   // 混合检索权重
+}
+
+// KeywordConf 关键词通道配置
+type KeywordConf struct {
+	Enabled            bool    `json:",default=true"` // 是否启用关键词
+	TopK               int     `json:",default=10"`   // 关键词检索TopK
+	RelativeScoreFloor float64 `json:",default=0.35"` // 关键词相对分数阈值
+}
+
+// VectorConf 向量通道配置
+type VectorConf struct {
+	Enabled       bool    `json:",default=true"` // 是否启用向量
+	TopK          int     `json:",default=10"`   // 向量检索TopK
+	MinSimilarity float64 `json:",default=0.45"` // 相似度阈值
+}
+
+// GraphRagConf 图RAG相关配置
+type GraphRagConf struct {
+	Enabled                     bool    `json:",default=true"` // 启用开关
+	ExtractBatch                int     `json:",default=1"`    // 每批 chunk 数（抽取提示）
+	ExtractConcurrency          int     `json:",default=4"`    // 抽取并发批次数（1 表示串行）
+	ChunkMaxChars               int     `json:",default=1200"` // 单 chunk 抽取截断字符数
+	MaxEntities                 int     `json:",default=300"`  // 单文档实体上限（超限按 PageRank 截断）
+	MaxRelations                int     `json:",default=500"`  // 单文档关系上限
+	MaxCommunities              int     `json:",default=50"`   // 单文档社区上限
+	CommunityTopNodes           int     `json:",default=5"`    // 社区标题/摘要取 top 实体数
+	CommunityReportTopN         int     `json:",default=12"`   // M3 LLM 社区报告预算闸门：仅前 N 个重要社区生成 LLM 摘要（0 关闭）
+	LouvainEnabled              bool    `json:",default=true"` // 是否启用 Louvain 细化（false 时仅并查集连通分量）
+	LouvainGamma                float64 `json:",default=1.0"`  // Louvain 分辨率（γ）
+	PageRankDamping             float64 `json:",default=0.85"` // PageRank 阻尼系数
+	PageRankMaxIter             int     `json:",default=30"`   // PageRank 最大迭代轮数
+	SearchMaxHops               int     `json:",default=2"`    // 检索最大跳数（硬限 2）
+	SearchTopK                  int     `json:",default=10"`   // 检索返回上限
+	TypedChunkProjectionEnabled bool    `json:",default=true"` // M3 Typed chunk 投影：图卡片写入向量库（增强依赖）
+	TypedCardTopK               int     `json:",default=100"`  // M3 图卡片总预算（实体:关系:社区 = 2:5:3 分配）
+}
+
+// RaptorConf RAPTOR通道配置
+type RaptorConf struct {
+	Enabled             bool    `json:",default=true"` // 是否启用Raptor
+	TopK                int     `json:",default=5"`    // 检索TopK
+	SourceChunkTopK     int     `json:",default=3"`    // 源块检索TopK
+	MaxClusterSize      int     `json:",default=6"`    // 最大聚类大小
+	MaxLevels           int     `json:",default=3"`    // 最大层级
+	LlmSummaryEnabled   bool    `json:",default=true"` // 启用LLM摘要
+	SummaryQualityFloor float64 `json:",default=0.42"` // 摘要质量下限
+}
+
+// HybridConf 混合检索权重
+type HybridConf struct {
+	VectorWeight        float64 `json:",default=1.0"`
+	KeywordWeight       float64 `json:",default=1.0"`
+	GraphRagWeight      float64 `json:",default=1.1"`
+	RaptorWeight        float64 `json:",default=1.05"`
+	RankWeight          float64 `json:",default=1.0"`
+	OriginalScoreWeight float64 `json:",default=0.08"`
+	MetadataBoostWeight float64 `json:",default=0.04"`
+	MaxMetadataBoost    float64 `json:",default=1.0"`
+}
+
+// RerankConf 重排序通道配置
+type RerankConf struct {
+	Enabled        bool          `json:",default=true"` // 是否启用重排序
+	URL            string        `json:",optional"`     // 重排序API地址
+	ApiKey         string        `json:",optional"`     // 重排序API密钥
+	Model          string        `json:",optional"`     // 重排序模型
+	TopN           int           `json:",default=24"`   // 重排序TopN
+	ConnectTimeout time.Duration `json:",default=3s"`   // 连接超时时间
+	ReadTimeout    time.Duration `json:",default=6s"`   // 读取超时时间
+	ScoreThreshold float64       `json:",default=0.0"`  // 重排序分数阈值
+}
+
+// SemanticCacheConf 语义缓存配置
+type SemanticCacheConf struct {
+	Enabled             bool    `json:",default=false"`                            // 是否启用语义缓存
+	Collection          string  `json:",default=semantic_cache"`                  // Milvus 向量集合名
+	SimilarityThreshold float32 `json:",default=0.70"`                           // 向量召回粗筛阈值：得分低于该值直接未命中
+	DirectHitThreshold  float32 `json:",default=0.90"`                           // 直接命中阈值：最高候选得分达到该值跳过 LLM 判定
+	RecallTopK          int     `json:",default=3"`                              // 向量召回候选数（进入灰色区间的候选池大小）
+	ConfidenceFloor     float32 `json:",default=0.6"`                            // LLM 判定置信度兜底地板：低于该值强制未命中
+	JudgeEnabled        bool    `json:",default=false"`                          // 灰色区间是否启用大模型等价终判（false 时灰色区间保守未命中）
+	JudgeTemperature    float32 `json:",default=0.1"`                            // 大模型判定温度
+	ReuseAnswer         bool    `json:",default=false"`                          // true=命中时直接复用答案
+	WriteTopic          string  `json:",default=know-agent-semantic-cache-write"` // MQ 写入主题
+}
+
+// AgentConf Agent配置
+type AgentConf struct {
+	RecommendationEnabled  bool          `json:",default=true"` // 是否启用推荐追问
+	MaxModelCallsPerRun    int           `json:",default=8"`    // 每次最大模型调用次数
+	MaxModelCallsPerThread int           `json:",default=40"`   // 每次最大模型调用线程数
+	MaxToolCallsPerRun     int           `json:",default=6"`    // 每次最大工具调用次数
+	MaxToolCallsPerThread  int           `json:",default=30"`   // 每次最大工具调用线程数
+	HistoryPreviewTurns    int           `json:",default=4"`    // 预览历史轮次
+	RecommendationTimeout  time.Duration `json:",default=5s"`   // 推荐生成超时时间
+	SystemPrompt           string        `json:",optional"`     // 系统提示
+}

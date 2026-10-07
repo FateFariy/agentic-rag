@@ -8,7 +8,6 @@ import (
 type HybridOptions struct {
 	VectorWeight        float64
 	KeywordWeight       float64
-	TableWeight         float64
 	GraphRagWeight      float64
 	RaptorWeight        float64
 	RankWeight          float64
@@ -21,7 +20,6 @@ func NewDefaultHybridOptions() *HybridOptions {
 	return &HybridOptions{
 		VectorWeight:        1.0,
 		KeywordWeight:       1.0,
-		TableWeight:         1.2,
 		GraphRagWeight:      1.1,
 		RaptorWeight:        1.05,
 		RankWeight:          1.0,
@@ -48,7 +46,6 @@ type RagRuntimeOptions struct {
 	MinVectorSimilarity       float64
 	KeywordRelativeScoreFloor float64
 	KeywordChannelEnabled     bool
-	TableChannelEnabled       bool
 	GraphRagChannelEnabled    bool
 	RaptorChannelEnabled      bool
 	Hybrid                    *HybridOptions
@@ -73,7 +70,6 @@ func NewDefaultRagRuntimeOptions() *RagRuntimeOptions {
 		MinVectorSimilarity:       0.45,
 		KeywordRelativeScoreFloor: 0.35,
 		KeywordChannelEnabled:     true,
-		TableChannelEnabled:       true,
 		GraphRagChannelEnabled:    true,
 		RaptorChannelEnabled:      true,
 		Hybrid:                    NewDefaultHybridOptions(),

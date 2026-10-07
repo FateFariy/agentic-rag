@@ -7,7 +7,7 @@ import (
 	"github.com/duke-git/lancet/v2/strutil"
 	"gorm.io/gorm"
 
-	"github.com/swiftbit/know-agent/pkg/gormtx"
+	"github.com/swiftbit/know-agent/pkg/infra"
 	"github.com/swiftbit/know-agent/pkg/utils"
 	"github.com/swiftbit/know-agent/services/knowledge/internal/convert"
 	"github.com/swiftbit/know-agent/services/knowledge/internal/domain/adapter"
@@ -18,7 +18,7 @@ import (
 
 // KnowledgeRepositoryImpl 文档知识仓储实现
 type KnowledgeRepositoryImpl struct {
-	*gormtx.Manager
+	*infra.TxManager
 }
 
 var _ adapter.KnowledgeRepository = (*KnowledgeRepositoryImpl)(nil)
@@ -26,7 +26,7 @@ var _ adapter.KnowledgeRepository = (*KnowledgeRepositoryImpl)(nil)
 // NewKnowledgeRepository 构造函数，仅依赖 knowledge 服务自有的 MySQL 连接。
 func NewKnowledgeRepository(db *gorm.DB) *KnowledgeRepositoryImpl {
 	return &KnowledgeRepositoryImpl{
-		Manager: gormtx.New(db),
+		TxManager: infra.NewTxManager(db),
 	}
 }
 

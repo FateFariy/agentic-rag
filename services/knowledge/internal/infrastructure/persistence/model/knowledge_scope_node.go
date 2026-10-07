@@ -1,6 +1,8 @@
 package model
 
-import "github.com/swiftbit/know-agent/common"
+import (
+	"github.com/swiftbit/know-agent/pkg/common"
+)
 
 // KnowledgeScopeNode 知识范围节点实体
 type KnowledgeScopeNode struct {

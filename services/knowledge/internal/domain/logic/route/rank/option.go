@@ -1,7 +1,7 @@
 package rank
 
 import (
-	"github.com/swiftbit/know-agent/common"
+	"github.com/swiftbit/know-agent/pkg/common"
 	"github.com/swiftbit/know-agent/services/knowledge/internal/domain/adapter"
 	"github.com/swiftbit/know-agent/services/knowledge/internal/domain/logic/route/score"
 )

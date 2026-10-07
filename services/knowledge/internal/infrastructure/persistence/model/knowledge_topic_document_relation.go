@@ -1,6 +1,8 @@
 package model
 
-import "github.com/swiftbit/know-agent/common"
+import (
+	"github.com/swiftbit/know-agent/pkg/common"
+)
 
 // KnowledgeTopicDocumentRelation 主题-文档映射关系
 type KnowledgeTopicDocumentRelation struct {

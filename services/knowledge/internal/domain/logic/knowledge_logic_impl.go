@@ -5,7 +5,7 @@ import (
 
 	"github.com/duke-git/lancet/v2/strutil"
 
-	"github.com/swiftbit/know-agent/common"
+	"github.com/swiftbit/know-agent/pkg/common"
 	"github.com/swiftbit/know-agent/pkg/utils"
 	"github.com/swiftbit/know-agent/services/knowledge/internal/domain/adapter"
 	"github.com/swiftbit/know-agent/services/knowledge/internal/domain/model/entity"

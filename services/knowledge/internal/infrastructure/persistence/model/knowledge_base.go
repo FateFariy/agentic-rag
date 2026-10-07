@@ -3,7 +3,7 @@ package model
 import (
 	"gorm.io/datatypes"
 
-	"github.com/swiftbit/know-agent/common"
+	"github.com/swiftbit/know-agent/pkg/common"
 )
 
 type KnowledgeBase struct {

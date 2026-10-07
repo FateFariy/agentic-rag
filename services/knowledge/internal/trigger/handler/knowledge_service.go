@@ -3,9 +3,6 @@ package handler
 import (
 	"context"
 
-	"google.golang.org/protobuf/types/known/emptypb"
-
-	knowledgev1 "github.com/swiftbit/know-agent/pkg/grpc/gen/proto/knowagent/knowledge/v1"
 	"github.com/swiftbit/know-agent/pkg/utils"
 	"github.com/swiftbit/know-agent/services/knowledge/api"
 	"github.com/swiftbit/know-agent/services/knowledge/internal/convert"
@@ -14,12 +11,10 @@ import (
 
 // KnowledgeService 知识管理 HTTP 服务
 type KnowledgeService struct {
-	knowledgev1.UnimplementedKnowledgeServiceServer
 	l   logic.KnowledgeLogic
 	kbl logic.KnowledgeBaseLogic
 }
 
-var _ knowledgev1.KnowledgeServiceServer = (*KnowledgeService)(nil)
 var _ api.HTTPServer = (*KnowledgeService)(nil)
 
 // NewKnowledgeService 构造函数
@@ -127,34 +122,4 @@ func (k *KnowledgeService) ListKnowledgeBase(ctx context.Context) ([]*api.Knowle
 		return nil, err
 	}
 	return convert.ToKnowledgeBaseItemRespList(items), nil
-}
-
-func (k *KnowledgeService) DetermineKnowledgeScope(ctx context.Context, request *knowledgev1.DetermineKnowledgeScopeRequest) (*knowledgev1.KnowledgeBaseSelectionSnapshot, error) {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (k *KnowledgeService) Route(ctx context.Context, request *knowledgev1.RouteRequest) (*knowledgev1.KnowledgeRouteDecision, error) {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (k *KnowledgeService) RecordShadowRoute(ctx context.Context, request *knowledgev1.RecordShadowRouteRequest) (*emptypb.Empty, error) {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (k *KnowledgeService) Resolve(ctx context.Context, request *knowledgev1.ResolveRequest) (*knowledgev1.IndexingOptions, error) {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (k *KnowledgeService) RequireEnabled(ctx context.Context, request *knowledgev1.RequireEnabledRequest) (*knowledgev1.RequireEnabledResponse, error) {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (k *KnowledgeService) GraphTypes(ctx context.Context, request *knowledgev1.GraphTypesRequest) (*knowledgev1.GraphTypesResponse, error) {
-	//TODO implement me
-	panic("implement me")
 }

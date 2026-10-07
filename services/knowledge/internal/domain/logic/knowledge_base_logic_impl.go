@@ -8,7 +8,9 @@ import (
 
 	"github.com/swiftbit/know-agent/pkg/utils"
 	"github.com/swiftbit/know-agent/services/knowledge/internal/domain/adapter"
+	"github.com/swiftbit/know-agent/services/knowledge/internal/domain/logic/config"
 	"github.com/swiftbit/know-agent/services/knowledge/internal/domain/model/entity"
+	"github.com/swiftbit/know-agent/services/knowledge/internal/domain/model/vo"
 	errorx "github.com/swiftbit/know-agent/services/knowledge/internal/error"
 )
 
@@ -16,12 +18,14 @@ import (
 type KnowledgeBaseLogicImpl struct {
 	repo       adapter.KnowledgeRepository
 	docGateway adapter.DocumentGateway
+	resolver   *config.Resolver
 }
 
-func NewKnowledgeBaseLogicImpl(repo adapter.KnowledgeRepository, docGateway adapter.DocumentGateway) *KnowledgeBaseLogicImpl {
+func NewKnowledgeBaseLogicImpl(repo adapter.KnowledgeRepository, docGateway adapter.DocumentGateway, global config.GlobalConfigProvider) *KnowledgeBaseLogicImpl {
 	return &KnowledgeBaseLogicImpl{
 		repo:       repo,
 		docGateway: docGateway,
+		resolver:   config.NewResolver(global),
 	}
 }
 
@@ -132,7 +136,7 @@ func (k *KnowledgeBaseLogicImpl) ListKnowledgeBasesByIds(ctx context.Context, id
 	return k.repo.SelectKnowledgeBaseByIds(ctx, ids)
 }
 
-// GetEnabledKnowledgeBase 根据ID获取启用的知识库
+// GetEnabledKnowledgeBase 根据ID获取知识库，要求记录存在且未软删除，记录不存在时仓储返回 ErrKnowledgeBaseNotFound
 func (k *KnowledgeBaseLogicImpl) GetEnabledKnowledgeBase(ctx context.Context, id int64) (*entity.KnowledgeBase, error) {
 	if id <= 0 {
 		return nil, errors.New("id 不能为空")
@@ -142,6 +146,25 @@ func (k *KnowledgeBaseLogicImpl) GetEnabledKnowledgeBase(ctx context.Context, id
 		return nil, err
 	}
 	return base, nil
+}
+
+// ResolveIndexingOptions 解析指定知识库的索引构建配置；knowledgeBaseId 为 0 时返回全局默认。
+func (k *KnowledgeBaseLogicImpl) ResolveIndexingOptions(ctx context.Context, knowledgeBaseId int64) *vo.IndexingOptions {
+	if knowledgeBaseId == 0 {
+		return k.resolver.ResolveIndexingOptions(nil)
+	}
+	base, _ := k.repo.SelectKnowledgeBaseById(ctx, knowledgeBaseId)
+	// TODO: resolver 当前恒返回全局默认，查库结果暂未参与 kb 级索引配置合并，待 ResolveIndexingOptions 支持后启用
+	return k.resolver.ResolveIndexingOptions([]*entity.KnowledgeBase{base})
+}
+
+// GraphTypes 返回知识库配置的实体/关系类型白名单（nil 表示回退全局默认）。
+func (k *KnowledgeBaseLogicImpl) GraphTypes(ctx context.Context, knowledgeBaseId int64) ([]string, []string, error) {
+	base, err := k.repo.SelectKnowledgeBaseById(ctx, knowledgeBaseId)
+	if err != nil {
+		return nil, nil, err
+	}
+	return base.EntityTypes, base.RelationTypes, nil
 }
 
 // ListKnowledgeBaseItems 查询知识库列表（包含文档数量和可检索文档数量）

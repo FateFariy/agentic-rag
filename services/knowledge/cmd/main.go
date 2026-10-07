@@ -5,37 +5,28 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/swiftbit/know-agent/pkg/config"
-	pkggrpcclient "github.com/swiftbit/know-agent/pkg/grpcclient"
-	"github.com/swiftbit/know-agent/pkg/grpcserver"
-	"github.com/swiftbit/know-agent/services/knowledge/internal/bootstrap"
+	"github.com/swiftbit/know-agent/pkg/infra"
+	"github.com/swiftbit/know-agent/services/knowledge/internal/config"
 	"github.com/swiftbit/know-agent/services/knowledge/internal/infrastructure/port/gateway"
 )
 
 func main() {
 	c := config.MustLoad()
 	applyEnv(c)
+	if c.Grpc.KnowledgeRpc.ListenOn == "" {
+		c.Grpc.KnowledgeRpc.ListenOn = ":50052"
+	}
 
-	documentConn, err := pkggrpcclient.Dial(c.Grpc.DocumentAddr)
+	documentConn, err := infra.DialGrpc(c.Grpc.DocumentAddr)
 	if err != nil {
 		log.Fatalf("dial document service: %v", err)
 	}
 	documentClient := gateway.NewKnowledgeDocumentClient(documentConn)
 
-	knowledgeApp := bootstrap.Build(c, documentClient)
-
-	go func() {
-		addr := c.Grpc.KnowledgeListen
-		if addr == "" {
-			addr = ":50052"
-		}
-		if err := grpcserver.RunGRPC(addr, knowledgeApp.RegisterGRPC); err != nil {
-			log.Fatalf("knowledge gRPC server: %v", err)
-		}
-	}()
+	knowledgeApp := Build(c, documentClient)
 
 	log.Printf("knowledge service starting, http :%d", c.Http.Port)
-	knowledgeApp.HTTPServer().Start()
+	knowledgeApp.Start()
 }
 
 func applyEnv(c *config.Config) {
@@ -48,6 +39,6 @@ func applyEnv(c *config.Config) {
 		c.Grpc.DocumentAddr = v
 	}
 	if v := os.Getenv("KNOWLEDGE_GRPC_LISTEN"); v != "" {
-		c.Grpc.KnowledgeListen = v
+		c.Grpc.KnowledgeRpc.ListenOn = v
 	}
 }

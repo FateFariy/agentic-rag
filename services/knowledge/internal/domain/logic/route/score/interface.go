@@ -1,6 +1,8 @@
 package score
 
-import "github.com/swiftbit/know-agent/common"
+import (
+	"github.com/swiftbit/know-agent/pkg/common"
+)
 
 // Scorer 定义评分能力，方便扩展不同加权策略或机器学习模型。
 type Scorer interface {

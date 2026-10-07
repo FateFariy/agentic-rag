@@ -5,6 +5,7 @@ import (
 
 	"github.com/swiftbit/know-agent/services/knowledge/internal/domain/model/aggregate"
 	"github.com/swiftbit/know-agent/services/knowledge/internal/domain/model/entity"
+	"github.com/swiftbit/know-agent/services/knowledge/internal/domain/model/vo"
 )
 
 // KnowledgeLogic 知识管理服务接口
@@ -63,11 +64,17 @@ type KnowledgeBaseLogic interface {
 	// ListKnowledgeBasesByIds 根据ID列表查询知识库
 	ListKnowledgeBasesByIds(ctx context.Context, ids []int64) ([]*entity.KnowledgeBase, error)
 
-	// GetEnabledKnowledgeBase 根据ID获取启用的知识库（不存在或已停用则返回错误）
+	// GetEnabledKnowledgeBase 根据ID获取知识库，要求记录存在且未软删除，记录不存在时返回 ErrKnowledgeBaseNotFound
 	GetEnabledKnowledgeBase(ctx context.Context, id int64) (*entity.KnowledgeBase, error)
 
 	// ListKnowledgeBaseItems 查询知识库列表（包含文档数量和可检索文档数量）
 	ListKnowledgeBaseItems(ctx context.Context) ([]*entity.KnowledgeBase, error)
+
+	// ResolveIndexingOptions 解析指定知识库的索引构建配置；knowledgeBaseId 为 0 时返回全局默认
+	ResolveIndexingOptions(ctx context.Context, knowledgeBaseId int64) *vo.IndexingOptions
+
+	// GraphTypes 返回知识库配置的实体/关系类型白名单（nil 表示回退全局默认）
+	GraphTypes(ctx context.Context, knowledgeBaseId int64) ([]string, []string, error)
 }
 
 // KnowledgeBaseRetrievalLogic 知识库检索范围

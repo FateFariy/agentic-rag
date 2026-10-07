@@ -1,7 +1,7 @@
 package model
 
 import (
-	"github.com/swiftbit/know-agent/common"
+	"github.com/swiftbit/know-agent/pkg/common"
 )
 
 // KnowledgeRouteTrace 知识路由追踪实体

@@ -1,7 +1,7 @@
 package config
 
 import (
-	"github.com/swiftbit/know-agent/pkg/config"
+	"github.com/swiftbit/know-agent/services/knowledge/internal/config"
 	"github.com/swiftbit/know-agent/services/knowledge/internal/domain/model/vo"
 )
 
@@ -39,14 +39,12 @@ func (c *LocalConfig) CurrentOptions() *vo.RagRuntimeOptions {
 	opts.MinVectorSimilarity = rag.Vector.MinSimilarity
 	opts.KeywordRelativeScoreFloor = rag.Keyword.RelativeScoreFloor
 	opts.KeywordChannelEnabled = rag.Keyword.Enabled
-	opts.TableChannelEnabled = rag.Table.Enabled
 	opts.GraphRagChannelEnabled = rag.Graph.Enabled
 	opts.RaptorChannelEnabled = rag.Raptor.Enabled
 	hybrid := rag.Hybrid
 	opts.Hybrid = &vo.HybridOptions{
 		VectorWeight:        hybrid.VectorWeight,
 		KeywordWeight:       hybrid.KeywordWeight,
-		TableWeight:         hybrid.TableWeight,
 		GraphRagWeight:      hybrid.GraphRagWeight,
 		RaptorWeight:        hybrid.RaptorWeight,
 		RankWeight:          hybrid.RankWeight,

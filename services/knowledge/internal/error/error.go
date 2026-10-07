@@ -1,6 +1,8 @@
 package errorx
 
-import "github.com/swiftbit/know-agent/common"
+import (
+	"github.com/swiftbit/know-agent/pkg/common"
+)
 
 var (
 	ErrKnowledgeBaseNotFound = common.NewBizError(40001, "知识库不存在: %d")

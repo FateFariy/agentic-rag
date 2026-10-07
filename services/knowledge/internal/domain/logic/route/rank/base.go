@@ -3,7 +3,7 @@ package rank
 import (
 	"context"
 
-	"github.com/swiftbit/know-agent/common"
+	"github.com/swiftbit/know-agent/pkg/common"
 	"github.com/swiftbit/know-agent/pkg/logx"
 	"github.com/swiftbit/know-agent/pkg/utils"
 	"github.com/swiftbit/know-agent/services/knowledge/internal/domain/adapter"
