@@ -21,22 +21,21 @@ type Neo4jConf struct {
 	QueryTimeoutSeconds int    `json:",default=5"`
 }
 
-// Neo4jGraphStore 基于 Neo4j 的图谱存储与写入网关（检索逻辑已下沉至 chat 服务）
+// Neo4jGraphStore 基于 Neo4j 的图谱存储与写入网关（检索逻辑已下沉至 chat 服务）。
+// 内嵌 neo4j.DriverWithContext，实例本身即驱动，可直接开会话、校验连通性、关闭连接。
 type Neo4jGraphStore struct {
-	driver neo4j.DriverWithContext
-	db     string
+	neo4j.DriverWithContext
+	db string
 }
 
-// NewNeo4jGraphStore 创建 Neo4j 图谱存储
-func NewNeo4jGraphStore(driver neo4j.DriverWithContext, db string) *Neo4jGraphStore {
-	return &Neo4jGraphStore{
-		driver: driver,
-		db:     db,
-	}
+// NewNeo4jGraphStore 按配置创建驱动并自动应用约束，返回图谱存储。
+// 未启用或连接失败时返回内嵌驱动为 nil 的实例（不阻断主流程），由 Available 判定。
+func NewNeo4jGraphStore(c Neo4jConf) *Neo4jGraphStore {
+	return &Neo4jGraphStore{DriverWithContext: newNeo4jDriver(c), db: c.Database}
 }
 
-// NewNeo4jClient 创建 Neo4j 驱动并自动应用约束；未启用或连接失败均返回 nil（不阻断主流程）
-func NewNeo4jClient(c Neo4jConf) neo4j.DriverWithContext {
+// newNeo4jDriver 创建 Neo4j 驱动并自动应用约束；未启用或连接失败均返回 nil
+func newNeo4jDriver(c Neo4jConf) neo4j.DriverWithContext {
 	if !c.Enabled {
 		return nil
 	}
@@ -84,7 +83,7 @@ func NewNeo4jClient(c Neo4jConf) neo4j.DriverWithContext {
 
 // Available 报告底层驱动是否可用（图谱能力未启用或连接失败时为 false）
 func (s *Neo4jGraphStore) Available() bool {
-	return s != nil && s.driver != nil
+	return s != nil && s.DriverWithContext != nil
 }
 
 // ExecuteWrite 在一个写事务内执行 work，供 document 服务侧的图谱写入适配器复用
@@ -92,7 +91,7 @@ func (s *Neo4jGraphStore) ExecuteWrite(ctx context.Context, work func(tx neo4j.M
 	if !s.Available() {
 		return fmt.Errorf("neo4j driver is nil")
 	}
-	session := s.driver.NewSession(ctx, neo4j.SessionConfig{DatabaseName: s.db})
+	session := s.NewSession(ctx, neo4j.SessionConfig{DatabaseName: s.db})
 	defer session.Close(ctx)
 	_, err := session.ExecuteWrite(ctx, func(tx neo4j.ManagedTransaction) (any, error) {
 		return nil, work(tx)
@@ -102,7 +101,7 @@ func (s *Neo4jGraphStore) ExecuteWrite(ctx context.Context, work func(tx neo4j.M
 
 // ExecuteRead 在一个只读事务内执行 work 并返回其结果，供各服务的图谱读取适配器复用
 func (s *Neo4jGraphStore) ExecuteRead(ctx context.Context, work func(tx neo4j.ManagedTransaction) (any, error)) (any, error) {
-	session := s.driver.NewSession(ctx, neo4j.SessionConfig{DatabaseName: s.db})
+	session := s.NewSession(ctx, neo4j.SessionConfig{DatabaseName: s.db})
 	defer session.Close(ctx)
 	return session.ExecuteRead(ctx, func(tx neo4j.ManagedTransaction) (any, error) {
 		return work(tx)

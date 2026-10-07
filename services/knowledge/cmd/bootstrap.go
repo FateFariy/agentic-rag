@@ -2,7 +2,6 @@
 package main
 
 import (
-	"github.com/zeromicro/go-zero/rest"
 	"google.golang.org/grpc"
 
 	"github.com/swiftbit/know-agent/pkg/embedding"
@@ -16,42 +15,14 @@ import (
 	portconfig "github.com/swiftbit/know-agent/services/knowledge/internal/infrastructure/port/config"
 	"github.com/swiftbit/know-agent/services/knowledge/internal/infrastructure/port/gateway"
 	"github.com/swiftbit/know-agent/services/knowledge/internal/infrastructure/port/storage"
-	srvserver "github.com/swiftbit/know-agent/services/knowledge/internal/server"
+	"github.com/swiftbit/know-agent/services/knowledge/internal/server"
 	grpcserver "github.com/swiftbit/know-agent/services/knowledge/internal/trigger/grpc"
 	"github.com/swiftbit/know-agent/services/knowledge/internal/trigger/handler"
 )
 
-// App 承载 knowledge 服务：聚合运行 Server（HTTP + gRPC）与 gRPC 注册回调
-// （后者供 app 包测试入口复用）。
-type App struct {
-	srv *srvserver.Server
-
-	registerGRPC func(*grpc.Server)
-}
-
-// HTTPServer 返回仅注册 knowledge 路由的 HTTP 服务。
-func (a *App) HTTPServer() *rest.Server {
-	return a.srv.HTTP
-}
-
-// RegisterGRPC 向指定 gRPC server 注册 knowledge 服务。
-func (a *App) RegisterGRPC(s *grpc.Server) {
-	a.registerGRPC(s)
-}
-
-// Start 经聚合 Server 启动 gRPC 与 HTTP 服务（阻塞）。
-func (a *App) Start() {
-	a.srv.Start()
-}
-
-// Stop 停止 HTTP 服务。
-func (a *App) Stop() {
-	a.srv.Stop()
-}
-
 // Build 按 knowledge 微服务自有资源完成装配。documentClient 为调用 document
 // 服务的 gRPC 客户端，由 cmd 或公开装配入口（services/knowledge/app）注入。
-func Build(c *config.Config, documentClient *gateway.KnowledgeDocumentClient) *App {
+func Build(c *config.Config, documentClient *gateway.KnowledgeDocumentClient) *server.Server {
 	// 1. knowledge 自有基础设施（仅 MySQL + Embedder + 词法桩 + 本地配置）
 	db := infra.NewDB(c.Mysql)
 	embedder := embedding.NewOllamaEmbedder(c.Embedding)
@@ -82,9 +53,8 @@ func Build(c *config.Config, documentClient *gateway.KnowledgeDocumentClient) *A
 	}
 
 	// 6. 装配聚合 HTTP + gRPC Server
-	httpServer := srvserver.NewHTTPServer(c.Http, knowledgeService)
-	rpcServer := srvserver.NewRPCServer(c.Grpc.KnowledgeRpc, registerGRPC)
-	agg := srvserver.NewServer(httpServer, rpcServer)
+	httpServer := server.NewHTTPServer(c.Http, knowledgeService)
+	rpcServer := server.NewRPCServer(c.Grpc.KnowledgeRpc, registerGRPC)
 
-	return &App{srv: agg, registerGRPC: registerGRPC}
+	return server.NewServer(httpServer, rpcServer)
 }

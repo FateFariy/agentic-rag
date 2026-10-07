@@ -2,6 +2,7 @@ package infra
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/milvus-io/milvus/client/v2/milvusclient"
 )
@@ -16,10 +17,14 @@ type MilvusConf struct {
 }
 
 // NewMilvusClient 创建并返回一个 Milvus 客户端连接。
-func NewMilvusClient(ctx context.Context, c MilvusConf) (*milvusclient.Client, error) {
-	return milvusclient.New(ctx, &milvusclient.ClientConfig{
+func NewMilvusClient(ctx context.Context, c MilvusConf) *milvusclient.Client {
+	client, err := milvusclient.New(ctx, &milvusclient.ClientConfig{
 		Address:  c.Addr,
 		Username: c.Username,
 		Password: c.Password,
 	})
+	if err != nil {
+		panic(fmt.Errorf("init milvus client: %w", err))
+	}
+	return client
 }

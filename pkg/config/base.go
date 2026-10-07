@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/zeromicro/go-zero/core/conf"
-	"github.com/zeromicro/go-zero/core/stores/cache"
 	"github.com/zeromicro/go-zero/rest"
 	"github.com/zeromicro/go-zero/zrpc"
 
@@ -26,7 +25,7 @@ type BaseConfig struct {
 	Http       rest.RestConf
 	Auth       AuthConf
 	Mysql      infra.MySQLCon
-	Redis      cache.CacheConf
+	Redis      infra.RedisConf
 	Minio      infra.MinioConf
 	Neo4j      infra.Neo4jConf
 	MQ         infra.MQConfig
