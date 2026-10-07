@@ -1,0 +1,170 @@
+syntax = "proto3";
+
+package knowledge.v1;
+
+option go_package = "github.com/swiftbit/know-agent/pkg/grpc/gen/knowledge/v1;knowledgev1";
+
+import "google/protobuf/empty.proto";
+import "proto/document/v1/document.proto";
+
+// KnowledgeBase 知识库元信息（跨服务只传递 id 与 base_name 等关键字段）
+message KnowledgeBase {
+  int64 id = 1;
+  string base_name = 2;
+  string description = 3;
+  string embedding_model = 4;
+  string retrieval_config_json = 5;
+  string graph_rag_config_json = 6;
+  string raptor_config_json = 7;
+  string metadata_filter_json = 8;
+  int32 is_default = 9;
+  int32 sort_order = 10;
+}
+
+// HybridOptions 混合检索权重
+message HybridOptions {
+  double vector_weight = 1;
+  double keyword_weight = 2;
+  double table_weight = 3;
+  double graph_rag_weight = 4;
+  double raptor_weight = 5;
+  double rank_weight = 6;
+  double original_score_weight = 7;
+  double metadata_boost_weight = 8;
+  double max_metadata_boost = 9;
+}
+
+// RagRuntimeOptions RAG 运行时参数
+message RagRuntimeOptions {
+  int32 vector_top_k = 1;
+  int32 keyword_top_k = 2;
+  int32 graph_rag_top_k = 3;
+  int32 graph_rag_max_hops = 4;
+  int32 raptor_top_k = 5;
+  int32 raptor_source_chunk_top_k = 6;
+  int32 candidate_top_k = 7;
+  int32 rerank_candidate_top_k = 8;
+  int32 final_top_k = 9;
+  bool rerank_enabled = 10;
+  int64 channel_timeout_ms = 11;
+  int64 sub_question_timeout_ms = 12;
+  double min_vector_similarity = 13;
+  double keyword_relative_score_floor = 14;
+  bool keyword_channel_enabled = 15;
+  bool table_channel_enabled = 16;
+  bool graph_rag_channel_enabled = 17;
+  bool raptor_channel_enabled = 18;
+  HybridOptions hybrid = 19;
+  repeated string kb_config_conflict_fields = 20;
+}
+
+// KnowledgeBaseSelectionSnapshot 知识库选择快照
+message KnowledgeBaseSelectionSnapshot {
+  string selection_mode = 1;
+  repeated int64 selected_knowledge_base_ids = 2;
+  repeated string selected_knowledge_base_names = 3;
+  repeated KnowledgeBase selected_knowledge_bases = 4;
+  repeated document.v1.DocumentMetadata allowed_documents = 5;
+  RagRuntimeOptions rag_runtime_options = 6;
+}
+
+message ScopeRouteCandidate {
+  int64 scope_id = 1;
+  string scope_name = 2;
+  double score = 3;
+  string reason = 4;
+  string source = 5;
+  map<string, double> features = 6;
+}
+message TopicRouteCandidate {
+  int64 topic_id = 1;
+  string topic_name = 2;
+  int64 scope_id = 3;
+  double score = 4;
+  string reason = 5;
+  string source = 6;
+  map<string, double> features = 7;
+}
+message DocumentRouteCandidate {
+  int64 document_id = 1;
+  string document_name = 2;
+  int64 last_index_task_id = 3;
+  double score = 4;
+  string reason = 5;
+  string source = 6;
+  map<string, double> features = 7;
+}
+message KnowledgeRouteDecision {
+  repeated ScopeRouteCandidate scopes = 1;
+  repeated TopicRouteCandidate topics = 2;
+  repeated DocumentRouteCandidate documents = 3;
+  double confidence = 4;
+  string route_status = 5;
+  string reason = 6;
+  string source = 7;
+  bool degraded = 8;
+  repeated string degraded_reasons = 9;
+}
+
+// KnowledgeRouteInput 路由决策输入
+message KnowledgeRouteInput {
+  string conversation_id = 1;
+  int64 exchange_id = 2;
+  string question = 3;
+  string rewrite_question = 4;
+  string knowledge_base_selection_mode = 5;
+  int64 selected_document_id = 6;
+  repeated int64 selected_knowledge_base_ids = 7;
+  repeated string selected_knowledge_base_names = 8;
+  repeated int64 allowed_document_ids = 9;
+}
+
+message DetermineKnowledgeScopeRequest {
+  string select_mode = 1;
+  repeated string kb_ids = 2;
+}
+message RouteRequest { KnowledgeRouteInput input = 1; }
+message RecordShadowRouteRequest { KnowledgeRouteInput input = 1; }
+message ResolveRequest { int64 knowledge_base_id = 1; }
+message RequireEnabledRequest { int64 knowledge_base_id = 1; }
+message GraphTypesRequest { int64 knowledge_base_id = 1; }
+
+message IndexingOptions {
+  ChunkOptions chunk = 1;
+  GraphRagBuildOptions graph_rag = 2;
+  RaptorBuildOptions raptor = 3;
+}
+message ChunkOptions {
+  int32 child_recursive_max_chars = 1;
+  int32 child_recursive_overlap_chars = 2;
+  int32 child_semantic_max_chars = 3;
+  int32 child_semantic_min_chars = 4;
+  double child_semantic_similarity_threshold = 5;
+  int32 parent_chunk_max_chars = 6;
+  int32 parent_chunk_overlap_chars = 7;
+  int32 parent_semantic_max_chars = 8;
+  int32 parent_semantic_min_chars = 9;
+}
+message GraphRagBuildOptions { bool graph_rag_build_enabled = 1; }
+message RaptorBuildOptions {
+  bool raptor_build_enabled = 1;
+  int32 raptor_max_cluster_size = 2;
+  int32 raptor_max_levels = 3;
+  bool raptor_llm_summary_enabled = 4;
+  double raptor_summary_quality_floor = 5;
+}
+message RequireEnabledResponse { KnowledgeBase knowledge_base = 1; }
+message GraphTypesResponse {
+  repeated string entity_types = 1;
+  repeated string relation_types = 2;
+}
+
+// KnowledgeService 知识库域对外提供的跨服务调用契约
+service KnowledgeService {
+  rpc DetermineKnowledgeScope(DetermineKnowledgeScopeRequest) returns (KnowledgeBaseSelectionSnapshot);
+  rpc Route(RouteRequest) returns (KnowledgeRouteDecision);
+  rpc RecordShadowRoute(RecordShadowRouteRequest) returns (google.protobuf.Empty);
+  rpc Resolve(ResolveRequest) returns (IndexingOptions);
+  rpc RequireEnabled(RequireEnabledRequest) returns (RequireEnabledResponse);
+  rpc GraphTypes(GraphTypesRequest) returns (GraphTypesResponse);
+}

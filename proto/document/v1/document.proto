@@ -1,0 +1,113 @@
+syntax = "proto3";
+
+package document.v1;
+
+option go_package = "github.com/swiftbit/know-agent/pkg/grpc/gen/document/v1;documentv1";
+
+import "google/protobuf/struct.proto";
+
+// DocumentMetadata 文档元信息（chat 与 knowledge 两侧的字段完全一致）
+message DocumentMetadata {
+  int64 document_id = 1;
+  string document_name = 2;
+  int64 knowledge_base_id = 3;
+  string knowledge_base_name = 4;
+  int64 last_index_task_id = 5;
+}
+
+// DocumentChunk 检索/召回的文档块
+message DocumentChunk {
+  string id = 1;
+  double score = 2;
+  string content = 3;
+  string source_type = 4;
+  string channel = 5;
+  int64 task_id = 6;
+  int64 parent_chunk_id = 7;
+  int64 document_id = 8;
+  int32 chunk_no = 9;
+  string section_path = 10;
+  int64 structure_node_id = 11;
+  int32 structure_node_type = 12;
+  string canonical_path = 13;
+  int32 item_index = 14;
+  string original_snippet = 15;
+  string document_name = 16;
+  int64 knowledge_base_id = 17;
+  string knowledge_base_name = 18;
+  int32 is_elevated = 19;
+  double metadata_boost = 20;
+  double normalized_score = 21;
+  double rrf_score = 22;
+  double rerank_score = 23;
+  int32 parent_chunk_no = 24;
+  string title = 25;
+  string url = 26;
+  string tool_name = 27;
+  string rerank_model = 28;
+  string rerank_query = 29;
+  int64 rerank_duration_ms = 30;
+  int32 rerank_original_index = 31;
+  google.protobuf.Struct extra = 32;
+}
+
+// GraphSection 结构图章节节点
+message GraphSection {
+  int64 node_id = 1;
+  int64 document_id = 2;
+  int64 parse_task_id = 3;
+  int32 node_no = 4;
+  int32 depth = 5;
+  int64 parent_node_id = 6;
+  int64 prev_sibling_node_id = 7;
+  int64 next_sibling_node_id = 8;
+  string node_code = 9;
+  string title = 10;
+  string anchor_text = 11;
+  string section_path = 12;
+  string canonical_path = 13;
+  string content_text = 14;
+}
+
+// DocumentProfile 文档画像
+message DocumentProfile {
+  int64 document_id = 1;
+  string document_summary = 2;
+  string core_topics = 3;
+  string example_questions = 4;
+  string document_type = 5;
+}
+
+// Int64CountMap 知识库 ID -> 计数的映射
+message Int64CountMap {
+  map<int64, int64> counts = 1;
+}
+
+message DocumentMetadataList { repeated DocumentMetadata items = 1; }
+message DocumentChunkList { repeated DocumentChunk items = 1; }
+message GraphSectionList { repeated GraphSection items = 1; }
+message DocumentProfileList { repeated DocumentProfile items = 1; }
+message GraphSectionOrEmpty { GraphSection section = 1; }
+
+message FindRetrievableByKbIdsRequest { repeated int64 kb_ids = 1; }
+message FindRetrieveDocumentByIdsRequest { repeated int64 ids = 1; }
+message FindParentChunksRequest { repeated int64 ids = 1; }
+message ListSectionsRequest { int64 document_id = 1; }
+message FindSectionByIdRequest { int64 document_id = 1; int64 node_id = 2; }
+message FindSectionByCodeRequest { int64 document_id = 1; string section_code = 2; }
+message CountByKbIdsRequest { repeated int64 kb_ids = 1; }
+message FindDocumentProfilesRequest {}
+
+// DocumentService 文档域对外提供的跨服务调用契约
+service DocumentService {
+  rpc FindRetrievableByKbIds(FindRetrievableByKbIdsRequest) returns (DocumentMetadataList);
+  rpc FindRetrieveDocumentByIds(FindRetrieveDocumentByIdsRequest) returns (DocumentMetadataList);
+  rpc FindParentChunks(FindParentChunksRequest) returns (DocumentChunkList);
+  rpc ListSections(ListSectionsRequest) returns (GraphSectionList);
+  rpc FindSectionById(FindSectionByIdRequest) returns (GraphSectionOrEmpty);
+  rpc FindSectionByCode(FindSectionByCodeRequest) returns (GraphSectionOrEmpty);
+  rpc CountDocumentsByKbIds(CountByKbIdsRequest) returns (Int64CountMap);
+  rpc CountRetrievableDocumentsByKbIds(CountByKbIdsRequest) returns (Int64CountMap);
+  rpc FindDocumentProfileByDocIds(FindRetrieveDocumentByIdsRequest) returns (DocumentProfileList);
+  rpc FindDocumentProfiles(FindDocumentProfilesRequest) returns (DocumentProfileList);
+}
