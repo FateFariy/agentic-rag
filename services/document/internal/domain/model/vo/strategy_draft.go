@@ -24,7 +24,6 @@ type DocumentStrategyPlanDraft struct {
 type DocumentStrategyStepDraft struct {
 	PipelineType    string // 流水线类型
 	StrategyType    int    // 策略类型
-	StrategyRole    int    // 策略角色
 	SourceType      int    // 来源类型
 	RecommendReason string // 推荐理由
 }

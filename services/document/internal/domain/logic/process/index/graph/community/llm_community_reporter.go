@@ -5,9 +5,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/swiftbit/know-agent/pkg/ai"
 	"github.com/swiftbit/know-agent/pkg/utils"
-	"github.com/swiftbit/know-agent/services/document/internal/domain/adapter"
-	"github.com/swiftbit/know-agent/services/document/internal/domain/adapter/model"
 	"github.com/swiftbit/know-agent/services/document/internal/domain/model/entity"
 	"github.com/swiftbit/know-agent/services/document/internal/domain/model/enum"
 )
@@ -20,12 +19,12 @@ const (
 // LLMCommunityReporter M3：基于 LLM 的社区报告生成器。
 // 社区报告为效果增强：生成失败时由 builder 回退抽取式摘要，不阻断图谱构建。
 type LLMCommunityReporter struct {
-	chatModel model.ChatModel
-	renderer  adapter.PromptRenderer
+	chatModel ai.ChatModel
+	renderer  ai.PromptRenderer
 }
 
 // NewLLMCommunityReporter 创建 LLM 社区报告器
-func NewLLMCommunityReporter(chatModel model.ChatModel, renderer adapter.PromptRenderer) *LLMCommunityReporter {
+func NewLLMCommunityReporter(chatModel ai.ChatModel, renderer ai.PromptRenderer) *LLMCommunityReporter {
 	return &LLMCommunityReporter{chatModel: chatModel, renderer: renderer}
 }
 

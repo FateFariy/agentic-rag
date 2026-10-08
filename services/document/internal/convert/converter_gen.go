@@ -6,15 +6,15 @@ package convert
 import (
 	"time"
 
-	common "github.com/swiftbit/know-agent/common"
-	document "github.com/swiftbit/know-agent/services/document/api"
+	"github.com/swiftbit/know-agent/pkg/common"
+	api "github.com/swiftbit/know-agent/services/document/api"
 	aggregate "github.com/swiftbit/know-agent/services/document/internal/domain/model/aggregate"
 	entity "github.com/swiftbit/know-agent/services/document/internal/domain/model/entity"
 	vo "github.com/swiftbit/know-agent/services/document/internal/domain/model/vo"
 	model "github.com/swiftbit/know-agent/services/document/internal/infrastructure/persistence/model"
 )
 
-func FromConfirmStrategyReq(source *document.ConfirmStrategyReq) *vo.DocumentStrategyConfirmCmd {
+func FromConfirmStrategyReq(source *api.ConfirmStrategyReq) *vo.DocumentStrategyConfirmCmd {
 	var pVoDocumentStrategyConfirmCmd *vo.DocumentStrategyConfirmCmd
 	if source != nil {
 		var voDocumentStrategyConfirmCmd vo.DocumentStrategyConfirmCmd
@@ -25,20 +25,20 @@ func FromConfirmStrategyReq(source *document.ConfirmStrategyReq) *vo.DocumentStr
 		if (*source).ParentSteps != nil {
 			voDocumentStrategyConfirmCmd.ParentSteps = make([]*vo.DocumentStrategyStepItem, len((*source).ParentSteps))
 			for i := 0; i < len((*source).ParentSteps); i++ {
-				voDocumentStrategyConfirmCmd.ParentSteps[i] = pDocumentStrategyStepItemToPVoDocumentStrategyStepItem((*source).ParentSteps[i])
+				voDocumentStrategyConfirmCmd.ParentSteps[i] = pApiStrategyStepItemToPVoDocumentStrategyStepItem((*source).ParentSteps[i])
 			}
 		}
 		if (*source).ChildSteps != nil {
 			voDocumentStrategyConfirmCmd.ChildSteps = make([]*vo.DocumentStrategyStepItem, len((*source).ChildSteps))
 			for j := 0; j < len((*source).ChildSteps); j++ {
-				voDocumentStrategyConfirmCmd.ChildSteps[j] = pDocumentStrategyStepItemToPVoDocumentStrategyStepItem((*source).ChildSteps[j])
+				voDocumentStrategyConfirmCmd.ChildSteps[j] = pApiStrategyStepItemToPVoDocumentStrategyStepItem((*source).ChildSteps[j])
 			}
 		}
 		pVoDocumentStrategyConfirmCmd = &voDocumentStrategyConfirmCmd
 	}
 	return pVoDocumentStrategyConfirmCmd
 }
-func FromUploadDocumentReq(source *document.UploadDocumentReq) *entity.Document {
+func FromUploadDocumentReq(source *api.UploadDocumentReq) *entity.Document {
 	var pEntityDocument *entity.Document
 	if source != nil {
 		var entityDocument entity.Document
@@ -49,35 +49,35 @@ func FromUploadDocumentReq(source *document.UploadDocumentReq) *entity.Document 
 	}
 	return pEntityDocument
 }
-func ToBuildIndexResp(source *vo.DocumentIndexBuild) *document.BuildIndexResp {
-	var pDocumentBuildIndexResp *document.BuildIndexResp
+func ToBuildIndexResp(source *vo.DocumentIndexBuild) *api.BuildIndexResp {
+	var pApiBuildIndexResp *api.BuildIndexResp
 	if source != nil {
-		var documentBuildIndexResp document.BuildIndexResp
-		documentBuildIndexResp.TaskId = Int64ToString((*source).TaskId)
-		documentBuildIndexResp.DocumentId = Int64ToString((*source).DocumentId)
-		documentBuildIndexResp.TaskType = (*source).TaskType
-		documentBuildIndexResp.TaskTypeName = (*source).TaskTypeName
-		documentBuildIndexResp.TaskStatus = (*source).TaskStatus
-		documentBuildIndexResp.TaskStatusName = (*source).TaskStatusName
-		documentBuildIndexResp.IndexStatus = (*source).IndexStatus
-		documentBuildIndexResp.IndexStatusName = (*source).IndexStatusName
-		pDocumentBuildIndexResp = &documentBuildIndexResp
+		var apiBuildIndexResp api.BuildIndexResp
+		apiBuildIndexResp.TaskId = Int64ToString((*source).TaskId)
+		apiBuildIndexResp.DocumentId = Int64ToString((*source).DocumentId)
+		apiBuildIndexResp.TaskType = (*source).TaskType
+		apiBuildIndexResp.TaskTypeName = (*source).TaskTypeName
+		apiBuildIndexResp.TaskStatus = (*source).TaskStatus
+		apiBuildIndexResp.TaskStatusName = (*source).TaskStatusName
+		apiBuildIndexResp.IndexStatus = (*source).IndexStatus
+		apiBuildIndexResp.IndexStatusName = (*source).IndexStatusName
+		pApiBuildIndexResp = &apiBuildIndexResp
 	}
-	return pDocumentBuildIndexResp
+	return pApiBuildIndexResp
 }
-func ToConfirmStrategyResp(source *entity.DocumentStrategyPlan) *document.ConfirmStrategyResp {
-	var pDocumentConfirmStrategyResp *document.ConfirmStrategyResp
+func ToConfirmStrategyResp(source *entity.DocumentStrategyPlan) *api.ConfirmStrategyResp {
+	var pApiConfirmStrategyResp *api.ConfirmStrategyResp
 	if source != nil {
-		var documentConfirmStrategyResp document.ConfirmStrategyResp
-		documentConfirmStrategyResp.ID = Int64ToString((*source).ID)
-		documentConfirmStrategyResp.DocumentId = Int64ToString((*source).DocumentId)
-		documentConfirmStrategyResp.PlanVersion = (*source).PlanVersion
-		documentConfirmStrategyResp.Normalized = (*source).Normalized
-		documentConfirmStrategyResp.ParentPipeline = pEntityDocumentStrategyPipelineToPDocumentDocumentStrategyPipeline((*source).ParentPipeline)
-		documentConfirmStrategyResp.ChildPipeline = pEntityDocumentStrategyPipelineToPDocumentDocumentStrategyPipeline((*source).ChildPipeline)
-		pDocumentConfirmStrategyResp = &documentConfirmStrategyResp
+		var apiConfirmStrategyResp api.ConfirmStrategyResp
+		apiConfirmStrategyResp.ID = Int64ToString((*source).ID)
+		apiConfirmStrategyResp.DocumentId = Int64ToString((*source).DocumentId)
+		apiConfirmStrategyResp.PlanVersion = (*source).PlanVersion
+		apiConfirmStrategyResp.Normalized = (*source).Normalized
+		apiConfirmStrategyResp.ParentPipeline = pEntityDocumentStrategyPipelineToPApiDocumentStrategyPipeline((*source).ParentPipeline)
+		apiConfirmStrategyResp.ChildPipeline = pEntityDocumentStrategyPipelineToPApiDocumentStrategyPipeline((*source).ChildPipeline)
+		pApiConfirmStrategyResp = &apiConfirmStrategyResp
 	}
-	return pDocumentConfirmStrategyResp
+	return pApiConfirmStrategyResp
 }
 func ToDocumentBlockModel(source *entity.DocumentBlock) *model.DocumentBlock {
 	var pModelDocumentBlock *model.DocumentBlock
@@ -96,7 +96,6 @@ func ToDocumentBlockModel(source *entity.DocumentBlock) *model.DocumentBlock {
 		modelDocumentBlock.BboxJson = (*source).BboxJson
 		modelDocumentBlock.Text = (*source).Text
 		modelDocumentBlock.ContentWithWeight = (*source).ContentWithWeight
-		modelDocumentBlock.TableHTML = (*source).TableHTML
 		modelDocumentBlock.ImageObjectName = (*source).ImageObjectName
 		modelDocumentBlock.ImageCaption = (*source).ImageCaption
 		modelDocumentBlock.Metadata = (*source).Metadata
@@ -114,15 +113,15 @@ func ToDocumentBlockModelList(source []*entity.DocumentBlock) []*model.DocumentB
 	}
 	return pModelDocumentBlockList
 }
-func ToDocumentChunkItemList(source []*entity.DocumentChunk) []*document.DocumentChunkItem {
-	var pDocumentDocumentChunkItemList []*document.DocumentChunkItem
+func ToDocumentChunkItemList(source []*entity.DocumentChunk) []*api.DocumentChunkItem {
+	var pApiDocumentChunkItemList []*api.DocumentChunkItem
 	if source != nil {
-		pDocumentDocumentChunkItemList = make([]*document.DocumentChunkItem, len(source))
+		pApiDocumentChunkItemList = make([]*api.DocumentChunkItem, len(source))
 		for i := 0; i < len(source); i++ {
-			pDocumentDocumentChunkItemList[i] = pEntityDocumentChunkToPDocumentDocumentChunkItem(source[i])
+			pApiDocumentChunkItemList[i] = pEntityDocumentChunkToPApiDocumentChunkItem(source[i])
 		}
 	}
-	return pDocumentDocumentChunkItemList
+	return pApiDocumentChunkItemList
 }
 func ToDocumentChunkModel(source *entity.DocumentChunk) *model.DocumentChunk {
 	var pModelDocumentChunk *model.DocumentChunk
@@ -169,49 +168,49 @@ func ToDocumentChunkModelList(source []*entity.DocumentChunk) []*model.DocumentC
 	}
 	return pModelDocumentChunkList
 }
-func ToDocumentDetailResp(source *entity.Document) *document.DocumentDetailResp {
-	var pDocumentDocumentDetailResp *document.DocumentDetailResp
+func ToDocumentDetailResp(source *entity.Document) *api.DocumentDetailResp {
+	var pApiDocumentDetailResp *api.DocumentDetailResp
 	if source != nil {
-		var documentDocumentDetailResp document.DocumentDetailResp
-		documentDocumentDetailResp.ID = Int64ToString((*source).ID)
-		documentDocumentDetailResp.DocumentName = (*source).DocumentName
-		documentDocumentDetailResp.OriginalFileName = (*source).OriginalFileName
-		documentDocumentDetailResp.FileType = (*source).FileType
-		documentDocumentDetailResp.FileTypeName = (*source).FileTypeName
-		documentDocumentDetailResp.FileSize = (*source).FileSize
-		documentDocumentDetailResp.CharCount = (*source).CharCount
-		documentDocumentDetailResp.TokenCount = (*source).TokenCount
-		documentDocumentDetailResp.ParseStatus = (*source).ParseStatus
-		documentDocumentDetailResp.ParseStatusName = (*source).ParseStatusName
-		documentDocumentDetailResp.StrategyStatus = (*source).StrategyStatus
-		documentDocumentDetailResp.StrategyStatusName = (*source).StrategyStatusName
-		documentDocumentDetailResp.IndexStatus = (*source).IndexStatus
-		documentDocumentDetailResp.IndexStatusName = (*source).IndexStatusName
+		var apiDocumentDetailResp api.DocumentDetailResp
+		apiDocumentDetailResp.ID = Int64ToString((*source).ID)
+		apiDocumentDetailResp.DocumentName = (*source).DocumentName
+		apiDocumentDetailResp.OriginalFileName = (*source).OriginalFileName
+		apiDocumentDetailResp.FileType = (*source).FileType
+		apiDocumentDetailResp.FileTypeName = (*source).FileTypeName
+		apiDocumentDetailResp.FileSize = (*source).FileSize
+		apiDocumentDetailResp.CharCount = (*source).CharCount
+		apiDocumentDetailResp.TokenCount = (*source).TokenCount
+		apiDocumentDetailResp.ParseStatus = (*source).ParseStatus
+		apiDocumentDetailResp.ParseStatusName = (*source).ParseStatusName
+		apiDocumentDetailResp.StrategyStatus = (*source).StrategyStatus
+		apiDocumentDetailResp.StrategyStatusName = (*source).StrategyStatusName
+		apiDocumentDetailResp.IndexStatus = (*source).IndexStatus
+		apiDocumentDetailResp.IndexStatusName = (*source).IndexStatusName
 		if (*source).ParseErrorMsg != nil {
-			documentDocumentDetailResp.ParseErrorMsg = *(*source).ParseErrorMsg
+			apiDocumentDetailResp.ParseErrorMsg = *(*source).ParseErrorMsg
 		}
-		documentDocumentDetailResp.CurrentPlanId = Int64ToString((*source).CurrentPlanId)
-		documentDocumentDetailResp.LastIndexTaskId = Int64ToString((*source).LastIndexTaskId)
-		documentDocumentDetailResp.LatestTaskId = Int64ToString((*source).LatestTaskId)
-		documentDocumentDetailResp.LatestTaskType = (*source).LatestTaskType
-		documentDocumentDetailResp.LatestTaskTypeName = (*source).LatestTaskTypeName
-		documentDocumentDetailResp.LatestTaskStatus = (*source).LatestTaskStatus
-		documentDocumentDetailResp.LatestTaskStatusName = (*source).LatestTaskStatusName
-		documentDocumentDetailResp.CreateTime = TimeToString((*source).CreateTime)
-		documentDocumentDetailResp.UpdateTime = TimeToString((*source).UpdateTime)
-		pDocumentDocumentDetailResp = &documentDocumentDetailResp
+		apiDocumentDetailResp.CurrentPlanId = Int64ToString((*source).CurrentPlanId)
+		apiDocumentDetailResp.LastIndexTaskId = Int64ToString((*source).LastIndexTaskId)
+		apiDocumentDetailResp.LatestTaskId = Int64ToString((*source).LatestTaskId)
+		apiDocumentDetailResp.LatestTaskType = (*source).LatestTaskType
+		apiDocumentDetailResp.LatestTaskTypeName = (*source).LatestTaskTypeName
+		apiDocumentDetailResp.LatestTaskStatus = (*source).LatestTaskStatus
+		apiDocumentDetailResp.LatestTaskStatusName = (*source).LatestTaskStatusName
+		apiDocumentDetailResp.CreateTime = TimeToString((*source).CreateTime)
+		apiDocumentDetailResp.UpdateTime = TimeToString((*source).UpdateTime)
+		pApiDocumentDetailResp = &apiDocumentDetailResp
 	}
-	return pDocumentDocumentDetailResp
+	return pApiDocumentDetailResp
 }
-func ToDocumentDetailRespList(source []*entity.Document) []*document.DocumentDetailResp {
-	var pDocumentDocumentDetailRespList []*document.DocumentDetailResp
+func ToDocumentDetailRespList(source []*entity.Document) []*api.DocumentDetailResp {
+	var pApiDocumentDetailRespList []*api.DocumentDetailResp
 	if source != nil {
-		pDocumentDocumentDetailRespList = make([]*document.DocumentDetailResp, len(source))
+		pApiDocumentDetailRespList = make([]*api.DocumentDetailResp, len(source))
 		for i := 0; i < len(source); i++ {
-			pDocumentDocumentDetailRespList[i] = ToDocumentDetailResp(source[i])
+			pApiDocumentDetailRespList[i] = ToDocumentDetailResp(source[i])
 		}
 	}
-	return pDocumentDocumentDetailRespList
+	return pApiDocumentDetailRespList
 }
 func ToDocumentModel(source *entity.Document) *model.Document {
 	var pModelDocument *model.Document
@@ -307,55 +306,55 @@ func ToDocumentProfileModel(source *entity.DocumentProfile) *model.DocumentProfi
 	}
 	return pModelDocumentProfile
 }
-func ToDocumentProfileResp(source *entity.DocumentProfile) *document.DocumentProfileResp {
-	var pDocumentDocumentProfileResp *document.DocumentProfileResp
+func ToDocumentProfileResp(source *entity.DocumentProfile) *api.DocumentProfileResp {
+	var pApiDocumentProfileResp *api.DocumentProfileResp
 	if source != nil {
-		var documentDocumentProfileResp document.DocumentProfileResp
-		documentDocumentProfileResp.DocumentId = Int64ToString((*source).DocumentId)
-		documentDocumentProfileResp.DocumentSummary = (*source).DocumentSummary
-		documentDocumentProfileResp.DocumentType = (*source).DocumentType
-		documentDocumentProfileResp.CoreTopics = (*source).CoreTopics
-		documentDocumentProfileResp.ExampleQuestions = (*source).ExampleQuestions
-		documentDocumentProfileResp.GraphFriendly = (*source).GraphFriendly
-		documentDocumentProfileResp.SupportsGraphOutline = (*source).SupportsGraphOutline
-		documentDocumentProfileResp.SupportsItemLookup = (*source).SupportsItemLookup
-		documentDocumentProfileResp.SupportsGraphAssist = (*source).SupportsGraphAssist
-		documentDocumentProfileResp.ProfileSource = (*source).ProfileSource
-		documentDocumentProfileResp.ProfileStatus = (*source).ProfileStatus
+		var apiDocumentProfileResp api.DocumentProfileResp
+		apiDocumentProfileResp.DocumentId = Int64ToString((*source).DocumentId)
+		apiDocumentProfileResp.DocumentSummary = (*source).DocumentSummary
+		apiDocumentProfileResp.DocumentType = (*source).DocumentType
+		apiDocumentProfileResp.CoreTopics = (*source).CoreTopics
+		apiDocumentProfileResp.ExampleQuestions = (*source).ExampleQuestions
+		apiDocumentProfileResp.GraphFriendly = (*source).GraphFriendly
+		apiDocumentProfileResp.SupportsGraphOutline = (*source).SupportsGraphOutline
+		apiDocumentProfileResp.SupportsItemLookup = (*source).SupportsItemLookup
+		apiDocumentProfileResp.SupportsGraphAssist = (*source).SupportsGraphAssist
+		apiDocumentProfileResp.ProfileSource = (*source).ProfileSource
+		apiDocumentProfileResp.ProfileStatus = (*source).ProfileStatus
 		if (*source).ErrorMsg != nil {
-			documentDocumentProfileResp.ErrorMsg = *(*source).ErrorMsg
+			apiDocumentProfileResp.ErrorMsg = *(*source).ErrorMsg
 		}
-		pDocumentDocumentProfileResp = &documentDocumentProfileResp
+		pApiDocumentProfileResp = &apiDocumentProfileResp
 	}
-	return pDocumentDocumentProfileResp
+	return pApiDocumentProfileResp
 }
-func ToDocumentProfileRespList(source []*entity.DocumentProfile) []*document.DocumentProfileResp {
-	var pDocumentDocumentProfileRespList []*document.DocumentProfileResp
+func ToDocumentProfileRespList(source []*entity.DocumentProfile) []*api.DocumentProfileResp {
+	var pApiDocumentProfileRespList []*api.DocumentProfileResp
 	if source != nil {
-		pDocumentDocumentProfileRespList = make([]*document.DocumentProfileResp, len(source))
+		pApiDocumentProfileRespList = make([]*api.DocumentProfileResp, len(source))
 		for i := 0; i < len(source); i++ {
-			pDocumentDocumentProfileRespList[i] = ToDocumentProfileResp(source[i])
+			pApiDocumentProfileRespList[i] = ToDocumentProfileResp(source[i])
 		}
 	}
-	return pDocumentDocumentProfileRespList
+	return pApiDocumentProfileRespList
 }
-func ToDocumentStrategyPlan(source *entity.DocumentStrategyPlan) *document.DocumentStrategyPlan {
-	var pDocumentDocumentStrategyPlan *document.DocumentStrategyPlan
+func ToDocumentStrategyPlan(source *entity.DocumentStrategyPlan) *api.DocumentStrategyPlan {
+	var pApiDocumentStrategyPlan *api.DocumentStrategyPlan
 	if source != nil {
-		var documentDocumentStrategyPlan document.DocumentStrategyPlan
-		documentDocumentStrategyPlan.ID = Int64ToString((*source).ID)
-		documentDocumentStrategyPlan.PlanVersion = (*source).PlanVersion
-		documentDocumentStrategyPlan.PlanSource = (*source).PlanSource
-		documentDocumentStrategyPlan.PlanSourceName = (*source).PlanSourceName
-		documentDocumentStrategyPlan.PlanStatus = (*source).PlanStatus
-		documentDocumentStrategyPlan.PlanStatusName = (*source).PlanStatusName
-		documentDocumentStrategyPlan.StrategySnapshot = (*source).StrategySnapshot
-		documentDocumentStrategyPlan.RecommendReason = (*source).RecommendReason
-		documentDocumentStrategyPlan.ParentPipeline = pEntityDocumentStrategyPipelineToPDocumentDocumentStrategyPipeline((*source).ParentPipeline)
-		documentDocumentStrategyPlan.ChildPipeline = pEntityDocumentStrategyPipelineToPDocumentDocumentStrategyPipeline((*source).ChildPipeline)
-		pDocumentDocumentStrategyPlan = &documentDocumentStrategyPlan
+		var apiDocumentStrategyPlan api.DocumentStrategyPlan
+		apiDocumentStrategyPlan.ID = Int64ToString((*source).ID)
+		apiDocumentStrategyPlan.PlanVersion = (*source).PlanVersion
+		apiDocumentStrategyPlan.PlanSource = (*source).PlanSource
+		apiDocumentStrategyPlan.PlanSourceName = (*source).PlanSourceName
+		apiDocumentStrategyPlan.PlanStatus = (*source).PlanStatus
+		apiDocumentStrategyPlan.PlanStatusName = (*source).PlanStatusName
+		apiDocumentStrategyPlan.StrategySnapshot = (*source).StrategySnapshot
+		apiDocumentStrategyPlan.RecommendReason = (*source).RecommendReason
+		apiDocumentStrategyPlan.ParentPipeline = pEntityDocumentStrategyPipelineToPApiDocumentStrategyPipeline((*source).ParentPipeline)
+		apiDocumentStrategyPlan.ChildPipeline = pEntityDocumentStrategyPipelineToPApiDocumentStrategyPipeline((*source).ChildPipeline)
+		pApiDocumentStrategyPlan = &apiDocumentStrategyPlan
 	}
-	return pDocumentDocumentStrategyPlan
+	return pApiDocumentStrategyPlan
 }
 func ToDocumentStrategyPlanModel(source *entity.DocumentStrategyPlan) *model.DocumentStrategyPlan {
 	var pModelDocumentStrategyPlan *model.DocumentStrategyPlan
@@ -386,7 +385,6 @@ func ToDocumentStrategyStepModel(source *entity.DocumentStrategyStep) *model.Doc
 		modelDocumentStrategyStep.StepNo = (*source).StepNo
 		modelDocumentStrategyStep.PipelineType = (*source).PipelineType
 		modelDocumentStrategyStep.StrategyType = (*source).StrategyType
-		modelDocumentStrategyStep.StrategyRole = (*source).StrategyRole
 		modelDocumentStrategyStep.SourceType = (*source).SourceType
 		modelDocumentStrategyStep.ExecuteStatus = (*source).ExecuteStatus
 		modelDocumentStrategyStep.RecommendReason = (*source).RecommendReason
@@ -449,117 +447,6 @@ func ToDocumentStructureNodeModelList(source []*entity.StructureNode) []*model.D
 	}
 	return pModelDocumentStructureNodeList
 }
-func ToDocumentTableCellModel(source *entity.TableCell) *model.DocumentTableCell {
-	var pModelDocumentTableCell *model.DocumentTableCell
-	if source != nil {
-		var modelDocumentTableCell model.DocumentTableCell
-		modelDocumentTableCell.Model = entityTableCellToCommonModel((*source))
-		modelDocumentTableCell.DocumentId = (*source).DocumentId
-		modelDocumentTableCell.TaskId = (*source).TaskId
-		modelDocumentTableCell.TableId = (*source).TableId
-		modelDocumentTableCell.RowId = (*source).RowId
-		modelDocumentTableCell.ColumnId = (*source).ColumnId
-		modelDocumentTableCell.RowNo = (*source).RowNo
-		modelDocumentTableCell.ColumnNo = (*source).ColumnNo
-		modelDocumentTableCell.CellText = (*source).CellText
-		modelDocumentTableCell.NumericValue = (*source).NumericValue
-		modelDocumentTableCell.SourceRowNo = (*source).SourceRowNo
-		modelDocumentTableCell.SourceColumnNo = (*source).SourceColumnNo
-		modelDocumentTableCell.SourceCellRef = (*source).SourceCellRef
-		pModelDocumentTableCell = &modelDocumentTableCell
-	}
-	return pModelDocumentTableCell
-}
-func ToDocumentTableCellModelList(source []*entity.TableCell) []*model.DocumentTableCell {
-	var pModelDocumentTableCellList []*model.DocumentTableCell
-	if source != nil {
-		pModelDocumentTableCellList = make([]*model.DocumentTableCell, len(source))
-		for i := 0; i < len(source); i++ {
-			pModelDocumentTableCellList[i] = ToDocumentTableCellModel(source[i])
-		}
-	}
-	return pModelDocumentTableCellList
-}
-func ToDocumentTableColumnModel(source *entity.TableColumn) *model.DocumentTableColumn {
-	var pModelDocumentTableColumn *model.DocumentTableColumn
-	if source != nil {
-		var modelDocumentTableColumn model.DocumentTableColumn
-		modelDocumentTableColumn.Model = entityTableColumnToCommonModel((*source))
-		modelDocumentTableColumn.DocumentId = (*source).DocumentId
-		modelDocumentTableColumn.TaskId = (*source).TaskId
-		modelDocumentTableColumn.TableId = (*source).TableId
-		modelDocumentTableColumn.ColumnNo = (*source).ColumnNo
-		modelDocumentTableColumn.ColumnName = (*source).ColumnName
-		modelDocumentTableColumn.NormalizedName = (*source).NormalizedName
-		modelDocumentTableColumn.ValueType = (*source).ValueType
-		pModelDocumentTableColumn = &modelDocumentTableColumn
-	}
-	return pModelDocumentTableColumn
-}
-func ToDocumentTableColumnModelList(source []*entity.TableColumn) []*model.DocumentTableColumn {
-	var pModelDocumentTableColumnList []*model.DocumentTableColumn
-	if source != nil {
-		pModelDocumentTableColumnList = make([]*model.DocumentTableColumn, len(source))
-		for i := 0; i < len(source); i++ {
-			pModelDocumentTableColumnList[i] = ToDocumentTableColumnModel(source[i])
-		}
-	}
-	return pModelDocumentTableColumnList
-}
-func ToDocumentTableModel(source *entity.DocumentTable) *model.DocumentTable {
-	var pModelDocumentTable *model.DocumentTable
-	if source != nil {
-		var modelDocumentTable model.DocumentTable
-		modelDocumentTable.Model = entityDocumentTableToCommonModel((*source))
-		modelDocumentTable.DocumentId = (*source).DocumentId
-		modelDocumentTable.TaskId = (*source).TaskId
-		modelDocumentTable.BlockId = (*source).BlockId
-		modelDocumentTable.TableNo = (*source).TableNo
-		modelDocumentTable.SectionPath = (*source).SectionPath
-		modelDocumentTable.PageNo = (*source).PageNo
-		modelDocumentTable.PageRange = (*source).PageRange
-		modelDocumentTable.BboxJson = (*source).BboxJson
-		modelDocumentTable.Title = (*source).Title
-		modelDocumentTable.RowCount = (*source).RowCount
-		modelDocumentTable.ColumnCount = (*source).ColumnCount
-		pModelDocumentTable = &modelDocumentTable
-	}
-	return pModelDocumentTable
-}
-func ToDocumentTableModelList(source []*entity.DocumentTable) []*model.DocumentTable {
-	var pModelDocumentTableList []*model.DocumentTable
-	if source != nil {
-		pModelDocumentTableList = make([]*model.DocumentTable, len(source))
-		for i := 0; i < len(source); i++ {
-			pModelDocumentTableList[i] = ToDocumentTableModel(source[i])
-		}
-	}
-	return pModelDocumentTableList
-}
-func ToDocumentTableRowModel(source *entity.TableRow) *model.DocumentTableRow {
-	var pModelDocumentTableRow *model.DocumentTableRow
-	if source != nil {
-		var modelDocumentTableRow model.DocumentTableRow
-		modelDocumentTableRow.Model = entityTableRowToCommonModel((*source))
-		modelDocumentTableRow.DocumentId = (*source).DocumentId
-		modelDocumentTableRow.TaskId = (*source).TaskId
-		modelDocumentTableRow.TableId = (*source).TableId
-		modelDocumentTableRow.RowNo = (*source).RowNo
-		modelDocumentTableRow.RowText = (*source).RowText
-		pModelDocumentTableRow = &modelDocumentTableRow
-	}
-	return pModelDocumentTableRow
-}
-func ToDocumentTableRowModelList(source []*entity.TableRow) []*model.DocumentTableRow {
-	var pModelDocumentTableRowList []*model.DocumentTableRow
-	if source != nil {
-		pModelDocumentTableRowList = make([]*model.DocumentTableRow, len(source))
-		for i := 0; i < len(source); i++ {
-			pModelDocumentTableRowList[i] = ToDocumentTableRowModel(source[i])
-		}
-	}
-	return pModelDocumentTableRowList
-}
 func ToDocumentTaskLogModel(source *entity.DocumentTaskLog) *model.DocumentTaskLog {
 	var pModelDocumentTaskLog *model.DocumentTaskLog
 	if source != nil {
@@ -602,79 +489,79 @@ func ToDocumentTaskModel(source *entity.DocumentTask) *model.DocumentTask {
 	}
 	return pModelDocumentTask
 }
-func ToKnowledgeDocumentOptionRespList(source []*vo.DocumentMetadata) []*document.KnowledgeDocumentOptionResp {
-	var pDocumentKnowledgeDocumentOptionRespList []*document.KnowledgeDocumentOptionResp
+func ToKnowledgeDocumentOptionRespList(source []*vo.DocumentMetadata) []*api.KnowledgeDocumentOptionResp {
+	var pApiKnowledgeDocumentOptionRespList []*api.KnowledgeDocumentOptionResp
 	if source != nil {
-		pDocumentKnowledgeDocumentOptionRespList = make([]*document.KnowledgeDocumentOptionResp, len(source))
+		pApiKnowledgeDocumentOptionRespList = make([]*api.KnowledgeDocumentOptionResp, len(source))
 		for i := 0; i < len(source); i++ {
-			pDocumentKnowledgeDocumentOptionRespList[i] = pVoDocumentMetadataToPDocumentKnowledgeDocumentOptionResp(source[i])
+			pApiKnowledgeDocumentOptionRespList[i] = pVoDocumentMetadataToPApiKnowledgeDocumentOptionResp(source[i])
 		}
 	}
-	return pDocumentKnowledgeDocumentOptionRespList
+	return pApiKnowledgeDocumentOptionRespList
 }
-func ToQueryDocumentChunkDetailResp(source *aggregate.DocumentChunkDetail) *document.QueryDocumentChunkDetailResp {
-	var pDocumentQueryDocumentChunkDetailResp *document.QueryDocumentChunkDetailResp
+func ToQueryDocumentChunkDetailResp(source *aggregate.DocumentChunkDetail) *api.QueryDocumentChunkDetailResp {
+	var pApiQueryDocumentChunkDetailResp *api.QueryDocumentChunkDetailResp
 	if source != nil {
-		var documentQueryDocumentChunkDetailResp document.QueryDocumentChunkDetailResp
-		documentQueryDocumentChunkDetailResp.DocumentId = Int64ToString((*source).DocumentId)
-		documentQueryDocumentChunkDetailResp.TaskId = Int64ToString((*source).TaskId)
-		documentQueryDocumentChunkDetailResp.PlanId = Int64ToString((*source).PlanId)
-		documentQueryDocumentChunkDetailResp.Chunk = pEntityDocumentChunkToPDocumentDocumentChunkItem((*source).Chunk)
-		documentQueryDocumentChunkDetailResp.SiblingChunks = ToDocumentChunkItemList((*source).SiblingChunks)
-		pDocumentQueryDocumentChunkDetailResp = &documentQueryDocumentChunkDetailResp
+		var apiQueryDocumentChunkDetailResp api.QueryDocumentChunkDetailResp
+		apiQueryDocumentChunkDetailResp.DocumentId = Int64ToString((*source).DocumentId)
+		apiQueryDocumentChunkDetailResp.TaskId = Int64ToString((*source).TaskId)
+		apiQueryDocumentChunkDetailResp.PlanId = Int64ToString((*source).PlanId)
+		apiQueryDocumentChunkDetailResp.Chunk = pEntityDocumentChunkToPApiDocumentChunkItem((*source).Chunk)
+		apiQueryDocumentChunkDetailResp.SiblingChunks = ToDocumentChunkItemList((*source).SiblingChunks)
+		pApiQueryDocumentChunkDetailResp = &apiQueryDocumentChunkDetailResp
 	}
-	return pDocumentQueryDocumentChunkDetailResp
+	return pApiQueryDocumentChunkDetailResp
 }
-func ToQueryStrategyPlanResp(source *entity.Document) *document.QueryStrategyPlanResp {
-	var pDocumentQueryStrategyPlanResp *document.QueryStrategyPlanResp
+func ToQueryStrategyPlanResp(source *entity.Document) *api.QueryStrategyPlanResp {
+	var pApiQueryStrategyPlanResp *api.QueryStrategyPlanResp
 	if source != nil {
-		var documentQueryStrategyPlanResp document.QueryStrategyPlanResp
-		documentQueryStrategyPlanResp.ID = Int64ToString((*source).ID)
-		documentQueryStrategyPlanResp.DocumentName = (*source).DocumentName
-		documentQueryStrategyPlanResp.ParseStatus = (*source).ParseStatus
-		documentQueryStrategyPlanResp.ParseStatusName = (*source).ParseStatusName
-		documentQueryStrategyPlanResp.StrategyStatus = (*source).StrategyStatus
-		documentQueryStrategyPlanResp.StrategyStatusName = (*source).StrategyStatusName
-		documentQueryStrategyPlanResp.IndexStatus = (*source).IndexStatus
-		documentQueryStrategyPlanResp.IndexStatusName = (*source).IndexStatusName
+		var apiQueryStrategyPlanResp api.QueryStrategyPlanResp
+		apiQueryStrategyPlanResp.ID = Int64ToString((*source).ID)
+		apiQueryStrategyPlanResp.DocumentName = (*source).DocumentName
+		apiQueryStrategyPlanResp.ParseStatus = (*source).ParseStatus
+		apiQueryStrategyPlanResp.ParseStatusName = (*source).ParseStatusName
+		apiQueryStrategyPlanResp.StrategyStatus = (*source).StrategyStatus
+		apiQueryStrategyPlanResp.StrategyStatusName = (*source).StrategyStatusName
+		apiQueryStrategyPlanResp.IndexStatus = (*source).IndexStatus
+		apiQueryStrategyPlanResp.IndexStatusName = (*source).IndexStatusName
 		if (*source).ParseErrorMsg != nil {
-			documentQueryStrategyPlanResp.ParseErrorMsg = *(*source).ParseErrorMsg
+			apiQueryStrategyPlanResp.ParseErrorMsg = *(*source).ParseErrorMsg
 		}
-		documentQueryStrategyPlanResp.PlanReady = (*source).PlanReady
-		pDocumentQueryStrategyPlanResp = &documentQueryStrategyPlanResp
+		apiQueryStrategyPlanResp.PlanReady = (*source).PlanReady
+		pApiQueryStrategyPlanResp = &apiQueryStrategyPlanResp
 	}
-	return pDocumentQueryStrategyPlanResp
+	return pApiQueryStrategyPlanResp
 }
-func ToQueryTaskLogsResp(source *entity.DocumentTask) *document.QueryTaskLogsResp {
-	var pDocumentQueryTaskLogsResp *document.QueryTaskLogsResp
+func ToQueryTaskLogsResp(source *entity.DocumentTask) *api.QueryTaskLogsResp {
+	var pApiQueryTaskLogsResp *api.QueryTaskLogsResp
 	if source != nil {
-		var documentQueryTaskLogsResp document.QueryTaskLogsResp
-		documentQueryTaskLogsResp.ID = Int64ToString((*source).ID)
-		documentQueryTaskLogsResp.DocumentId = Int64ToString((*source).DocumentId)
-		documentQueryTaskLogsResp.TaskType = (*source).TaskType
-		documentQueryTaskLogsResp.TaskTypeName = (*source).TaskTypeName
-		documentQueryTaskLogsResp.TaskStatus = (*source).TaskStatus
-		documentQueryTaskLogsResp.TaskStatusName = (*source).TaskStatusName
-		documentQueryTaskLogsResp.CurrentStage = (*source).CurrentStage
-		documentQueryTaskLogsResp.CurrentStageName = (*source).CurrentStageName
-		documentQueryTaskLogsResp.StartTime = pTimeTimeToString((*source).StartTime)
-		documentQueryTaskLogsResp.FinishTime = pTimeTimeToString((*source).FinishTime)
-		documentQueryTaskLogsResp.CostMillis = (*source).CostMillis
+		var apiQueryTaskLogsResp api.QueryTaskLogsResp
+		apiQueryTaskLogsResp.ID = Int64ToString((*source).ID)
+		apiQueryTaskLogsResp.DocumentId = Int64ToString((*source).DocumentId)
+		apiQueryTaskLogsResp.TaskType = (*source).TaskType
+		apiQueryTaskLogsResp.TaskTypeName = (*source).TaskTypeName
+		apiQueryTaskLogsResp.TaskStatus = (*source).TaskStatus
+		apiQueryTaskLogsResp.TaskStatusName = (*source).TaskStatusName
+		apiQueryTaskLogsResp.CurrentStage = (*source).CurrentStage
+		apiQueryTaskLogsResp.CurrentStageName = (*source).CurrentStageName
+		apiQueryTaskLogsResp.StartTime = pTimeTimeToString((*source).StartTime)
+		apiQueryTaskLogsResp.FinishTime = pTimeTimeToString((*source).FinishTime)
+		apiQueryTaskLogsResp.CostMillis = (*source).CostMillis
 		if (*source).ErrorCode != nil {
-			documentQueryTaskLogsResp.ErrorCode = *(*source).ErrorCode
+			apiQueryTaskLogsResp.ErrorCode = *(*source).ErrorCode
 		}
 		if (*source).ErrorMsg != nil {
-			documentQueryTaskLogsResp.ErrorMsg = *(*source).ErrorMsg
+			apiQueryTaskLogsResp.ErrorMsg = *(*source).ErrorMsg
 		}
 		if (*source).Logs != nil {
-			documentQueryTaskLogsResp.Logs = make([]*document.TaskLog, len((*source).Logs))
+			apiQueryTaskLogsResp.Logs = make([]*api.TaskLog, len((*source).Logs))
 			for i := 0; i < len((*source).Logs); i++ {
-				documentQueryTaskLogsResp.Logs[i] = pEntityDocumentTaskLogToPDocumentTaskLog((*source).Logs[i])
+				apiQueryTaskLogsResp.Logs[i] = pEntityDocumentTaskLogToPApiTaskLog((*source).Logs[i])
 			}
 		}
-		pDocumentQueryTaskLogsResp = &documentQueryTaskLogsResp
+		pApiQueryTaskLogsResp = &apiQueryTaskLogsResp
 	}
-	return pDocumentQueryTaskLogsResp
+	return pApiQueryTaskLogsResp
 }
 func entityDocumentBlockToCommonModel(source entity.DocumentBlock) common.Model {
 	var commonModel common.Model
@@ -706,11 +593,6 @@ func entityDocumentStrategyStepToCommonModel(source entity.DocumentStrategyStep)
 	commonModel.ID = source.ID
 	return commonModel
 }
-func entityDocumentTableToCommonModel(source entity.DocumentTable) common.Model {
-	var commonModel common.Model
-	commonModel.ID = source.ID
-	return commonModel
-}
 func entityDocumentTaskLogToCommonModel(source entity.DocumentTaskLog) common.Model {
 	var commonModel common.Model
 	commonModel.ID = source.ID
@@ -731,22 +613,7 @@ func entityStructureNodeToCommonModel(source entity.StructureNode) common.Model 
 	commonModel.ID = source.ID
 	return commonModel
 }
-func entityTableCellToCommonModel(source entity.TableCell) common.Model {
-	var commonModel common.Model
-	commonModel.ID = source.ID
-	return commonModel
-}
-func entityTableColumnToCommonModel(source entity.TableColumn) common.Model {
-	var commonModel common.Model
-	commonModel.ID = source.ID
-	return commonModel
-}
-func entityTableRowToCommonModel(source entity.TableRow) common.Model {
-	var commonModel common.Model
-	commonModel.ID = source.ID
-	return commonModel
-}
-func pDocumentStrategyStepItemToPVoDocumentStrategyStepItem(source *document.StrategyStepItem) *vo.DocumentStrategyStepItem {
+func pApiStrategyStepItemToPVoDocumentStrategyStepItem(source *api.StrategyStepItem) *vo.DocumentStrategyStepItem {
 	var pVoDocumentStrategyStepItem *vo.DocumentStrategyStepItem
 	if source != nil {
 		var voDocumentStrategyStepItem vo.DocumentStrategyStepItem
@@ -756,82 +623,80 @@ func pDocumentStrategyStepItemToPVoDocumentStrategyStepItem(source *document.Str
 	}
 	return pVoDocumentStrategyStepItem
 }
-func pEntityDocumentChunkToPDocumentDocumentChunkItem(source *entity.DocumentChunk) *document.DocumentChunkItem {
-	var pDocumentDocumentChunkItem *document.DocumentChunkItem
+func pEntityDocumentChunkToPApiDocumentChunkItem(source *entity.DocumentChunk) *api.DocumentChunkItem {
+	var pApiDocumentChunkItem *api.DocumentChunkItem
 	if source != nil {
-		var documentDocumentChunkItem document.DocumentChunkItem
-		documentDocumentChunkItem.ID = Int64ToString((*source).ID)
-		documentDocumentChunkItem.ParentBlockNo = (*source).ParentBlockNo
-		documentDocumentChunkItem.ParentChildCount = (*source).ParentChildCount
-		documentDocumentChunkItem.ParentStartChunkNo = (*source).ParentStartChunkNo
-		documentDocumentChunkItem.ParentEndChunkNo = (*source).ParentEndChunkNo
-		documentDocumentChunkItem.ChunkNo = (*source).ChunkNo
-		documentDocumentChunkItem.SectionPath = (*source).SectionPath
-		documentDocumentChunkItem.SourceType = (*source).SourceType
-		documentDocumentChunkItem.SourceTypeName = (*source).SourceTypeName
-		documentDocumentChunkItem.CharCount = (*source).CharCount
-		documentDocumentChunkItem.TokenCount = (*source).TokenCount
-		documentDocumentChunkItem.VectorStatus = (*source).VectorStatus
-		documentDocumentChunkItem.VectorStatusName = (*source).VectorStatusName
-		documentDocumentChunkItem.ChunkText = (*source).ChunkText
-		pDocumentDocumentChunkItem = &documentDocumentChunkItem
+		var apiDocumentChunkItem api.DocumentChunkItem
+		apiDocumentChunkItem.ID = Int64ToString((*source).ID)
+		apiDocumentChunkItem.ParentBlockNo = (*source).ParentBlockNo
+		apiDocumentChunkItem.ParentChildCount = (*source).ParentChildCount
+		apiDocumentChunkItem.ParentStartChunkNo = (*source).ParentStartChunkNo
+		apiDocumentChunkItem.ParentEndChunkNo = (*source).ParentEndChunkNo
+		apiDocumentChunkItem.ChunkNo = (*source).ChunkNo
+		apiDocumentChunkItem.SectionPath = (*source).SectionPath
+		apiDocumentChunkItem.SourceType = (*source).SourceType
+		apiDocumentChunkItem.SourceTypeName = (*source).SourceTypeName
+		apiDocumentChunkItem.CharCount = (*source).CharCount
+		apiDocumentChunkItem.TokenCount = (*source).TokenCount
+		apiDocumentChunkItem.VectorStatus = (*source).VectorStatus
+		apiDocumentChunkItem.VectorStatusName = (*source).VectorStatusName
+		apiDocumentChunkItem.ChunkText = (*source).ChunkText
+		pApiDocumentChunkItem = &apiDocumentChunkItem
 	}
-	return pDocumentDocumentChunkItem
+	return pApiDocumentChunkItem
 }
-func pEntityDocumentStrategyPipelineToPDocumentDocumentStrategyPipeline(source *entity.DocumentStrategyPipeline) *document.DocumentStrategyPipeline {
-	var pDocumentDocumentStrategyPipeline *document.DocumentStrategyPipeline
+func pEntityDocumentStrategyPipelineToPApiDocumentStrategyPipeline(source *entity.DocumentStrategyPipeline) *api.DocumentStrategyPipeline {
+	var pApiDocumentStrategyPipeline *api.DocumentStrategyPipeline
 	if source != nil {
-		var documentDocumentStrategyPipeline document.DocumentStrategyPipeline
-		documentDocumentStrategyPipeline.PipelineType = (*source).PipelineType
-		documentDocumentStrategyPipeline.PipelineTypeName = (*source).PipelineTypeName
-		documentDocumentStrategyPipeline.StrategySnapshot = (*source).StrategySnapshot
+		var apiDocumentStrategyPipeline api.DocumentStrategyPipeline
+		apiDocumentStrategyPipeline.PipelineType = (*source).PipelineType
+		apiDocumentStrategyPipeline.PipelineTypeName = (*source).PipelineTypeName
+		apiDocumentStrategyPipeline.StrategySnapshot = (*source).StrategySnapshot
 		if (*source).Steps != nil {
-			documentDocumentStrategyPipeline.Steps = make([]*document.DocumentStrategyStep, len((*source).Steps))
+			apiDocumentStrategyPipeline.Steps = make([]*api.DocumentStrategyStep, len((*source).Steps))
 			for i := 0; i < len((*source).Steps); i++ {
-				documentDocumentStrategyPipeline.Steps[i] = pEntityDocumentStrategyStepToPDocumentDocumentStrategyStep((*source).Steps[i])
+				apiDocumentStrategyPipeline.Steps[i] = pEntityDocumentStrategyStepToPApiDocumentStrategyStep((*source).Steps[i])
 			}
 		}
-		pDocumentDocumentStrategyPipeline = &documentDocumentStrategyPipeline
+		pApiDocumentStrategyPipeline = &apiDocumentStrategyPipeline
 	}
-	return pDocumentDocumentStrategyPipeline
+	return pApiDocumentStrategyPipeline
 }
-func pEntityDocumentStrategyStepToPDocumentDocumentStrategyStep(source *entity.DocumentStrategyStep) *document.DocumentStrategyStep {
-	var pDocumentDocumentStrategyStep *document.DocumentStrategyStep
+func pEntityDocumentStrategyStepToPApiDocumentStrategyStep(source *entity.DocumentStrategyStep) *api.DocumentStrategyStep {
+	var pApiDocumentStrategyStep *api.DocumentStrategyStep
 	if source != nil {
-		var documentDocumentStrategyStep document.DocumentStrategyStep
-		documentDocumentStrategyStep.StepNo = (*source).StepNo
-		documentDocumentStrategyStep.PipelineType = (*source).PipelineType
-		documentDocumentStrategyStep.PipelineTypeName = (*source).PipelineTypeName
-		documentDocumentStrategyStep.StrategyType = (*source).StrategyType
-		documentDocumentStrategyStep.StrategyTypeName = (*source).StrategyTypeName
-		documentDocumentStrategyStep.StrategyRole = (*source).StrategyRole
-		documentDocumentStrategyStep.StrategyRoleName = (*source).StrategyRoleName
-		documentDocumentStrategyStep.SourceType = (*source).SourceType
-		documentDocumentStrategyStep.SourceTypeName = (*source).SourceTypeName
-		documentDocumentStrategyStep.ExecuteStatus = (*source).ExecuteStatus
-		documentDocumentStrategyStep.ExecuteStatusName = (*source).ExecuteStatusName
-		documentDocumentStrategyStep.RecommendReason = (*source).RecommendReason
-		pDocumentDocumentStrategyStep = &documentDocumentStrategyStep
+		var apiDocumentStrategyStep api.DocumentStrategyStep
+		apiDocumentStrategyStep.StepNo = (*source).StepNo
+		apiDocumentStrategyStep.PipelineType = (*source).PipelineType
+		apiDocumentStrategyStep.PipelineTypeName = (*source).PipelineTypeName
+		apiDocumentStrategyStep.StrategyType = (*source).StrategyType
+		apiDocumentStrategyStep.StrategyTypeName = (*source).StrategyTypeName
+		apiDocumentStrategyStep.SourceType = (*source).SourceType
+		apiDocumentStrategyStep.SourceTypeName = (*source).SourceTypeName
+		apiDocumentStrategyStep.ExecuteStatus = (*source).ExecuteStatus
+		apiDocumentStrategyStep.ExecuteStatusName = (*source).ExecuteStatusName
+		apiDocumentStrategyStep.RecommendReason = (*source).RecommendReason
+		pApiDocumentStrategyStep = &apiDocumentStrategyStep
 	}
-	return pDocumentDocumentStrategyStep
+	return pApiDocumentStrategyStep
 }
-func pEntityDocumentTaskLogToPDocumentTaskLog(source *entity.DocumentTaskLog) *document.TaskLog {
-	var pDocumentTaskLog *document.TaskLog
+func pEntityDocumentTaskLogToPApiTaskLog(source *entity.DocumentTaskLog) *api.TaskLog {
+	var pApiTaskLog *api.TaskLog
 	if source != nil {
-		var documentTaskLog document.TaskLog
-		documentTaskLog.ID = Int64ToString((*source).ID)
-		documentTaskLog.StageType = (*source).StageType
-		documentTaskLog.StageTypeName = (*source).StageTypeName
-		documentTaskLog.EventType = (*source).EventType
-		documentTaskLog.EventTypeName = (*source).EventTypeName
-		documentTaskLog.LogLevel = (*source).LogLevel
-		documentTaskLog.LogLevelName = (*source).LogLevelName
-		documentTaskLog.Content = (*source).Content
-		documentTaskLog.DetailJson = (*source).DetailJson
-		documentTaskLog.CreateTime = TimeToString((*source).CreateTime)
-		pDocumentTaskLog = &documentTaskLog
+		var apiTaskLog api.TaskLog
+		apiTaskLog.ID = Int64ToString((*source).ID)
+		apiTaskLog.StageType = (*source).StageType
+		apiTaskLog.StageTypeName = (*source).StageTypeName
+		apiTaskLog.EventType = (*source).EventType
+		apiTaskLog.EventTypeName = (*source).EventTypeName
+		apiTaskLog.LogLevel = (*source).LogLevel
+		apiTaskLog.LogLevelName = (*source).LogLevelName
+		apiTaskLog.Content = (*source).Content
+		apiTaskLog.DetailJson = (*source).DetailJson
+		apiTaskLog.CreateTime = TimeToString((*source).CreateTime)
+		pApiTaskLog = &apiTaskLog
 	}
-	return pDocumentTaskLog
+	return pApiTaskLog
 }
 func pTimeTimeToString(source *time.Time) string {
 	var xstring string
@@ -840,13 +705,13 @@ func pTimeTimeToString(source *time.Time) string {
 	}
 	return xstring
 }
-func pVoDocumentMetadataToPDocumentKnowledgeDocumentOptionResp(source *vo.DocumentMetadata) *document.KnowledgeDocumentOptionResp {
-	var pDocumentKnowledgeDocumentOptionResp *document.KnowledgeDocumentOptionResp
+func pVoDocumentMetadataToPApiKnowledgeDocumentOptionResp(source *vo.DocumentMetadata) *api.KnowledgeDocumentOptionResp {
+	var pApiKnowledgeDocumentOptionResp *api.KnowledgeDocumentOptionResp
 	if source != nil {
-		var documentKnowledgeDocumentOptionResp document.KnowledgeDocumentOptionResp
-		documentKnowledgeDocumentOptionResp.DocumentId = Int64ToString((*source).DocumentId)
-		documentKnowledgeDocumentOptionResp.DocumentName = (*source).DocumentName
-		pDocumentKnowledgeDocumentOptionResp = &documentKnowledgeDocumentOptionResp
+		var apiKnowledgeDocumentOptionResp api.KnowledgeDocumentOptionResp
+		apiKnowledgeDocumentOptionResp.DocumentId = Int64ToString((*source).DocumentId)
+		apiKnowledgeDocumentOptionResp.DocumentName = (*source).DocumentName
+		pApiKnowledgeDocumentOptionResp = &apiKnowledgeDocumentOptionResp
 	}
-	return pDocumentKnowledgeDocumentOptionResp
+	return pApiKnowledgeDocumentOptionResp
 }

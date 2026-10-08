@@ -13,7 +13,6 @@ import (
 	"github.com/swiftbit/know-agent/services/document/internal/domain/model/aggregate"
 	"github.com/swiftbit/know-agent/services/document/internal/domain/model/entity"
 	"github.com/swiftbit/know-agent/services/document/internal/domain/model/enum"
-	"github.com/swiftbit/know-agent/services/document/internal/domain/model/shared"
 	"github.com/swiftbit/know-agent/services/document/internal/infrastructure/port/parser"
 	"github.com/swiftbit/know-agent/services/document/internal/infrastructure/port/parser/markdown"
 )
@@ -56,7 +55,6 @@ func (p *ParseStage) Execute(ctx context.Context, parseCtx *Context) error {
 	// 记录"解析器返回结果"日志
 	parserResultDetail, _ := json.Marshal(map[string]any{
 		"blockCount":              len(analysisResult.Blocks),
-		"tableCandidateCount":     len(analysisResult.TableCandidates),
 		"structureCandidateCount": structureCandidateCount,
 		"parserCostMillis":        time.Since(startTime).Milliseconds(),
 	})
@@ -103,9 +101,6 @@ func (p *ParseStage) process(ctx context.Context, parseCtx *Context) (*aggregate
 	// 4. 结构节点投影
 	structureNodes := projectStructureNodes(parseCtx.Document.OriginalFileName, blocks)
 
-	// 5. 表格候选投影
-	tableCandidates := projectTableCandidates(blocks)
-
 	return &aggregate.AnalysisResult{
 		ParsedText:          parsedText,
 		CharCount:           charCount,
@@ -116,7 +111,6 @@ func (p *ParseStage) process(ctx context.Context, parseCtx *Context) (*aggregate
 		ParagraphCount:      paragraphCount,
 		MaxParagraphLength:  maxParagraphLen,
 		StructureNodes:      structureNodes,
-		TableCandidates:     tableCandidates,
 		Blocks:              blocks,
 	}, nil
 }
@@ -156,7 +150,7 @@ func projectStructureNodes(documentTitle string, blocks entity.DocumentBlocks) [
 		}
 
 		blockText := strings.TrimSpace(block.Text)
-		if blockText == "" && block.TableHTML == "" && block.ImageCaption == "" {
+		if blockText == "" && block.ImageCaption == "" {
 			continue
 		}
 
@@ -219,7 +213,7 @@ func projectStructureNodes(documentTitle string, blocks entity.DocumentBlocks) [
 				NodeType:      enum.NodeTypeStep,
 				ParentNodeNo:  contentParentNo,
 				Depth:         contentParent.Depth + 1,
-				Title:         utils.FirstNonBlank(blockText, block.ImageCaption, block.ExtractTableSummary()),
+				Title:         utils.FirstNonBlank(blockText, block.ImageCaption),
 				AnchorText:    utils.ClipHead(blockText, 200),
 				CanonicalPath: block.CanonicalPath,
 				SectionPath:   block.SectionPath,
@@ -239,70 +233,4 @@ func projectStructureNodes(documentTitle string, blocks entity.DocumentBlocks) [
 	}
 
 	return nodes
-}
-
-// projectTableCandidates 表格候选投影
-func projectTableCandidates(blocks entity.DocumentBlocks) []*shared.TableCandidate {
-	var candidates []*shared.TableCandidate
-	for _, block := range blocks {
-		if block == nil || block.BlockType != enum.BlockTypeTable {
-			continue
-		}
-		if block.TableHTML == "" && len(block.TableRows) == 0 {
-			continue
-		}
-
-		tableCandidate := &shared.TableCandidate{
-			SourceBlockNo:   block.BlockNo,
-			SectionPath:     block.SectionPath,
-			PageNo:          block.PageNo,
-			PageRange:       block.PageRange,
-			BoundingBoxJson: block.BboxJson,
-			TableHTML:       block.TableHTML,
-			TitleHint:       block.ImageCaption,
-			ProjectionOwner: "GO_BLOCKS_PROJECTION",
-			Rows:            buildTableRows(block.TableRows),
-			SourceMetadata:  block.Metadata,
-		}
-		candidates = append(candidates, tableCandidate)
-	}
-	return candidates
-}
-
-// buildTableRows 构建表格行
-func buildTableRows(rawRows [][]string) []*shared.TableRow {
-	if len(rawRows) == 0 {
-		return nil
-	}
-	var rows []*shared.TableRow
-	for i, rawRow := range rawRows {
-		cells := buildTableCells(rawRow)
-		isHeader := i == 0
-		for _, cell := range cells {
-			if cell.IsHeader {
-				isHeader = true
-				break
-			}
-		}
-		row := &shared.TableRow{
-			RowIndex: i,
-			IsHeader: isHeader,
-			Cells:    cells,
-		}
-		rows = append(rows, row)
-	}
-	return rows
-}
-
-// buildTableCells 构建表格单元格
-func buildTableCells(rawRow []string) []*shared.TableCell {
-	var cells []*shared.TableCell
-	for j, text := range rawRow {
-		cells = append(cells, &shared.TableCell{
-			RowIndex:    0,
-			ColumnIndex: j,
-			Text:        text,
-		})
-	}
-	return cells
 }

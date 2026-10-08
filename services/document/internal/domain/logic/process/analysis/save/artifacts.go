@@ -11,16 +11,14 @@ import (
 )
 
 type ArtifactPersistPhase struct {
-	repo      adapter.DocumentRepository
-	tableRepo adapter.TableRepository
-	storage   adapter.Storage
+	repo    adapter.DocumentRepository
+	storage adapter.Storage
 }
 
-func NewArtifactPersistPhase(repo adapter.DocumentRepository, tableRepo adapter.TableRepository, storage adapter.Storage) *ArtifactPersistPhase {
+func NewArtifactPersistPhase(repo adapter.DocumentRepository, storage adapter.Storage) *ArtifactPersistPhase {
 	return &ArtifactPersistPhase{
-		repo:      repo,
-		tableRepo: tableRepo,
-		storage:   storage,
+		repo:    repo,
+		storage: storage,
 	}
 }
 
@@ -42,9 +40,6 @@ func (p *ArtifactPersistPhase) saveBlocks(ctx context.Context, parseCtx *Context
 		return err
 	}
 	txFn := func(txCtx context.Context) error {
-		if err = p.tableRepo.DeleteTablesByTask(txCtx, documentId, taskId); err != nil {
-			return err
-		}
 		if err = p.repo.DeleteDocumentBlocksByTask(txCtx, documentId, taskId); err != nil {
 			return err
 		}

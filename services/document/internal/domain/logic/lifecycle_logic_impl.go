@@ -12,9 +12,8 @@ import (
 	"github.com/duke-git/lancet/v2/slice"
 	"github.com/duke-git/lancet/v2/strutil"
 
-	"github.com/swiftbit/know-agent/common"
+	"github.com/swiftbit/know-agent/pkg/common"
 	"github.com/swiftbit/know-agent/pkg/logx"
-	"github.com/swiftbit/know-agent/pkg/svc"
 	"github.com/swiftbit/know-agent/pkg/utils"
 	"github.com/swiftbit/know-agent/services/document/internal/domain/adapter"
 	"github.com/swiftbit/know-agent/services/document/internal/domain/model/aggregate"
@@ -37,8 +36,8 @@ type LifecycleLogicImpl struct {
 
 var _ LifecycleLogic = (*LifecycleLogicImpl)(nil)
 
-func NewLifecycleLogicImpl(svcCtx *svc.ServiceContext, messageProducer adapter.MessageProducer, store adapter.Storage,
-	repo adapter.DocumentRepository, knowledgeGateway adapter.KnowledgeGateway, vectorIndexer adapter.VectorIndexer, graphStore adapter.GraphStore) *LifecycleLogicImpl {
+func NewLifecycleLogicImpl(messageProducer adapter.MessageProducer, store adapter.Storage,
+	repo adapter.DocumentRepository, knowledgeGateway adapter.KnowledgeGateway, vectorIndexer adapter.VectorIndexer, graphStore adapter.GraphStore, parseTopic, indexTopic string) *LifecycleLogicImpl {
 	return &LifecycleLogicImpl{
 		repo:             repo,
 		store:            store,
@@ -46,8 +45,8 @@ func NewLifecycleLogicImpl(svcCtx *svc.ServiceContext, messageProducer adapter.M
 		vectorIndexer:    vectorIndexer,
 		knowledgeGateway: knowledgeGateway,
 		messageProducer:  messageProducer,
-		parseTopic:       svcCtx.Config.MQ.ParseTopic,
-		indexTopic:       svcCtx.Config.MQ.IndexTopic,
+		parseTopic:       parseTopic,
+		indexTopic:       indexTopic,
 	}
 }
 
@@ -792,7 +791,6 @@ func (d *LifecycleLogicImpl) buildParentChildSteps(baseSteps entity.DocumentStra
 				PipelineType:    pipelineType,
 				StepNo:          i + 1,
 				StrategyType:    strategyType,
-				StrategyRole:    enum.ResolveRole(i, strategyType),
 				SourceType:      enum.StrategySourceTypeUserAdd,
 				ExecuteStatus:   enum.StrategyExecuteStatusWaitExecute,
 				RecommendReason: "用户手动追加该策略。",

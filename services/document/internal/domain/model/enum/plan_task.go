@@ -132,7 +132,6 @@ const (
 	TaskStageKeywordIndex                          // 关键词索引
 	TaskStageGraphRag                              // GraphRAG 构建
 	TaskStageGraphTypedIndex                       // GraphRAG 类型化索引
-	TaskStageRaptor                                // RAPTOR 层级摘要树
 	TaskStageStoreComplete                         // 存储完成
 )
 
@@ -156,8 +155,6 @@ func TaskStageName(ts TaskStage) string {
 		return "GraphRAG 构建"
 	case TaskStageGraphTypedIndex:
 		return "GraphRAG 类型化索引"
-	case TaskStageRaptor:
-		return "RAPTOR 层级摘要树"
 	case TaskStageStoreComplete:
 		return "存储完成"
 	case TaskStageStrategyRoute:

@@ -1,6 +1,8 @@
 package entity
 
 import (
+	"strings"
+
 	"github.com/duke-git/lancet/v2/strutil"
 
 	"github.com/swiftbit/know-agent/pkg/utils"
@@ -100,4 +102,40 @@ func (n StructureNodes) FindChildrenByNo(parentNodeNo int) []int {
 		}
 	}
 	return children
+}
+
+// Sections 返回全部章节类型节点（NodeTypeSection），保留 nil 防御。
+func (n StructureNodes) Sections() StructureNodes {
+	sections := make(StructureNodes, 0, len(n))
+	for _, node := range n {
+		if node != nil && node.NodeType == enum.NodeTypeSection {
+			sections = append(sections, node)
+		}
+	}
+	return sections
+}
+
+// FindSectionByID 按节点 ID 查找章节，不存在返回 nil。
+func (n StructureNodes) FindSectionByID(id int64) *StructureNode {
+	for _, node := range n {
+		if node != nil && node.ID == id {
+			return node
+		}
+	}
+	return nil
+}
+
+// FindSectionByCode 按节点编码查找章节：入参与节点 NodeCode 双向 TrimSpace 后
+// 以 EqualFold 匹配，入参为纯空白或未命中时返回 nil。
+func (n StructureNodes) FindSectionByCode(code string) *StructureNode {
+	code = strings.TrimSpace(code)
+	if code == "" {
+		return nil
+	}
+	for _, node := range n {
+		if node != nil && strings.EqualFold(strings.TrimSpace(node.NodeCode), code) {
+			return node
+		}
+	}
+	return nil
 }

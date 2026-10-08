@@ -30,13 +30,11 @@ type DocumentBlock struct {
 	BboxJson           string         `gorm:"column:bbox_json"`                               // 边界框 JSON
 	Text               string         `gorm:"column:text"`                                    // 文本内容
 	ContentWithWeight  string         `gorm:"column:content_with_weight"`                     // 带权重的内容
-	TableHTML          string         `gorm:"column:table_html"`                              // 表格 HTML
 	ImageObjectName    string         `gorm:"column:image_object_name"`                       // 图片对象名
 	ImageCaption       string         `gorm:"column:image_caption"`                           // 图片说明
 	Metadata           map[string]any `gorm:"column:metadata_json;type:json;serializer:json"` // 元数据
 	ParentBlockNo      int            `gorm:"-"`                                              // 父块编号
 	BoundingBoxJSON    string         `gorm:"-"`                                              // 边界框JSON
-	TableRows          [][]string     `gorm:"-"`                                              // 表格行数据
 	ImageFileName      string         `gorm:"-"`                                              // 图片文件名
 	ImageContentBase64 string         `gorm:"-"`                                              // 图片Base64内容
 }
@@ -51,23 +49,19 @@ func (b *DocumentBlock) RenderBlockContent() string {
 	if b == nil {
 		return ""
 	}
-	text := utils.FirstNonBlank(b.Text, b.ImageCaption, b.TableHTML)
-	if strutil.Trim(text) == "" {
+	text := utils.FirstNonBlank(b.Text, b.ImageCaption)
+	if utils.IsBlank(text) {
 		return ""
 	}
 
 	// 根据块类型处理内容
-	switch strings.ToUpper(strutil.Trim(b.BlockType)) {
+	switch strings.ToUpper(utils.Trim(b.BlockType)) {
 	case "TITLE":
-		if !strings.HasPrefix(strutil.Trim(text), "#") {
+		if !strings.HasPrefix(utils.Trim(text), "#") {
 			return "# " + text
 		}
-	case "TABLE":
-		if strutil.Trim(b.TableHTML) != "" && !strings.Contains(text, b.TableHTML) {
-			return "[TABLE]\n" + text + "\n\n" + b.TableHTML
-		}
 	case "IMAGE", "FIGURE":
-		if strutil.Trim(b.ImageCaption) != "" {
+		if utils.IsNotBlank(b.ImageCaption) {
 			return "[IMAGE]\n" + b.ImageCaption
 		}
 	}
@@ -108,29 +102,7 @@ func (b *DocumentBlock) HeadingLevel() int {
 	return 1
 }
 
-// ExtractTableSummary 提取表格摘要
-func (b *DocumentBlock) ExtractTableSummary() string {
-	if b == nil {
-		return ""
-	}
-	if b.TableHTML != "" {
-		return "[TABLE]"
-	}
-	if len(b.TableRows) > 0 {
-		var firstRow []string
-		if len(b.TableRows) > 0 {
-			firstRow = b.TableRows[0]
-		}
-		summary := strings.Join(firstRow, " | ")
-		if len(b.TableRows) > 1 {
-			summary += fmt.Sprintf(" ... (%d rows)", len(b.TableRows))
-		}
-		return summary
-	}
-	return ""
-}
-
-// BuildContentText 构建内容文本（包含文本、表格、图片说明）
+// BuildContentText 构建内容文本（包含文本、图片说明）
 func (b *DocumentBlock) BuildContentText() string {
 	if b == nil {
 		return ""
@@ -138,10 +110,6 @@ func (b *DocumentBlock) BuildContentText() string {
 	var parts []string
 	if b.Text != "" {
 		parts = append(parts, b.Text)
-	}
-	if b.TableHTML != "" {
-		parts = append(parts, "[TABLE]")
-		parts = append(parts, b.TableHTML)
 	}
 	if b.ImageCaption != "" {
 		parts = append(parts, fmt.Sprintf("[IMAGE] %s", b.ImageCaption))
@@ -263,32 +231,7 @@ func (b *DocumentBlock) BuildContentWithWeight() string {
 	if b.ImageCaption != "" && b.ImageCaption != b.Text {
 		parts = append(parts, fmt.Sprintf("caption: %s", b.ImageCaption))
 	}
-	if len(b.TableRows) > 0 {
-		parts = append(parts, tableText(b.TableRows))
-	}
 	return strings.Join(parts, "\n")
-}
-
-// tableText 将二维字符串数组（表格行）转换为纯文本表示
-func tableText(rows [][]string) string {
-	if len(rows) == 0 {
-		return ""
-	}
-	lines := make([]string, 0, len(rows))
-	for _, row := range rows {
-		// 收集非空单元格
-		cells := make([]string, 0, len(row))
-		for _, cell := range row {
-			if cell != "" {
-				cells = append(cells, cell)
-			}
-		}
-		// 若该行有非空单元格，则构建行字符串
-		if len(cells) > 0 {
-			lines = append(lines, strings.Join(cells, " | "))
-		}
-	}
-	return strings.Join(lines, "\n")
 }
 
 var nonAllowedCharsRegex = regexp.MustCompile(`[^0-9a-zA-Z\p{Han}]+`)
@@ -599,8 +542,8 @@ func (b DocumentBlocks) Normalize() DocumentBlocks {
 	for _, block := range b {
 		text := utils.CleanupSpace(block.Text)
 		text = utils.ClipHead(text, 200)
-		// 过滤掉无文本、无表格 HTML、无图片说明的空块
-		if text == "" && block.TableHTML == "" && block.ImageCaption == "" {
+		// 过滤掉无文本、无图片说明的空块
+		if text == "" && block.ImageCaption == "" {
 			continue
 		}
 
@@ -646,8 +589,6 @@ func (b DocumentBlocks) ExtractParsedText() string {
 		text := strings.TrimSpace(block.Text)
 		if text != "" {
 			parts = append(parts, text)
-		} else if block.TableHTML != "" {
-			parts = append(parts, block.TableHTML)
 		} else if block.ImageCaption != "" {
 			parts = append(parts, block.ImageCaption)
 		}
@@ -666,9 +607,6 @@ func (b DocumentBlocks) CalcStats() (headingCount, paragraphCount, maxParagraphL
 			headingCount++
 		default:
 			textLen := utils.Len(strings.TrimSpace(block.Text))
-			if block.TableHTML != "" {
-				textLen = max(textLen, utils.Len(block.TableHTML))
-			}
 			if block.ImageCaption != "" {
 				textLen = max(textLen, utils.Len(block.ImageCaption))
 			}

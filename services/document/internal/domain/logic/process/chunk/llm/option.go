@@ -1,7 +1,7 @@
 package llm
 
 import (
-	"github.com/swiftbit/know-agent/common"
+	"github.com/swiftbit/know-agent/pkg/common"
 )
 
 type options struct {

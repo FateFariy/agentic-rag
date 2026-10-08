@@ -7,7 +7,7 @@ import (
 
 	"github.com/zeromicro/go-zero/rest/httpx"
 
-	"github.com/swiftbit/know-agent/common"
+	"github.com/swiftbit/know-agent/pkg/common"
 )
 
 type HTTPServer interface {

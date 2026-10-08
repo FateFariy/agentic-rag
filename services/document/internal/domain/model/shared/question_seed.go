@@ -48,9 +48,6 @@ func (q *QuestionSeed) Build() []string {
 
 	// 基于块类型生成特定问题
 	upperType := strings.ToUpper(q.chunkType)
-	if upperType == "TABLE" {
-		add("这个表格说明了什么？")
-	}
 	if upperType == "IMAGE" || upperType == "FIGURE" {
 		add("这张图片说明了什么？")
 	}

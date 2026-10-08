@@ -1,7 +1,7 @@
 package recursive
 
 import (
-	"github.com/swiftbit/know-agent/common"
+	"github.com/swiftbit/know-agent/pkg/common"
 )
 
 const (

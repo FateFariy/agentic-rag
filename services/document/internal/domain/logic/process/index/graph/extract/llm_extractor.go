@@ -5,23 +5,22 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/swiftbit/know-agent/pkg/ai"
 	"github.com/swiftbit/know-agent/pkg/utils"
-	"github.com/swiftbit/know-agent/services/document/internal/domain/adapter"
-	"github.com/swiftbit/know-agent/services/document/internal/domain/adapter/model"
 	"github.com/swiftbit/know-agent/services/document/internal/domain/model/entity"
 	"github.com/swiftbit/know-agent/services/document/internal/domain/model/enum"
 )
 
 // LLMExtractor 基于大模型的实体/关系抽取器
 type LLMExtractor struct {
-	chatModel     model.ChatModel
-	renderer      adapter.PromptRenderer
+	chatModel     ai.ChatModel
+	renderer      ai.PromptRenderer
 	tokenizer     Tokenizer
 	chunkMaxChars int // 单 chunk 抽取截断上限
 }
 
 // NewLLMExtractor 创建大模型抽取器
-func NewLLMExtractor(chatModel model.ChatModel, renderer adapter.PromptRenderer, tokenizer Tokenizer, chunkMaxChars int) *LLMExtractor {
+func NewLLMExtractor(chatModel ai.ChatModel, renderer ai.PromptRenderer, tokenizer Tokenizer, chunkMaxChars int) *LLMExtractor {
 	return &LLMExtractor{
 		chatModel:     chatModel,
 		renderer:      renderer,

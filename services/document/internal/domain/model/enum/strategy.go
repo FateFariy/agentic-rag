@@ -71,51 +71,6 @@ const (
 )
 
 // ============================================================
-// StrategyRole 策略角色
-// ============================================================
-
-type StrategyRole = int
-
-const (
-	StrategyRolePrimary StrategyRole = iota + 1
-	StrategyRoleOptimize
-	StrategyRoleFallback
-	StrategyRoleEnhance
-)
-
-func StrategyRoleName(role StrategyRole) string {
-	switch role {
-	case StrategyRolePrimary:
-		return "主策略"
-	case StrategyRoleOptimize:
-		return "优化策略"
-	case StrategyRoleFallback:
-		return "回退策略"
-	case StrategyRoleEnhance:
-		return "增强策略"
-	default:
-		return ""
-	}
-}
-
-// ResolveRole 为指定步骤分配角色
-func ResolveRole(index int, strategyType int) int {
-	if index == 0 {
-		return StrategyRolePrimary
-	}
-	if strategyType == StrategyTypeRecursive {
-		return StrategyRoleFallback
-	}
-	if strategyType == StrategyTypeSemantic {
-		return StrategyRoleOptimize
-	}
-	if strategyType == StrategyTypeLLM {
-		return StrategyRoleEnhance
-	}
-	return StrategyRoleOptimize
-}
-
-// ============================================================
 // StrategySourceType 策略来源类型
 // ============================================================
 

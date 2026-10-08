@@ -7,9 +7,9 @@ import (
 	"slices"
 	"sync"
 
-	"github.com/swiftbit/know-agent/pkg/config"
 	"github.com/swiftbit/know-agent/pkg/logx"
 	"github.com/swiftbit/know-agent/pkg/utils"
+	"github.com/swiftbit/know-agent/services/document/internal/config"
 	"github.com/swiftbit/know-agent/services/document/internal/domain/adapter"
 	"github.com/swiftbit/know-agent/services/document/internal/domain/logic/process/index/graph/community"
 	"github.com/swiftbit/know-agent/services/document/internal/domain/logic/process/index/graph/extract"
@@ -19,7 +19,6 @@ import (
 )
 
 // GraphTypeProvider 提供知识库自定义的图谱实体/关系类型白名单。
-// 由调用方注入（通常包装 KnowledgeRepository），避免 document 域直接依赖 knowledge 域。
 type GraphTypeProvider interface {
 	// GraphTypes 返回指定知识库允许的实体类型与关系类型；缺省返回 nil，调用方回退到全局默认白名单。
 	GraphTypes(ctx context.Context, knowledgeBaseId int64) (entityTypes, relationTypes []string, err error)

@@ -1,7 +1,7 @@
 package semantic
 
 import (
-	"github.com/swiftbit/know-agent/common"
+	"github.com/swiftbit/know-agent/pkg/common"
 	"github.com/swiftbit/know-agent/services/document/internal/domain/logic/process/chunk/semantic/similarity"
 )
 

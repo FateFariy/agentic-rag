@@ -3,7 +3,7 @@ package chunk
 import (
 	"context"
 
-	"github.com/swiftbit/know-agent/common"
+	"github.com/swiftbit/know-agent/pkg/common"
 )
 
 // Chunker 文本分块器

@@ -153,7 +153,6 @@ func (p *FinalizationStage) convertStepDraftsToEntities(planId int64, document *
 			PipelineType:    pipelineType,
 			StepNo:          orderIdx + 1,
 			StrategyType:    step.StrategyType,
-			StrategyRole:    step.StrategyRole,
 			SourceType:      step.SourceType,
 			ExecuteStatus:   enum.StrategyExecuteStatusWaitExecute,
 			RecommendReason: draft.RecommendReason,

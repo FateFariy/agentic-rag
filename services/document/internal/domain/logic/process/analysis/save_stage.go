@@ -26,12 +26,12 @@ type SaveStage struct {
 }
 
 // NewSaveStage 创建保存阶段
-func NewSaveStage(repo adapter.DocumentRepository, tableRepo adapter.TableRepository, storage adapter.Storage, gen save.ProfileGenerator) *SaveStage {
+func NewSaveStage(repo adapter.DocumentRepository, storage adapter.Storage, gen save.ProfileGenerator) *SaveStage {
 	return &SaveStage{
 		repo: repo,
 		saves: []Save{
 			save.NewParsedTextUploadPhase(storage),
-			save.NewArtifactPersistPhase(repo, tableRepo, storage),
+			save.NewArtifactPersistPhase(repo, storage),
 			save.NewStructurePersistPhase(repo),
 			save.NewProfileGeneratePhase(gen),
 		},

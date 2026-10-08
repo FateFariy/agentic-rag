@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/swiftbit/know-agent/pkg/ai"
 	"github.com/swiftbit/know-agent/pkg/logx"
-	"github.com/swiftbit/know-agent/pkg/svc"
+	"github.com/swiftbit/know-agent/services/document/internal/config"
 	"github.com/swiftbit/know-agent/services/document/internal/domain/adapter"
 	"github.com/swiftbit/know-agent/services/document/internal/domain/logic/process/analysis/save"
 )
@@ -17,14 +18,14 @@ type Chain struct {
 }
 
 // NewAnalysisChain 创建并注册所有阶段
-func NewAnalysisChain(svcCtx *svc.ServiceContext, repo adapter.DocumentRepository, tableRepo adapter.TableRepository,
+func NewAnalysisChain(chunkConf config.ChunkConf, chatModel ai.ChatModel, repo adapter.DocumentRepository,
 	storage adapter.Storage, gen save.ProfileGenerator, resolver IndexingConfigResolver) *Chain {
 	phases := []Stage{
-		NewInitializationStage(repo),                // 1. 初始化任务状态，标记解析开始
-		NewParseStage(repo, storage),                // 2. 解析文件内容，生成分析结果
-		NewSaveStage(repo, tableRepo, storage, gen), // 3. 保存解析产物（文本、结构节点等）
-		NewStrategyStage(svcCtx, repo, resolver),    // 4. 生成推荐切分策略
-		NewFinalizationStage(repo),                  // 5. 持久化策略，更新文档/任务最终状态
+		NewInitializationStage(repo),                           // 1. 初始化任务状态，标记解析开始
+		NewParseStage(repo, storage),                           // 2. 解析文件内容，生成分析结果
+		NewSaveStage(repo, storage, gen),                       // 3. 保存解析产物（文本、结构节点等）
+		NewStrategyStage(chunkConf, chatModel, repo, resolver), // 4. 生成推荐切分策略
+		NewFinalizationStage(repo),                             // 5. 持久化策略，更新文档/任务最终状态
 	}
 
 	return &Chain{phases: phases}

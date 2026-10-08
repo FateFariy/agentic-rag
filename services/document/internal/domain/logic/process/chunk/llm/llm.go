@@ -7,10 +7,9 @@ import (
 
 	"github.com/duke-git/lancet/v2/strutil"
 
-	"github.com/swiftbit/know-agent/common"
+	"github.com/swiftbit/know-agent/pkg/ai"
+	"github.com/swiftbit/know-agent/pkg/common"
 	"github.com/swiftbit/know-agent/pkg/utils"
-	"github.com/swiftbit/know-agent/services/document/internal/domain/adapter"
-	"github.com/swiftbit/know-agent/services/document/internal/domain/adapter/model"
 	"github.com/swiftbit/know-agent/services/document/internal/domain/logic/process/chunk/recursive"
 	"github.com/swiftbit/know-agent/services/document/internal/domain/model/enum"
 )
@@ -21,14 +20,14 @@ const (
 
 // Chunker 大模型智能分块器
 type Chunker struct {
-	model     model.ChatModel
-	renderer  adapter.PromptRenderer
+	model     ai.ChatModel
+	renderer  ai.PromptRenderer
 	recursive *recursive.Chunker
 	opt       *options
 }
 
 // NewChunker 创建大模型智能分块器
-func NewChunker(model model.ChatModel, renderer adapter.PromptRenderer, opts ...common.Option) *Chunker {
+func NewChunker(model ai.ChatModel, renderer ai.PromptRenderer, opts ...common.Option) *Chunker {
 	return &Chunker{
 		opt: common.GetImplSpecificOptions(&options{
 			llmMaxChars: defaultLLMMaxChars,

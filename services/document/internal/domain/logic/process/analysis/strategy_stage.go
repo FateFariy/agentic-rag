@@ -6,10 +6,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/duke-git/lancet/v2/slice"
-
-	"github.com/swiftbit/know-agent/pkg/svc"
+	"github.com/swiftbit/know-agent/pkg/ai"
 	"github.com/swiftbit/know-agent/pkg/utils"
+	"github.com/swiftbit/know-agent/services/document/internal/config"
 	"github.com/swiftbit/know-agent/services/document/internal/domain/adapter"
 	"github.com/swiftbit/know-agent/services/document/internal/domain/model/aggregate"
 	"github.com/swiftbit/know-agent/services/document/internal/domain/model/entity"
@@ -26,13 +25,13 @@ type StrategyStage struct {
 	llmValid                   bool
 }
 
-func NewStrategyStage(svcCtx *svc.ServiceContext, repo adapter.DocumentRepository, resolver IndexingConfigResolver) *StrategyStage {
+func NewStrategyStage(chunkConf config.ChunkConf, chatModel ai.ChatModel, repo adapter.DocumentRepository, resolver IndexingConfigResolver) *StrategyStage {
 	return &StrategyStage{
 		repo:                       repo,
 		resolver:                   resolver,
-		llmEnabled:                 svcCtx.Config.Chunk.LlmEnabled,
-		recommendLlmWhenLowQuality: svcCtx.Config.Chunk.RecommendLlmWhenLowQuality,
-		llmValid:                   svcCtx.ChatModel != nil,
+		llmEnabled:                 chunkConf.LlmEnabled,
+		recommendLlmWhenLowQuality: chunkConf.RecommendLlmWhenLowQuality,
+		llmValid:                   chatModel != nil,
 	}
 }
 
@@ -151,13 +150,12 @@ func (p *StrategyStage) recommend(ctx context.Context, document *entity.Document
 	}, nil
 }
 
-// buildDraftSteps 将策略类型列表构造成推荐步骤草稿（带上角色与理由），首项默认为主策略，其余按类型赋予优化/兜底/增强角色
+// buildDraftSteps 将策略类型列表构造成推荐步骤草稿（带上推荐理由）
 func (p *StrategyStage) buildDraftSteps(pipelineType string, strategyTypes []int, reasonMap map[int]string) vo.DocumentStrategyStepDrafts {
-	return slice.Map(strategyTypes, func(index, strategyType int) *vo.DocumentStrategyStepDraft {
+	return utils.Map(strategyTypes, func(strategyType int) *vo.DocumentStrategyStepDraft {
 		return &vo.DocumentStrategyStepDraft{
 			PipelineType:    pipelineType,
 			StrategyType:    strategyType,
-			StrategyRole:    enum.ResolveRole(index, strategyType),
 			SourceType:      enum.StrategySourceTypeSystemRecommend,
 			RecommendReason: utils.BlankToDefault(reasonMap[strategyType], "系统为当前流水线生成的推荐步骤。"),
 		}

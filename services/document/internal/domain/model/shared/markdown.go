@@ -22,10 +22,6 @@ type MarkdownNode struct {
 	Level        int         // 节点层级
 	Marker       string      // 标记符号(如列表符号)
 	Ordinal      int         // 序号值(有序列表)
-	IsHeader     bool        // 是否为标题
-	Alignment    string      // 对齐方式
-	RowIndex     int         // 表格行索引
-	ColumnIndex  int         // 表格列索引
 	CodeInfo     string      // 附加信息
 }
 

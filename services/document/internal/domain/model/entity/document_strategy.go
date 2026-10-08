@@ -54,13 +54,11 @@ type DocumentStrategyStep struct {
 	StepNo            int    `gorm:"column:step_no"`          // 步骤序号
 	PipelineType      string `gorm:"column:pipeline_type"`    // 流水线类型
 	StrategyType      int    `gorm:"column:strategy_type"`    // 策略类型
-	StrategyRole      int    `gorm:"column:strategy_role"`    // 策略角色
 	SourceType        int    `gorm:"column:source_type"`      // 来源类型
 	ExecuteStatus     int    `gorm:"column:execute_status"`   // 执行状态
 	RecommendReason   string `gorm:"column:recommend_reason"` // 推荐理由
 	PipelineTypeName  string `gorm:"-"`                       // 流水线类型名称
 	StrategyTypeName  string `gorm:"-"`                       // 策略类型名称
-	StrategyRoleName  string `gorm:"-"`                       // 策略角色名称
 	SourceTypeName    string `gorm:"-"`                       // 来源类型名称
 	ExecuteStatusName string `gorm:"-"`                       // 执行状态名称
 }
@@ -71,7 +69,6 @@ func (d *DocumentStrategyStep) FillEnumNames() {
 	}
 	d.PipelineTypeName = enum.PipelineTypeName(d.PipelineType)
 	d.StrategyTypeName = enum.StrategyTypeName(d.StrategyType)
-	d.StrategyRoleName = enum.StrategyRoleName(d.StrategyRole)
 	d.SourceTypeName = enum.StrategySourceTypeName(d.SourceType)
 	d.ExecuteStatusName = enum.StrategyStatusName(d.ExecuteStatus)
 }

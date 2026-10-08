@@ -18,7 +18,7 @@ import (
 // AsyncProcessImpl 异步处理业务逻辑实现
 //
 //	HandleParseRoute → 解析路由（文件解析 + 结构节点 + 策略推荐）
-//	HandleIndexBuild → 索引构建（切块流水线 + 向量化 + 落库 + GraphRAG + RAPTOR）
+//	HandleIndexBuild → 索引构建（切块流水线 + 向量化 + 落库 + GraphRAG）
 type AsyncProcessImpl struct {
 	repo          adapter.DocumentRepository
 	analysisChain *analysis.Chain
@@ -77,7 +77,7 @@ func (d *AsyncProcessImpl) HandleParseRoute(ctx context.Context, documentId, tas
 	return nil
 }
 
-// HandleIndexBuild 执行索引构建主流程（使用责任链模式）：准备 → 切块 → 向量化 → 关键词索引 → GraphRAG → RAPTOR → 完成
+// HandleIndexBuild 执行索引构建主流程（使用责任链模式）：准备 → 切块 → 向量化 → 关键词索引 → GraphRAG → 完成
 func (d *AsyncProcessImpl) HandleIndexBuild(ctx context.Context, documentId, taskId, planId int64) (err error) {
 	// 加载任务相关实体
 	task, err := d.repo.SelectTaskById(ctx, taskId)

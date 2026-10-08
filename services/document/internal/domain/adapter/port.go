@@ -53,12 +53,6 @@ type KnowledgeGateway interface {
 	RequireEnabled(ctx context.Context, knowledgeBaseId int64) (*entity.KnowledgeBase, error)
 }
 
-// PromptRenderer 负责将 sourceText 渲染为大模型提示词
-type PromptRenderer interface {
-	// Render 渲染提示词
-	Render(templateName string, variables map[string]any) (string, error)
-}
-
 // GraphStore 知识图谱存储（Neo4j 等图数据库）
 type GraphStore interface {
 	// ReplaceDocumentGraph 事务化全删全插（按 document_id + task_id 幂等）

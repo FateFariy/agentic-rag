@@ -2,7 +2,9 @@
 // 错误码沿用单体时期 200xx 段编号，保持与历史数据/日志的一致性。
 package errorx
 
-import "github.com/swiftbit/know-agent/common"
+import (
+	"github.com/swiftbit/know-agent/pkg/common"
+)
 
 var (
 	ErrDocumentNotFound        = common.NewBizError(20001, "文档不存在：%d")
