@@ -2,12 +2,7 @@ package config
 
 import "time"
 
-// ChatConf 对话业务总配置（knowledge 仅使用其 Rag 段，副本以实现配置解耦）
-type ChatConf struct {
-	Rag RagConf // RAG配置
-}
-
-// RagConf RAG配置
+// RagConf RAG配置（knowledge 直接消费，不再经 Chat 外壳）
 type RagConf struct {
 	Enabled                        bool          `json:",default=true"` // 是否启用RAG
 	ChannelTimeout                 time.Duration `json:",default=5s"`   // 通道超时时间

@@ -23,7 +23,7 @@ func (c *LocalConfig) CurrentOptions() *vo.RagRuntimeOptions {
 	}
 
 	// 覆盖所有字段
-	rag := c.conf.Chat.Rag
+	rag := c.conf.Rag
 	opts.VectorTopK = rag.Vector.TopK
 	opts.KeywordTopK = rag.Keyword.TopK
 	opts.GraphRagTopK = rag.Graph.SearchTopK
@@ -58,7 +58,7 @@ func (c *LocalConfig) CurrentIndexingOptions() *vo.IndexingOptions {
 	}
 
 	chunk := c.conf.Chunk
-	rag := c.conf.Chat.Rag
+	rag := c.conf.Rag
 
 	return &vo.IndexingOptions{
 		Chunk: vo.ChunkOptions{

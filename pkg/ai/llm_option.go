@@ -1,8 +1,6 @@
 package ai
 
-import (
-	"github.com/swiftbit/know-agent/pkg/common"
-)
+import "github.com/swiftbit/know-agent/pkg/common"
 
 type Options struct {
 	Function      string

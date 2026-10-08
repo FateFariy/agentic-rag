@@ -20,35 +20,34 @@ type AuthConf struct {
 	AccessExpire time.Duration
 }
 
-// BaseConfig 跨服务共享的基础设施与模型配置，由各微服务 MySQLCon 内嵌复用
+// BaseConfig 跨服务共享的基础设施与模型配置
 type BaseConfig struct {
-	Http       rest.RestConf
-	Rpc        zrpc.RpcServerConf `json:",optional"`
-	Auth       AuthConf
-	Mysql      infra.MySQLCon
-	Redis      infra.RedisConf
-	Minio      infra.MinioConf
-	Neo4j      infra.Neo4jConf
-	MQ         infra.MQConfig
-	Embedding  embedding.EmbeddingConf
-	Gse        tokenize.GseConf
-	Milvus     infra.MilvusConf
-	ChatModel  map[string]*ai.LLMConf
-	JudgeModel map[string]*ai.LLMConf
+	Http       rest.RestConf           `json:",optional"`
+	Rpc        zrpc.RpcServerConf      `json:",optional"`
+	Auth       AuthConf                `json:",optional"`
+	Mysql      infra.MySQLConf         `json:",optional"`
+	Redis      infra.RedisConf         `json:",optional"`
+	Minio      infra.MinioConf         `json:",optional"`
+	Neo4j      infra.Neo4jConf         `json:",optional"`
+	MQ         infra.MQConfig          `json:",optional"`
+	Embedding  embedding.EmbeddingConf `json:",optional"`
+	Gse        tokenize.GseConf        `json:",optional"`
+	Milvus     infra.MilvusConf        `json:",optional"`
+	ChatModel  map[string]*ai.LLMConf  `json:",optional"`
+	JudgeModel map[string]*ai.LLMConf  `json:",optional"`
 	Grpc       GrpcConf
 }
 
 // GrpcConf 微服务间 gRPC 出站上游地址（调用方使用）
 type GrpcConf struct {
-	DocumentAddr  string `json:",optional"` // document 出站地址（chat/knowledge 作为调用方）
-	KnowledgeAddr string `json:",optional"` // knowledge 出站地址（chat/document 作为调用方）
+	DocumentAddr  string `json:",optional"`
+	KnowledgeAddr string `json:",optional"`
 }
 
-// LoadConfig 从 -f 指定的 YAML 加载配置到 c（失败直接 panic），默认 etc/config-dev.yaml
-// 各微服务在自身 config 包内复用，解析自身 MySQLCon 结构（只读取关注的配置段）
-func LoadConfig(c any) {
+// LoadConfig 从 -f 指定的 YAML 加载配置到 c（失败直接 panic）
+func LoadConfig(c any, defaultPath string) {
 	var configFile string
-	flag.StringVar(&configFile, "f", "etc/config-dev.yaml", "the config file")
+	flag.StringVar(&configFile, "f", defaultPath, "the config file")
 	flag.Parse()
-	conf.MustLoad(configFile, c)
+	conf.MustLoad(configFile, c, conf.UseEnv())
 }

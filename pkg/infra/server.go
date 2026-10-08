@@ -11,7 +11,7 @@ import (
 	"google.golang.org/grpc/reflection"
 )
 
-// LifecycleComponent 随统一生命周期启停的消息组件（producer/consumer 均满足）
+// LifecycleComponent 随统一生命周期启停的消息组件
 type LifecycleComponent interface {
 	Start()
 	Stop()

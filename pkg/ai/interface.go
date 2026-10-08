@@ -14,3 +14,9 @@ type ChatModel interface {
 
 	Stream(ctx context.Context, stage, systemPrompt, userPrompt string, opts ...common.Option) (<-chan string, error)
 }
+
+// PromptRenderer 负责将 sourceText 渲染为大模型提示词
+type PromptRenderer interface {
+	// Render 渲染提示词
+	Render(templateName string, variables map[string]any) (string, error)
+}

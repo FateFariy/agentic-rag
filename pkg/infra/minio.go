@@ -29,27 +29,22 @@ type MinioConf struct {
 	UseSSL              bool   `json:",default=false"`
 }
 
-// NewMinioClient 创建 MinIO 客户端；失败直接 panic（启动期致命错误）。
-func NewMinioClient(c MinioConf) *minio.Client {
-	minioClient, err := minio.New(c.Addr, &minio.Options{
+// MinioStore 通用对象存储网关：内嵌 MinIO 客户端，封装上传、下载、删除、
+// 桶初始化与对象 URL 构建，供各服务的存储适配器复用，业务侧只需处理对象名拼接等业务规则
+type MinioStore struct {
+	*minio.Client
+	MinioConf
+}
+
+// NewMinioStore 基于配置创建对象存储网关，并在内部完成 MinIO 客户端初始化
+func NewMinioStore(c MinioConf) *MinioStore {
+	client, err := minio.New(c.Addr, &minio.Options{
 		Creds:  credentials.NewStaticV4(c.AccessKeyID, c.SecretAccessKey, ""),
 		Secure: c.UseSSL,
 	})
 	if err != nil {
 		panic(err)
 	}
-	return minioClient
-}
-
-// MinioStore 通用对象存储网关：封装上传、下载、删除、桶初始化与对象 URL 构建，
-// 供各服务的存储适配器内嵌复用，业务侧只需处理对象名拼接等业务规则。
-type MinioStore struct {
-	Client *minio.Client
-	MinioConf
-}
-
-// NewMinioStore 基于已有客户端与配置创建对象存储网关
-func NewMinioStore(client *minio.Client, c MinioConf) *MinioStore {
 	return &MinioStore{Client: client, MinioConf: c}
 }
 
@@ -59,7 +54,7 @@ func (s *MinioStore) Upload(ctx context.Context, objectName string, data []byte,
 		return common.WrapErr(err, ErrDocumentStorageFailed.Code, "上传 MinIO 文件失败: "+err.Error())
 	}
 
-	_, err := s.Client.PutObject(ctx, s.BucketName, objectName, bytes.NewReader(data), int64(len(data)), minio.PutObjectOptions{
+	_, err := s.PutObject(ctx, s.BucketName, objectName, bytes.NewReader(data), int64(len(data)), minio.PutObjectOptions{
 		ContentType: condition.Ternary(contentType == "", "application/octet-stream", contentType),
 	})
 	if err != nil {
@@ -70,7 +65,7 @@ func (s *MinioStore) Upload(ctx context.Context, objectName string, data []byte,
 
 // DownloadObject 下载对象内容
 func (s *MinioStore) DownloadObject(ctx context.Context, objectName string) ([]byte, error) {
-	object, err := s.Client.GetObject(ctx, s.BucketName, objectName, minio.GetObjectOptions{})
+	object, err := s.GetObject(ctx, s.BucketName, objectName, minio.GetObjectOptions{})
 	if err != nil {
 		return nil, common.WrapErr(err, ErrDocumentStorageFailed.Code, "下载 MinIO 文件失败: "+err.Error())
 	}
@@ -104,7 +99,7 @@ func (s *MinioStore) DeleteObjects(ctx context.Context, objectNameList []string)
 		return nil
 	}
 
-	exists, err := s.Client.BucketExists(ctx, s.BucketName)
+	exists, err := s.BucketExists(ctx, s.BucketName)
 	if err != nil {
 		return common.WrapErr(err, ErrDocumentStorageFailed.Code, "删除 MinIO 文件失败: "+err.Error())
 	}
@@ -113,7 +108,7 @@ func (s *MinioStore) DeleteObjects(ctx context.Context, objectNameList []string)
 	}
 
 	for _, objectName := range validObjectNameList {
-		if err = s.Client.RemoveObject(ctx, s.BucketName, objectName, minio.RemoveObjectOptions{}); err != nil {
+		if err = s.RemoveObject(ctx, s.BucketName, objectName, minio.RemoveObjectOptions{}); err != nil {
 			return common.WrapErr(err, ErrDocumentStorageFailed.Code, "删除 MinIO 文件失败: "+err.Error())
 		}
 	}
@@ -122,12 +117,12 @@ func (s *MinioStore) DeleteObjects(ctx context.Context, objectNameList []string)
 
 // EnsureBucket 确保桶存在，不存在则创建
 func (s *MinioStore) EnsureBucket(ctx context.Context) error {
-	exists, err := s.Client.BucketExists(ctx, s.BucketName)
+	exists, err := s.BucketExists(ctx, s.BucketName)
 	if err != nil {
 		return err
 	}
 	if !exists {
-		return s.Client.MakeBucket(ctx, s.BucketName, minio.MakeBucketOptions{})
+		return s.MakeBucket(ctx, s.BucketName, minio.MakeBucketOptions{})
 	}
 	return nil
 }
