@@ -28,8 +28,6 @@ func (c *LocalConfig) CurrentOptions() *vo.RagRuntimeOptions {
 	opts.KeywordTopK = rag.Keyword.TopK
 	opts.GraphRagTopK = rag.Graph.SearchTopK
 	opts.GraphRagMaxHops = rag.Graph.SearchMaxHops
-	opts.RaptorTopK = rag.Raptor.TopK
-	opts.RaptorSourceChunkTopK = rag.Raptor.SourceChunkTopK
 	opts.CandidateTopK = rag.FinalTopK
 	opts.RerankCandidateTopK = rag.Rerank.TopN
 	opts.FinalTopK = rag.FinalTopK
@@ -40,13 +38,11 @@ func (c *LocalConfig) CurrentOptions() *vo.RagRuntimeOptions {
 	opts.KeywordRelativeScoreFloor = rag.Keyword.RelativeScoreFloor
 	opts.KeywordChannelEnabled = rag.Keyword.Enabled
 	opts.GraphRagChannelEnabled = rag.Graph.Enabled
-	opts.RaptorChannelEnabled = rag.Raptor.Enabled
 	hybrid := rag.Hybrid
 	opts.Hybrid = &vo.HybridOptions{
 		VectorWeight:        hybrid.VectorWeight,
 		KeywordWeight:       hybrid.KeywordWeight,
 		GraphRagWeight:      hybrid.GraphRagWeight,
-		RaptorWeight:        hybrid.RaptorWeight,
 		RankWeight:          hybrid.RankWeight,
 		OriginalScoreWeight: hybrid.OriginalScoreWeight,
 		MetadataBoostWeight: hybrid.MetadataBoostWeight,
@@ -78,13 +74,6 @@ func (c *LocalConfig) CurrentIndexingOptions() *vo.IndexingOptions {
 		},
 		GraphRag: vo.GraphRagBuildOptions{
 			GraphRagBuildEnabled: rag.Graph.Enabled,
-		},
-		Raptor: vo.RaptorBuildOptions{
-			RaptorBuildEnabled:        rag.Raptor.Enabled,
-			RaptorMaxClusterSize:      rag.Raptor.MaxClusterSize,
-			RaptorMaxLevels:           rag.Raptor.MaxLevels,
-			RaptorLlmSummaryEnabled:   rag.Raptor.LlmSummaryEnabled,
-			RaptorSummaryQualityFloor: rag.Raptor.SummaryQualityFloor,
 		},
 	}
 }

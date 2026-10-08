@@ -17,6 +17,6 @@ type Config struct {
 // MustLoad 从 -f 指定的 YAML 加载 knowledge 配置（默认 etc/config-dev.yaml）。
 func MustLoad() *Config {
 	var c Config
-	sharedcfg.LoadInto(&c)
+	sharedcfg.LoadConfig(&c)
 	return &c
 }

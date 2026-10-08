@@ -2,20 +2,18 @@
 // versions:
 // 	protoc-gen-go v1.36.12
 // 	protoc        (unknown)
-// source: proto/knowagent/knowledge/v1/knowledge.proto
+// source: proto/knowledge/v1/knowledge.proto
 
 package knowledgev1
 
 import (
-	reflect "reflect"
-	sync "sync"
-	unsafe "unsafe"
-
+	v1 "github.com/swiftbit/know-agent/pkg/grpc/gen/document/v1"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	emptypb "google.golang.org/protobuf/types/known/emptypb"
-
-	v1 "github.com/swiftbit/know-agent/pkg/grpc/gen/document/v1"
+	reflect "reflect"
+	sync "sync"
+	unsafe "unsafe"
 )
 
 const (
@@ -34,17 +32,16 @@ type KnowledgeBase struct {
 	EmbeddingModel      string                 `protobuf:"bytes,4,opt,name=embedding_model,json=embeddingModel,proto3" json:"embedding_model,omitempty"`
 	RetrievalConfigJson string                 `protobuf:"bytes,5,opt,name=retrieval_config_json,json=retrievalConfigJson,proto3" json:"retrieval_config_json,omitempty"`
 	GraphRagConfigJson  string                 `protobuf:"bytes,6,opt,name=graph_rag_config_json,json=graphRagConfigJson,proto3" json:"graph_rag_config_json,omitempty"`
-	RaptorConfigJson    string                 `protobuf:"bytes,7,opt,name=raptor_config_json,json=raptorConfigJson,proto3" json:"raptor_config_json,omitempty"`
-	MetadataFilterJson  string                 `protobuf:"bytes,8,opt,name=metadata_filter_json,json=metadataFilterJson,proto3" json:"metadata_filter_json,omitempty"`
-	IsDefault           int32                  `protobuf:"varint,9,opt,name=is_default,json=isDefault,proto3" json:"is_default,omitempty"`
-	SortOrder           int32                  `protobuf:"varint,10,opt,name=sort_order,json=sortOrder,proto3" json:"sort_order,omitempty"`
+	MetadataFilterJson  string                 `protobuf:"bytes,7,opt,name=metadata_filter_json,json=metadataFilterJson,proto3" json:"metadata_filter_json,omitempty"`
+	IsDefault           int32                  `protobuf:"varint,8,opt,name=is_default,json=isDefault,proto3" json:"is_default,omitempty"`
+	SortOrder           int32                  `protobuf:"varint,9,opt,name=sort_order,json=sortOrder,proto3" json:"sort_order,omitempty"`
 	unknownFields       protoimpl.UnknownFields
 	sizeCache           protoimpl.SizeCache
 }
 
 func (x *KnowledgeBase) Reset() {
 	*x = KnowledgeBase{}
-	mi := &file_proto_knowagent_knowledge_v1_knowledge_proto_msgTypes[0]
+	mi := &file_proto_knowledge_v1_knowledge_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -56,7 +53,7 @@ func (x *KnowledgeBase) String() string {
 func (*KnowledgeBase) ProtoMessage() {}
 
 func (x *KnowledgeBase) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_knowagent_knowledge_v1_knowledge_proto_msgTypes[0]
+	mi := &file_proto_knowledge_v1_knowledge_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -69,7 +66,7 @@ func (x *KnowledgeBase) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use KnowledgeBase.ProtoReflect.Descriptor instead.
 func (*KnowledgeBase) Descriptor() ([]byte, []int) {
-	return file_proto_knowagent_knowledge_v1_knowledge_proto_rawDescGZIP(), []int{0}
+	return file_proto_knowledge_v1_knowledge_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *KnowledgeBase) GetId() int64 {
@@ -114,13 +111,6 @@ func (x *KnowledgeBase) GetGraphRagConfigJson() string {
 	return ""
 }
 
-func (x *KnowledgeBase) GetRaptorConfigJson() string {
-	if x != nil {
-		return x.RaptorConfigJson
-	}
-	return ""
-}
-
 func (x *KnowledgeBase) GetMetadataFilterJson() string {
 	if x != nil {
 		return x.MetadataFilterJson
@@ -147,20 +137,18 @@ type HybridOptions struct {
 	state               protoimpl.MessageState `protogen:"open.v1"`
 	VectorWeight        float64                `protobuf:"fixed64,1,opt,name=vector_weight,json=vectorWeight,proto3" json:"vector_weight,omitempty"`
 	KeywordWeight       float64                `protobuf:"fixed64,2,opt,name=keyword_weight,json=keywordWeight,proto3" json:"keyword_weight,omitempty"`
-	TableWeight         float64                `protobuf:"fixed64,3,opt,name=table_weight,json=tableWeight,proto3" json:"table_weight,omitempty"`
-	GraphRagWeight      float64                `protobuf:"fixed64,4,opt,name=graph_rag_weight,json=graphRagWeight,proto3" json:"graph_rag_weight,omitempty"`
-	RaptorWeight        float64                `protobuf:"fixed64,5,opt,name=raptor_weight,json=raptorWeight,proto3" json:"raptor_weight,omitempty"`
-	RankWeight          float64                `protobuf:"fixed64,6,opt,name=rank_weight,json=rankWeight,proto3" json:"rank_weight,omitempty"`
-	OriginalScoreWeight float64                `protobuf:"fixed64,7,opt,name=original_score_weight,json=originalScoreWeight,proto3" json:"original_score_weight,omitempty"`
-	MetadataBoostWeight float64                `protobuf:"fixed64,8,opt,name=metadata_boost_weight,json=metadataBoostWeight,proto3" json:"metadata_boost_weight,omitempty"`
-	MaxMetadataBoost    float64                `protobuf:"fixed64,9,opt,name=max_metadata_boost,json=maxMetadataBoost,proto3" json:"max_metadata_boost,omitempty"`
+	GraphRagWeight      float64                `protobuf:"fixed64,3,opt,name=graph_rag_weight,json=graphRagWeight,proto3" json:"graph_rag_weight,omitempty"`
+	RankWeight          float64                `protobuf:"fixed64,4,opt,name=rank_weight,json=rankWeight,proto3" json:"rank_weight,omitempty"`
+	OriginalScoreWeight float64                `protobuf:"fixed64,5,opt,name=original_score_weight,json=originalScoreWeight,proto3" json:"original_score_weight,omitempty"`
+	MetadataBoostWeight float64                `protobuf:"fixed64,6,opt,name=metadata_boost_weight,json=metadataBoostWeight,proto3" json:"metadata_boost_weight,omitempty"`
+	MaxMetadataBoost    float64                `protobuf:"fixed64,7,opt,name=max_metadata_boost,json=maxMetadataBoost,proto3" json:"max_metadata_boost,omitempty"`
 	unknownFields       protoimpl.UnknownFields
 	sizeCache           protoimpl.SizeCache
 }
 
 func (x *HybridOptions) Reset() {
 	*x = HybridOptions{}
-	mi := &file_proto_knowagent_knowledge_v1_knowledge_proto_msgTypes[1]
+	mi := &file_proto_knowledge_v1_knowledge_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -172,7 +160,7 @@ func (x *HybridOptions) String() string {
 func (*HybridOptions) ProtoMessage() {}
 
 func (x *HybridOptions) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_knowagent_knowledge_v1_knowledge_proto_msgTypes[1]
+	mi := &file_proto_knowledge_v1_knowledge_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -185,7 +173,7 @@ func (x *HybridOptions) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use HybridOptions.ProtoReflect.Descriptor instead.
 func (*HybridOptions) Descriptor() ([]byte, []int) {
-	return file_proto_knowagent_knowledge_v1_knowledge_proto_rawDescGZIP(), []int{1}
+	return file_proto_knowledge_v1_knowledge_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *HybridOptions) GetVectorWeight() float64 {
@@ -202,23 +190,9 @@ func (x *HybridOptions) GetKeywordWeight() float64 {
 	return 0
 }
 
-func (x *HybridOptions) GetTableWeight() float64 {
-	if x != nil {
-		return x.TableWeight
-	}
-	return 0
-}
-
 func (x *HybridOptions) GetGraphRagWeight() float64 {
 	if x != nil {
 		return x.GraphRagWeight
-	}
-	return 0
-}
-
-func (x *HybridOptions) GetRaptorWeight() float64 {
-	if x != nil {
-		return x.RaptorWeight
 	}
 	return 0
 }
@@ -258,29 +232,25 @@ type RagRuntimeOptions struct {
 	KeywordTopK               int32                  `protobuf:"varint,2,opt,name=keyword_top_k,json=keywordTopK,proto3" json:"keyword_top_k,omitempty"`
 	GraphRagTopK              int32                  `protobuf:"varint,3,opt,name=graph_rag_top_k,json=graphRagTopK,proto3" json:"graph_rag_top_k,omitempty"`
 	GraphRagMaxHops           int32                  `protobuf:"varint,4,opt,name=graph_rag_max_hops,json=graphRagMaxHops,proto3" json:"graph_rag_max_hops,omitempty"`
-	RaptorTopK                int32                  `protobuf:"varint,5,opt,name=raptor_top_k,json=raptorTopK,proto3" json:"raptor_top_k,omitempty"`
-	RaptorSourceChunkTopK     int32                  `protobuf:"varint,6,opt,name=raptor_source_chunk_top_k,json=raptorSourceChunkTopK,proto3" json:"raptor_source_chunk_top_k,omitempty"`
-	CandidateTopK             int32                  `protobuf:"varint,7,opt,name=candidate_top_k,json=candidateTopK,proto3" json:"candidate_top_k,omitempty"`
-	RerankCandidateTopK       int32                  `protobuf:"varint,8,opt,name=rerank_candidate_top_k,json=rerankCandidateTopK,proto3" json:"rerank_candidate_top_k,omitempty"`
-	FinalTopK                 int32                  `protobuf:"varint,9,opt,name=final_top_k,json=finalTopK,proto3" json:"final_top_k,omitempty"`
-	RerankEnabled             bool                   `protobuf:"varint,10,opt,name=rerank_enabled,json=rerankEnabled,proto3" json:"rerank_enabled,omitempty"`
-	ChannelTimeoutMs          int64                  `protobuf:"varint,11,opt,name=channel_timeout_ms,json=channelTimeoutMs,proto3" json:"channel_timeout_ms,omitempty"`
-	SubQuestionTimeoutMs      int64                  `protobuf:"varint,12,opt,name=sub_question_timeout_ms,json=subQuestionTimeoutMs,proto3" json:"sub_question_timeout_ms,omitempty"`
-	MinVectorSimilarity       float64                `protobuf:"fixed64,13,opt,name=min_vector_similarity,json=minVectorSimilarity,proto3" json:"min_vector_similarity,omitempty"`
-	KeywordRelativeScoreFloor float64                `protobuf:"fixed64,14,opt,name=keyword_relative_score_floor,json=keywordRelativeScoreFloor,proto3" json:"keyword_relative_score_floor,omitempty"`
-	KeywordChannelEnabled     bool                   `protobuf:"varint,15,opt,name=keyword_channel_enabled,json=keywordChannelEnabled,proto3" json:"keyword_channel_enabled,omitempty"`
-	TableChannelEnabled       bool                   `protobuf:"varint,16,opt,name=table_channel_enabled,json=tableChannelEnabled,proto3" json:"table_channel_enabled,omitempty"`
-	GraphRagChannelEnabled    bool                   `protobuf:"varint,17,opt,name=graph_rag_channel_enabled,json=graphRagChannelEnabled,proto3" json:"graph_rag_channel_enabled,omitempty"`
-	RaptorChannelEnabled      bool           `protobuf:"varint,18,opt,name=raptor_channel_enabled,json=raptorChannelEnabled,proto3" json:"raptor_channel_enabled,omitempty"`
-	Hybrid                    *HybridOptions `protobuf:"bytes,19,opt,name=hybrid,proto3" json:"hybrid,omitempty"`
-	KbConfigConflictFields    []string       `protobuf:"bytes,20,rep,name=kb_config_conflict_fields,json=kbConfigConflictFields,proto3" json:"kb_config_conflict_fields,omitempty"`
+	CandidateTopK             int32                  `protobuf:"varint,5,opt,name=candidate_top_k,json=candidateTopK,proto3" json:"candidate_top_k,omitempty"`
+	RerankCandidateTopK       int32                  `protobuf:"varint,6,opt,name=rerank_candidate_top_k,json=rerankCandidateTopK,proto3" json:"rerank_candidate_top_k,omitempty"`
+	FinalTopK                 int32                  `protobuf:"varint,7,opt,name=final_top_k,json=finalTopK,proto3" json:"final_top_k,omitempty"`
+	RerankEnabled             bool                   `protobuf:"varint,8,opt,name=rerank_enabled,json=rerankEnabled,proto3" json:"rerank_enabled,omitempty"`
+	ChannelTimeoutMs          int64                  `protobuf:"varint,9,opt,name=channel_timeout_ms,json=channelTimeoutMs,proto3" json:"channel_timeout_ms,omitempty"`
+	SubQuestionTimeoutMs      int64                  `protobuf:"varint,10,opt,name=sub_question_timeout_ms,json=subQuestionTimeoutMs,proto3" json:"sub_question_timeout_ms,omitempty"`
+	MinVectorSimilarity       float64                `protobuf:"fixed64,11,opt,name=min_vector_similarity,json=minVectorSimilarity,proto3" json:"min_vector_similarity,omitempty"`
+	KeywordRelativeScoreFloor float64                `protobuf:"fixed64,12,opt,name=keyword_relative_score_floor,json=keywordRelativeScoreFloor,proto3" json:"keyword_relative_score_floor,omitempty"`
+	KeywordChannelEnabled     bool                   `protobuf:"varint,13,opt,name=keyword_channel_enabled,json=keywordChannelEnabled,proto3" json:"keyword_channel_enabled,omitempty"`
+	GraphRagChannelEnabled    bool                   `protobuf:"varint,14,opt,name=graph_rag_channel_enabled,json=graphRagChannelEnabled,proto3" json:"graph_rag_channel_enabled,omitempty"`
+	Hybrid                    *HybridOptions         `protobuf:"bytes,15,opt,name=hybrid,proto3" json:"hybrid,omitempty"`
+	KbConfigConflictFields    []string               `protobuf:"bytes,16,rep,name=kb_config_conflict_fields,json=kbConfigConflictFields,proto3" json:"kb_config_conflict_fields,omitempty"`
 	unknownFields             protoimpl.UnknownFields
 	sizeCache                 protoimpl.SizeCache
 }
 
 func (x *RagRuntimeOptions) Reset() {
 	*x = RagRuntimeOptions{}
-	mi := &file_proto_knowagent_knowledge_v1_knowledge_proto_msgTypes[2]
+	mi := &file_proto_knowledge_v1_knowledge_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -292,7 +262,7 @@ func (x *RagRuntimeOptions) String() string {
 func (*RagRuntimeOptions) ProtoMessage() {}
 
 func (x *RagRuntimeOptions) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_knowagent_knowledge_v1_knowledge_proto_msgTypes[2]
+	mi := &file_proto_knowledge_v1_knowledge_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -305,7 +275,7 @@ func (x *RagRuntimeOptions) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RagRuntimeOptions.ProtoReflect.Descriptor instead.
 func (*RagRuntimeOptions) Descriptor() ([]byte, []int) {
-	return file_proto_knowagent_knowledge_v1_knowledge_proto_rawDescGZIP(), []int{2}
+	return file_proto_knowledge_v1_knowledge_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *RagRuntimeOptions) GetVectorTopK() int32 {
@@ -332,20 +302,6 @@ func (x *RagRuntimeOptions) GetGraphRagTopK() int32 {
 func (x *RagRuntimeOptions) GetGraphRagMaxHops() int32 {
 	if x != nil {
 		return x.GraphRagMaxHops
-	}
-	return 0
-}
-
-func (x *RagRuntimeOptions) GetRaptorTopK() int32 {
-	if x != nil {
-		return x.RaptorTopK
-	}
-	return 0
-}
-
-func (x *RagRuntimeOptions) GetRaptorSourceChunkTopK() int32 {
-	if x != nil {
-		return x.RaptorSourceChunkTopK
 	}
 	return 0
 }
@@ -413,23 +369,9 @@ func (x *RagRuntimeOptions) GetKeywordChannelEnabled() bool {
 	return false
 }
 
-func (x *RagRuntimeOptions) GetTableChannelEnabled() bool {
-	if x != nil {
-		return x.TableChannelEnabled
-	}
-	return false
-}
-
 func (x *RagRuntimeOptions) GetGraphRagChannelEnabled() bool {
 	if x != nil {
 		return x.GraphRagChannelEnabled
-	}
-	return false
-}
-
-func (x *RagRuntimeOptions) GetRaptorChannelEnabled() bool {
-	if x != nil {
-		return x.RaptorChannelEnabled
 	}
 	return false
 }
@@ -463,7 +405,7 @@ type KnowledgeBaseSelectionSnapshot struct {
 
 func (x *KnowledgeBaseSelectionSnapshot) Reset() {
 	*x = KnowledgeBaseSelectionSnapshot{}
-	mi := &file_proto_knowagent_knowledge_v1_knowledge_proto_msgTypes[3]
+	mi := &file_proto_knowledge_v1_knowledge_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -475,7 +417,7 @@ func (x *KnowledgeBaseSelectionSnapshot) String() string {
 func (*KnowledgeBaseSelectionSnapshot) ProtoMessage() {}
 
 func (x *KnowledgeBaseSelectionSnapshot) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_knowagent_knowledge_v1_knowledge_proto_msgTypes[3]
+	mi := &file_proto_knowledge_v1_knowledge_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -488,7 +430,7 @@ func (x *KnowledgeBaseSelectionSnapshot) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use KnowledgeBaseSelectionSnapshot.ProtoReflect.Descriptor instead.
 func (*KnowledgeBaseSelectionSnapshot) Descriptor() ([]byte, []int) {
-	return file_proto_knowagent_knowledge_v1_knowledge_proto_rawDescGZIP(), []int{3}
+	return file_proto_knowledge_v1_knowledge_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *KnowledgeBaseSelectionSnapshot) GetSelectionMode() string {
@@ -547,7 +489,7 @@ type ScopeRouteCandidate struct {
 
 func (x *ScopeRouteCandidate) Reset() {
 	*x = ScopeRouteCandidate{}
-	mi := &file_proto_knowagent_knowledge_v1_knowledge_proto_msgTypes[4]
+	mi := &file_proto_knowledge_v1_knowledge_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -559,7 +501,7 @@ func (x *ScopeRouteCandidate) String() string {
 func (*ScopeRouteCandidate) ProtoMessage() {}
 
 func (x *ScopeRouteCandidate) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_knowagent_knowledge_v1_knowledge_proto_msgTypes[4]
+	mi := &file_proto_knowledge_v1_knowledge_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -572,7 +514,7 @@ func (x *ScopeRouteCandidate) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ScopeRouteCandidate.ProtoReflect.Descriptor instead.
 func (*ScopeRouteCandidate) Descriptor() ([]byte, []int) {
-	return file_proto_knowagent_knowledge_v1_knowledge_proto_rawDescGZIP(), []int{4}
+	return file_proto_knowledge_v1_knowledge_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *ScopeRouteCandidate) GetScopeId() int64 {
@@ -632,7 +574,7 @@ type TopicRouteCandidate struct {
 
 func (x *TopicRouteCandidate) Reset() {
 	*x = TopicRouteCandidate{}
-	mi := &file_proto_knowagent_knowledge_v1_knowledge_proto_msgTypes[5]
+	mi := &file_proto_knowledge_v1_knowledge_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -644,7 +586,7 @@ func (x *TopicRouteCandidate) String() string {
 func (*TopicRouteCandidate) ProtoMessage() {}
 
 func (x *TopicRouteCandidate) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_knowagent_knowledge_v1_knowledge_proto_msgTypes[5]
+	mi := &file_proto_knowledge_v1_knowledge_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -657,7 +599,7 @@ func (x *TopicRouteCandidate) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TopicRouteCandidate.ProtoReflect.Descriptor instead.
 func (*TopicRouteCandidate) Descriptor() ([]byte, []int) {
-	return file_proto_knowagent_knowledge_v1_knowledge_proto_rawDescGZIP(), []int{5}
+	return file_proto_knowledge_v1_knowledge_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *TopicRouteCandidate) GetTopicId() int64 {
@@ -724,7 +666,7 @@ type DocumentRouteCandidate struct {
 
 func (x *DocumentRouteCandidate) Reset() {
 	*x = DocumentRouteCandidate{}
-	mi := &file_proto_knowagent_knowledge_v1_knowledge_proto_msgTypes[6]
+	mi := &file_proto_knowledge_v1_knowledge_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -736,7 +678,7 @@ func (x *DocumentRouteCandidate) String() string {
 func (*DocumentRouteCandidate) ProtoMessage() {}
 
 func (x *DocumentRouteCandidate) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_knowagent_knowledge_v1_knowledge_proto_msgTypes[6]
+	mi := &file_proto_knowledge_v1_knowledge_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -749,7 +691,7 @@ func (x *DocumentRouteCandidate) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DocumentRouteCandidate.ProtoReflect.Descriptor instead.
 func (*DocumentRouteCandidate) Descriptor() ([]byte, []int) {
-	return file_proto_knowagent_knowledge_v1_knowledge_proto_rawDescGZIP(), []int{6}
+	return file_proto_knowledge_v1_knowledge_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *DocumentRouteCandidate) GetDocumentId() int64 {
@@ -818,7 +760,7 @@ type KnowledgeRouteDecision struct {
 
 func (x *KnowledgeRouteDecision) Reset() {
 	*x = KnowledgeRouteDecision{}
-	mi := &file_proto_knowagent_knowledge_v1_knowledge_proto_msgTypes[7]
+	mi := &file_proto_knowledge_v1_knowledge_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -830,7 +772,7 @@ func (x *KnowledgeRouteDecision) String() string {
 func (*KnowledgeRouteDecision) ProtoMessage() {}
 
 func (x *KnowledgeRouteDecision) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_knowagent_knowledge_v1_knowledge_proto_msgTypes[7]
+	mi := &file_proto_knowledge_v1_knowledge_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -843,7 +785,7 @@ func (x *KnowledgeRouteDecision) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use KnowledgeRouteDecision.ProtoReflect.Descriptor instead.
 func (*KnowledgeRouteDecision) Descriptor() ([]byte, []int) {
-	return file_proto_knowagent_knowledge_v1_knowledge_proto_rawDescGZIP(), []int{7}
+	return file_proto_knowledge_v1_knowledge_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *KnowledgeRouteDecision) GetScopes() []*ScopeRouteCandidate {
@@ -927,7 +869,7 @@ type KnowledgeRouteInput struct {
 
 func (x *KnowledgeRouteInput) Reset() {
 	*x = KnowledgeRouteInput{}
-	mi := &file_proto_knowagent_knowledge_v1_knowledge_proto_msgTypes[8]
+	mi := &file_proto_knowledge_v1_knowledge_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -939,7 +881,7 @@ func (x *KnowledgeRouteInput) String() string {
 func (*KnowledgeRouteInput) ProtoMessage() {}
 
 func (x *KnowledgeRouteInput) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_knowagent_knowledge_v1_knowledge_proto_msgTypes[8]
+	mi := &file_proto_knowledge_v1_knowledge_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -952,7 +894,7 @@ func (x *KnowledgeRouteInput) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use KnowledgeRouteInput.ProtoReflect.Descriptor instead.
 func (*KnowledgeRouteInput) Descriptor() ([]byte, []int) {
-	return file_proto_knowagent_knowledge_v1_knowledge_proto_rawDescGZIP(), []int{8}
+	return file_proto_knowledge_v1_knowledge_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *KnowledgeRouteInput) GetConversationId() string {
@@ -1028,7 +970,7 @@ type DetermineKnowledgeScopeRequest struct {
 
 func (x *DetermineKnowledgeScopeRequest) Reset() {
 	*x = DetermineKnowledgeScopeRequest{}
-	mi := &file_proto_knowagent_knowledge_v1_knowledge_proto_msgTypes[9]
+	mi := &file_proto_knowledge_v1_knowledge_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1040,7 +982,7 @@ func (x *DetermineKnowledgeScopeRequest) String() string {
 func (*DetermineKnowledgeScopeRequest) ProtoMessage() {}
 
 func (x *DetermineKnowledgeScopeRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_knowagent_knowledge_v1_knowledge_proto_msgTypes[9]
+	mi := &file_proto_knowledge_v1_knowledge_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1053,7 +995,7 @@ func (x *DetermineKnowledgeScopeRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DetermineKnowledgeScopeRequest.ProtoReflect.Descriptor instead.
 func (*DetermineKnowledgeScopeRequest) Descriptor() ([]byte, []int) {
-	return file_proto_knowagent_knowledge_v1_knowledge_proto_rawDescGZIP(), []int{9}
+	return file_proto_knowledge_v1_knowledge_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *DetermineKnowledgeScopeRequest) GetSelectMode() string {
@@ -1079,7 +1021,7 @@ type RouteRequest struct {
 
 func (x *RouteRequest) Reset() {
 	*x = RouteRequest{}
-	mi := &file_proto_knowagent_knowledge_v1_knowledge_proto_msgTypes[10]
+	mi := &file_proto_knowledge_v1_knowledge_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1091,7 +1033,7 @@ func (x *RouteRequest) String() string {
 func (*RouteRequest) ProtoMessage() {}
 
 func (x *RouteRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_knowagent_knowledge_v1_knowledge_proto_msgTypes[10]
+	mi := &file_proto_knowledge_v1_knowledge_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1104,7 +1046,7 @@ func (x *RouteRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RouteRequest.ProtoReflect.Descriptor instead.
 func (*RouteRequest) Descriptor() ([]byte, []int) {
-	return file_proto_knowagent_knowledge_v1_knowledge_proto_rawDescGZIP(), []int{10}
+	return file_proto_knowledge_v1_knowledge_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *RouteRequest) GetInput() *KnowledgeRouteInput {
@@ -1123,7 +1065,7 @@ type RecordShadowRouteRequest struct {
 
 func (x *RecordShadowRouteRequest) Reset() {
 	*x = RecordShadowRouteRequest{}
-	mi := &file_proto_knowagent_knowledge_v1_knowledge_proto_msgTypes[11]
+	mi := &file_proto_knowledge_v1_knowledge_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1135,7 +1077,7 @@ func (x *RecordShadowRouteRequest) String() string {
 func (*RecordShadowRouteRequest) ProtoMessage() {}
 
 func (x *RecordShadowRouteRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_knowagent_knowledge_v1_knowledge_proto_msgTypes[11]
+	mi := &file_proto_knowledge_v1_knowledge_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1148,7 +1090,7 @@ func (x *RecordShadowRouteRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RecordShadowRouteRequest.ProtoReflect.Descriptor instead.
 func (*RecordShadowRouteRequest) Descriptor() ([]byte, []int) {
-	return file_proto_knowagent_knowledge_v1_knowledge_proto_rawDescGZIP(), []int{11}
+	return file_proto_knowledge_v1_knowledge_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *RecordShadowRouteRequest) GetInput() *KnowledgeRouteInput {
@@ -1167,7 +1109,7 @@ type ResolveRequest struct {
 
 func (x *ResolveRequest) Reset() {
 	*x = ResolveRequest{}
-	mi := &file_proto_knowagent_knowledge_v1_knowledge_proto_msgTypes[12]
+	mi := &file_proto_knowledge_v1_knowledge_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1179,7 +1121,7 @@ func (x *ResolveRequest) String() string {
 func (*ResolveRequest) ProtoMessage() {}
 
 func (x *ResolveRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_knowagent_knowledge_v1_knowledge_proto_msgTypes[12]
+	mi := &file_proto_knowledge_v1_knowledge_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1192,7 +1134,7 @@ func (x *ResolveRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ResolveRequest.ProtoReflect.Descriptor instead.
 func (*ResolveRequest) Descriptor() ([]byte, []int) {
-	return file_proto_knowagent_knowledge_v1_knowledge_proto_rawDescGZIP(), []int{12}
+	return file_proto_knowledge_v1_knowledge_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *ResolveRequest) GetKnowledgeBaseId() int64 {
@@ -1211,7 +1153,7 @@ type RequireEnabledRequest struct {
 
 func (x *RequireEnabledRequest) Reset() {
 	*x = RequireEnabledRequest{}
-	mi := &file_proto_knowagent_knowledge_v1_knowledge_proto_msgTypes[13]
+	mi := &file_proto_knowledge_v1_knowledge_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1223,7 +1165,7 @@ func (x *RequireEnabledRequest) String() string {
 func (*RequireEnabledRequest) ProtoMessage() {}
 
 func (x *RequireEnabledRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_knowagent_knowledge_v1_knowledge_proto_msgTypes[13]
+	mi := &file_proto_knowledge_v1_knowledge_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1236,7 +1178,7 @@ func (x *RequireEnabledRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RequireEnabledRequest.ProtoReflect.Descriptor instead.
 func (*RequireEnabledRequest) Descriptor() ([]byte, []int) {
-	return file_proto_knowagent_knowledge_v1_knowledge_proto_rawDescGZIP(), []int{13}
+	return file_proto_knowledge_v1_knowledge_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *RequireEnabledRequest) GetKnowledgeBaseId() int64 {
@@ -1255,7 +1197,7 @@ type GraphTypesRequest struct {
 
 func (x *GraphTypesRequest) Reset() {
 	*x = GraphTypesRequest{}
-	mi := &file_proto_knowagent_knowledge_v1_knowledge_proto_msgTypes[14]
+	mi := &file_proto_knowledge_v1_knowledge_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1267,7 +1209,7 @@ func (x *GraphTypesRequest) String() string {
 func (*GraphTypesRequest) ProtoMessage() {}
 
 func (x *GraphTypesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_knowagent_knowledge_v1_knowledge_proto_msgTypes[14]
+	mi := &file_proto_knowledge_v1_knowledge_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1280,7 +1222,7 @@ func (x *GraphTypesRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GraphTypesRequest.ProtoReflect.Descriptor instead.
 func (*GraphTypesRequest) Descriptor() ([]byte, []int) {
-	return file_proto_knowagent_knowledge_v1_knowledge_proto_rawDescGZIP(), []int{14}
+	return file_proto_knowledge_v1_knowledge_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *GraphTypesRequest) GetKnowledgeBaseId() int64 {
@@ -1294,14 +1236,13 @@ type IndexingOptions struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Chunk         *ChunkOptions          `protobuf:"bytes,1,opt,name=chunk,proto3" json:"chunk,omitempty"`
 	GraphRag      *GraphRagBuildOptions  `protobuf:"bytes,2,opt,name=graph_rag,json=graphRag,proto3" json:"graph_rag,omitempty"`
-	Raptor        *RaptorBuildOptions    `protobuf:"bytes,3,opt,name=raptor,proto3" json:"raptor,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *IndexingOptions) Reset() {
 	*x = IndexingOptions{}
-	mi := &file_proto_knowagent_knowledge_v1_knowledge_proto_msgTypes[15]
+	mi := &file_proto_knowledge_v1_knowledge_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1313,7 +1254,7 @@ func (x *IndexingOptions) String() string {
 func (*IndexingOptions) ProtoMessage() {}
 
 func (x *IndexingOptions) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_knowagent_knowledge_v1_knowledge_proto_msgTypes[15]
+	mi := &file_proto_knowledge_v1_knowledge_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1326,7 +1267,7 @@ func (x *IndexingOptions) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use IndexingOptions.ProtoReflect.Descriptor instead.
 func (*IndexingOptions) Descriptor() ([]byte, []int) {
-	return file_proto_knowagent_knowledge_v1_knowledge_proto_rawDescGZIP(), []int{15}
+	return file_proto_knowledge_v1_knowledge_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *IndexingOptions) GetChunk() *ChunkOptions {
@@ -1339,13 +1280,6 @@ func (x *IndexingOptions) GetChunk() *ChunkOptions {
 func (x *IndexingOptions) GetGraphRag() *GraphRagBuildOptions {
 	if x != nil {
 		return x.GraphRag
-	}
-	return nil
-}
-
-func (x *IndexingOptions) GetRaptor() *RaptorBuildOptions {
-	if x != nil {
-		return x.Raptor
 	}
 	return nil
 }
@@ -1367,7 +1301,7 @@ type ChunkOptions struct {
 
 func (x *ChunkOptions) Reset() {
 	*x = ChunkOptions{}
-	mi := &file_proto_knowagent_knowledge_v1_knowledge_proto_msgTypes[16]
+	mi := &file_proto_knowledge_v1_knowledge_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1379,7 +1313,7 @@ func (x *ChunkOptions) String() string {
 func (*ChunkOptions) ProtoMessage() {}
 
 func (x *ChunkOptions) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_knowagent_knowledge_v1_knowledge_proto_msgTypes[16]
+	mi := &file_proto_knowledge_v1_knowledge_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1392,7 +1326,7 @@ func (x *ChunkOptions) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ChunkOptions.ProtoReflect.Descriptor instead.
 func (*ChunkOptions) Descriptor() ([]byte, []int) {
-	return file_proto_knowagent_knowledge_v1_knowledge_proto_rawDescGZIP(), []int{16}
+	return file_proto_knowledge_v1_knowledge_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *ChunkOptions) GetChildRecursiveMaxChars() int32 {
@@ -1467,7 +1401,7 @@ type GraphRagBuildOptions struct {
 
 func (x *GraphRagBuildOptions) Reset() {
 	*x = GraphRagBuildOptions{}
-	mi := &file_proto_knowagent_knowledge_v1_knowledge_proto_msgTypes[17]
+	mi := &file_proto_knowledge_v1_knowledge_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1479,7 +1413,7 @@ func (x *GraphRagBuildOptions) String() string {
 func (*GraphRagBuildOptions) ProtoMessage() {}
 
 func (x *GraphRagBuildOptions) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_knowagent_knowledge_v1_knowledge_proto_msgTypes[17]
+	mi := &file_proto_knowledge_v1_knowledge_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1492,7 +1426,7 @@ func (x *GraphRagBuildOptions) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GraphRagBuildOptions.ProtoReflect.Descriptor instead.
 func (*GraphRagBuildOptions) Descriptor() ([]byte, []int) {
-	return file_proto_knowagent_knowledge_v1_knowledge_proto_rawDescGZIP(), []int{17}
+	return file_proto_knowledge_v1_knowledge_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *GraphRagBuildOptions) GetGraphRagBuildEnabled() bool {
@@ -1500,82 +1434,6 @@ func (x *GraphRagBuildOptions) GetGraphRagBuildEnabled() bool {
 		return x.GraphRagBuildEnabled
 	}
 	return false
-}
-
-type RaptorBuildOptions struct {
-	state                     protoimpl.MessageState `protogen:"open.v1"`
-	RaptorBuildEnabled        bool                   `protobuf:"varint,1,opt,name=raptor_build_enabled,json=raptorBuildEnabled,proto3" json:"raptor_build_enabled,omitempty"`
-	RaptorMaxClusterSize      int32                  `protobuf:"varint,2,opt,name=raptor_max_cluster_size,json=raptorMaxClusterSize,proto3" json:"raptor_max_cluster_size,omitempty"`
-	RaptorMaxLevels           int32                  `protobuf:"varint,3,opt,name=raptor_max_levels,json=raptorMaxLevels,proto3" json:"raptor_max_levels,omitempty"`
-	RaptorLlmSummaryEnabled   bool                   `protobuf:"varint,4,opt,name=raptor_llm_summary_enabled,json=raptorLlmSummaryEnabled,proto3" json:"raptor_llm_summary_enabled,omitempty"`
-	RaptorSummaryQualityFloor float64                `protobuf:"fixed64,5,opt,name=raptor_summary_quality_floor,json=raptorSummaryQualityFloor,proto3" json:"raptor_summary_quality_floor,omitempty"`
-	unknownFields             protoimpl.UnknownFields
-	sizeCache                 protoimpl.SizeCache
-}
-
-func (x *RaptorBuildOptions) Reset() {
-	*x = RaptorBuildOptions{}
-	mi := &file_proto_knowagent_knowledge_v1_knowledge_proto_msgTypes[18]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *RaptorBuildOptions) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*RaptorBuildOptions) ProtoMessage() {}
-
-func (x *RaptorBuildOptions) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_knowagent_knowledge_v1_knowledge_proto_msgTypes[18]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use RaptorBuildOptions.ProtoReflect.Descriptor instead.
-func (*RaptorBuildOptions) Descriptor() ([]byte, []int) {
-	return file_proto_knowagent_knowledge_v1_knowledge_proto_rawDescGZIP(), []int{18}
-}
-
-func (x *RaptorBuildOptions) GetRaptorBuildEnabled() bool {
-	if x != nil {
-		return x.RaptorBuildEnabled
-	}
-	return false
-}
-
-func (x *RaptorBuildOptions) GetRaptorMaxClusterSize() int32 {
-	if x != nil {
-		return x.RaptorMaxClusterSize
-	}
-	return 0
-}
-
-func (x *RaptorBuildOptions) GetRaptorMaxLevels() int32 {
-	if x != nil {
-		return x.RaptorMaxLevels
-	}
-	return 0
-}
-
-func (x *RaptorBuildOptions) GetRaptorLlmSummaryEnabled() bool {
-	if x != nil {
-		return x.RaptorLlmSummaryEnabled
-	}
-	return false
-}
-
-func (x *RaptorBuildOptions) GetRaptorSummaryQualityFloor() float64 {
-	if x != nil {
-		return x.RaptorSummaryQualityFloor
-	}
-	return 0
 }
 
 type RequireEnabledResponse struct {
@@ -1587,7 +1445,7 @@ type RequireEnabledResponse struct {
 
 func (x *RequireEnabledResponse) Reset() {
 	*x = RequireEnabledResponse{}
-	mi := &file_proto_knowagent_knowledge_v1_knowledge_proto_msgTypes[19]
+	mi := &file_proto_knowledge_v1_knowledge_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1599,7 +1457,7 @@ func (x *RequireEnabledResponse) String() string {
 func (*RequireEnabledResponse) ProtoMessage() {}
 
 func (x *RequireEnabledResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_knowagent_knowledge_v1_knowledge_proto_msgTypes[19]
+	mi := &file_proto_knowledge_v1_knowledge_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1612,7 +1470,7 @@ func (x *RequireEnabledResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RequireEnabledResponse.ProtoReflect.Descriptor instead.
 func (*RequireEnabledResponse) Descriptor() ([]byte, []int) {
-	return file_proto_knowagent_knowledge_v1_knowledge_proto_rawDescGZIP(), []int{19}
+	return file_proto_knowledge_v1_knowledge_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *RequireEnabledResponse) GetKnowledgeBase() *KnowledgeBase {
@@ -1632,7 +1490,7 @@ type GraphTypesResponse struct {
 
 func (x *GraphTypesResponse) Reset() {
 	*x = GraphTypesResponse{}
-	mi := &file_proto_knowagent_knowledge_v1_knowledge_proto_msgTypes[20]
+	mi := &file_proto_knowledge_v1_knowledge_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1644,7 +1502,7 @@ func (x *GraphTypesResponse) String() string {
 func (*GraphTypesResponse) ProtoMessage() {}
 
 func (x *GraphTypesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_knowagent_knowledge_v1_knowledge_proto_msgTypes[20]
+	mi := &file_proto_knowledge_v1_knowledge_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1657,7 +1515,7 @@ func (x *GraphTypesResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GraphTypesResponse.ProtoReflect.Descriptor instead.
 func (*GraphTypesResponse) Descriptor() ([]byte, []int) {
-	return file_proto_knowagent_knowledge_v1_knowledge_proto_rawDescGZIP(), []int{20}
+	return file_proto_knowledge_v1_knowledge_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *GraphTypesResponse) GetEntityTypes() []string {
@@ -1674,78 +1532,69 @@ func (x *GraphTypesResponse) GetRelationTypes() []string {
 	return nil
 }
 
-var File_proto_knowagent_knowledge_v1_knowledge_proto protoreflect.FileDescriptor
+var File_proto_knowledge_v1_knowledge_proto protoreflect.FileDescriptor
 
-const file_proto_knowagent_knowledge_v1_knowledge_proto_rawDesc = "" +
+const file_proto_knowledge_v1_knowledge_proto_rawDesc = "" +
 	"\n" +
-	",proto/knowagent/knowledge/v1/knowledge.proto\x12\x16knowagent.knowledge.v1\x1a\x1bgoogle/protobuf/empty.proto\x1a*proto/knowagent/document/v1/document.proto\"\x8c\x03\n" +
+	"\"proto/knowledge/v1/knowledge.proto\x12\fknowledge.v1\x1a\x1bgoogle/protobuf/empty.proto\x1a proto/document/v1/document.proto\"\xde\x02\n" +
 	"\rKnowledgeBase\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x1b\n" +
 	"\tbase_name\x18\x02 \x01(\tR\bbaseName\x12 \n" +
 	"\vdescription\x18\x03 \x01(\tR\vdescription\x12'\n" +
 	"\x0fembedding_model\x18\x04 \x01(\tR\x0eembeddingModel\x122\n" +
 	"\x15retrieval_config_json\x18\x05 \x01(\tR\x13retrievalConfigJson\x121\n" +
-	"\x15graph_rag_config_json\x18\x06 \x01(\tR\x12graphRagConfigJson\x12,\n" +
-	"\x12raptor_config_json\x18\a \x01(\tR\x10raptorConfigJson\x120\n" +
-	"\x14metadata_filter_json\x18\b \x01(\tR\x12metadataFilterJson\x12\x1d\n" +
+	"\x15graph_rag_config_json\x18\x06 \x01(\tR\x12graphRagConfigJson\x120\n" +
+	"\x14metadata_filter_json\x18\a \x01(\tR\x12metadataFilterJson\x12\x1d\n" +
 	"\n" +
-	"is_default\x18\t \x01(\x05R\tisDefault\x12\x1d\n" +
+	"is_default\x18\b \x01(\x05R\tisDefault\x12\x1d\n" +
 	"\n" +
-	"sort_order\x18\n" +
-	" \x01(\x05R\tsortOrder\"\x84\x03\n" +
+	"sort_order\x18\t \x01(\x05R\tsortOrder\"\xbc\x02\n" +
 	"\rHybridOptions\x12#\n" +
 	"\rvector_weight\x18\x01 \x01(\x01R\fvectorWeight\x12%\n" +
-	"\x0ekeyword_weight\x18\x02 \x01(\x01R\rkeywordWeight\x12!\n" +
-	"\ftable_weight\x18\x03 \x01(\x01R\vtableWeight\x12(\n" +
-	"\x10graph_rag_weight\x18\x04 \x01(\x01R\x0egraphRagWeight\x12#\n" +
-	"\rraptor_weight\x18\x05 \x01(\x01R\fraptorWeight\x12\x1f\n" +
-	"\vrank_weight\x18\x06 \x01(\x01R\n" +
+	"\x0ekeyword_weight\x18\x02 \x01(\x01R\rkeywordWeight\x12(\n" +
+	"\x10graph_rag_weight\x18\x03 \x01(\x01R\x0egraphRagWeight\x12\x1f\n" +
+	"\vrank_weight\x18\x04 \x01(\x01R\n" +
 	"rankWeight\x122\n" +
-	"\x15original_score_weight\x18\a \x01(\x01R\x13originalScoreWeight\x122\n" +
-	"\x15metadata_boost_weight\x18\b \x01(\x01R\x13metadataBoostWeight\x12,\n" +
-	"\x12max_metadata_boost\x18\t \x01(\x01R\x10maxMetadataBoost\"\xde\a\n" +
+	"\x15original_score_weight\x18\x05 \x01(\x01R\x13originalScoreWeight\x122\n" +
+	"\x15metadata_boost_weight\x18\x06 \x01(\x01R\x13metadataBoostWeight\x12,\n" +
+	"\x12max_metadata_boost\x18\a \x01(\x01R\x10maxMetadataBoost\"\x8e\x06\n" +
 	"\x11RagRuntimeOptions\x12 \n" +
 	"\fvector_top_k\x18\x01 \x01(\x05R\n" +
 	"vectorTopK\x12\"\n" +
 	"\rkeyword_top_k\x18\x02 \x01(\x05R\vkeywordTopK\x12%\n" +
 	"\x0fgraph_rag_top_k\x18\x03 \x01(\x05R\fgraphRagTopK\x12+\n" +
-	"\x12graph_rag_max_hops\x18\x04 \x01(\x05R\x0fgraphRagMaxHops\x12 \n" +
-	"\fraptor_top_k\x18\x05 \x01(\x05R\n" +
-	"raptorTopK\x128\n" +
-	"\x19raptor_source_chunk_top_k\x18\x06 \x01(\x05R\x15raptorSourceChunkTopK\x12&\n" +
-	"\x0fcandidate_top_k\x18\a \x01(\x05R\rcandidateTopK\x123\n" +
-	"\x16rerank_candidate_top_k\x18\b \x01(\x05R\x13rerankCandidateTopK\x12\x1e\n" +
-	"\vfinal_top_k\x18\t \x01(\x05R\tfinalTopK\x12%\n" +
-	"\x0ererank_enabled\x18\n" +
-	" \x01(\bR\rrerankEnabled\x12,\n" +
-	"\x12channel_timeout_ms\x18\v \x01(\x03R\x10channelTimeoutMs\x125\n" +
-	"\x17sub_question_timeout_ms\x18\f \x01(\x03R\x14subQuestionTimeoutMs\x122\n" +
-	"\x15min_vector_similarity\x18\r \x01(\x01R\x13minVectorSimilarity\x12?\n" +
-	"\x1ckeyword_relative_score_floor\x18\x0e \x01(\x01R\x19keywordRelativeScoreFloor\x126\n" +
-	"\x17keyword_channel_enabled\x18\x0f \x01(\bR\x15keywordChannelEnabled\x122\n" +
-	"\x15table_channel_enabled\x18\x10 \x01(\bR\x13tableChannelEnabled\x129\n" +
-	"\x19graph_rag_channel_enabled\x18\x11 \x01(\bR\x16graphRagChannelEnabled\x124\n" +
-	"\x16raptor_channel_enabled\x18\x12 \x01(\bR\x14raptorChannelEnabled\x12=\n" +
-	"\x06hybrid\x18\x13 \x01(\v2%.knowagent.knowledge.v1.HybridOptionsR\x06hybrid\x129\n" +
-	"\x19kb_config_conflict_fields\x18\x14 \x03(\tR\x16kbConfigConflictFields\"\xdb\x03\n" +
+	"\x12graph_rag_max_hops\x18\x04 \x01(\x05R\x0fgraphRagMaxHops\x12&\n" +
+	"\x0fcandidate_top_k\x18\x05 \x01(\x05R\rcandidateTopK\x123\n" +
+	"\x16rerank_candidate_top_k\x18\x06 \x01(\x05R\x13rerankCandidateTopK\x12\x1e\n" +
+	"\vfinal_top_k\x18\a \x01(\x05R\tfinalTopK\x12%\n" +
+	"\x0ererank_enabled\x18\b \x01(\bR\rrerankEnabled\x12,\n" +
+	"\x12channel_timeout_ms\x18\t \x01(\x03R\x10channelTimeoutMs\x125\n" +
+	"\x17sub_question_timeout_ms\x18\n" +
+	" \x01(\x03R\x14subQuestionTimeoutMs\x122\n" +
+	"\x15min_vector_similarity\x18\v \x01(\x01R\x13minVectorSimilarity\x12?\n" +
+	"\x1ckeyword_relative_score_floor\x18\f \x01(\x01R\x19keywordRelativeScoreFloor\x126\n" +
+	"\x17keyword_channel_enabled\x18\r \x01(\bR\x15keywordChannelEnabled\x129\n" +
+	"\x19graph_rag_channel_enabled\x18\x0e \x01(\bR\x16graphRagChannelEnabled\x123\n" +
+	"\x06hybrid\x18\x0f \x01(\v2\x1b.knowledge.v1.HybridOptionsR\x06hybrid\x129\n" +
+	"\x19kb_config_conflict_fields\x18\x10 \x03(\tR\x16kbConfigConflictFields\"\xbd\x03\n" +
 	"\x1eKnowledgeBaseSelectionSnapshot\x12%\n" +
 	"\x0eselection_mode\x18\x01 \x01(\tR\rselectionMode\x12=\n" +
 	"\x1bselected_knowledge_base_ids\x18\x02 \x03(\x03R\x18selectedKnowledgeBaseIds\x12A\n" +
-	"\x1dselected_knowledge_base_names\x18\x03 \x03(\tR\x1aselectedKnowledgeBaseNames\x12_\n" +
-	"\x18selected_knowledge_bases\x18\x04 \x03(\v2%.knowagent.knowledge.v1.KnowledgeBaseR\x16selectedKnowledgeBases\x12T\n" +
-	"\x11allowed_documents\x18\x05 \x03(\v2'.knowagent.document.v1.DocumentMetadataR\x10allowedDocuments\x12Y\n" +
-	"\x13rag_runtime_options\x18\x06 \x01(\v2).knowagent.knowledge.v1.RagRuntimeOptionsR\x11ragRuntimeOptions\"\xa9\x02\n" +
+	"\x1dselected_knowledge_base_names\x18\x03 \x03(\tR\x1aselectedKnowledgeBaseNames\x12U\n" +
+	"\x18selected_knowledge_bases\x18\x04 \x03(\v2\x1b.knowledge.v1.KnowledgeBaseR\x16selectedKnowledgeBases\x12J\n" +
+	"\x11allowed_documents\x18\x05 \x03(\v2\x1d.document.v1.DocumentMetadataR\x10allowedDocuments\x12O\n" +
+	"\x13rag_runtime_options\x18\x06 \x01(\v2\x1f.knowledge.v1.RagRuntimeOptionsR\x11ragRuntimeOptions\"\x9f\x02\n" +
 	"\x13ScopeRouteCandidate\x12\x19\n" +
 	"\bscope_id\x18\x01 \x01(\x03R\ascopeId\x12\x1d\n" +
 	"\n" +
 	"scope_name\x18\x02 \x01(\tR\tscopeName\x12\x14\n" +
 	"\x05score\x18\x03 \x01(\x01R\x05score\x12\x16\n" +
 	"\x06reason\x18\x04 \x01(\tR\x06reason\x12\x16\n" +
-	"\x06source\x18\x05 \x01(\tR\x06source\x12U\n" +
-	"\bfeatures\x18\x06 \x03(\v29.knowagent.knowledge.v1.ScopeRouteCandidate.FeaturesEntryR\bfeatures\x1a;\n" +
+	"\x06source\x18\x05 \x01(\tR\x06source\x12K\n" +
+	"\bfeatures\x18\x06 \x03(\v2/.knowledge.v1.ScopeRouteCandidate.FeaturesEntryR\bfeatures\x1a;\n" +
 	"\rFeaturesEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\x01R\x05value:\x028\x01\"\xc4\x02\n" +
+	"\x05value\x18\x02 \x01(\x01R\x05value:\x028\x01\"\xba\x02\n" +
 	"\x13TopicRouteCandidate\x12\x19\n" +
 	"\btopic_id\x18\x01 \x01(\x03R\atopicId\x12\x1d\n" +
 	"\n" +
@@ -1753,11 +1602,11 @@ const file_proto_knowagent_knowledge_v1_knowledge_proto_rawDesc = "" +
 	"\bscope_id\x18\x03 \x01(\x03R\ascopeId\x12\x14\n" +
 	"\x05score\x18\x04 \x01(\x01R\x05score\x12\x16\n" +
 	"\x06reason\x18\x05 \x01(\tR\x06reason\x12\x16\n" +
-	"\x06source\x18\x06 \x01(\tR\x06source\x12U\n" +
-	"\bfeatures\x18\a \x03(\v29.knowagent.knowledge.v1.TopicRouteCandidate.FeaturesEntryR\bfeatures\x1a;\n" +
+	"\x06source\x18\x06 \x01(\tR\x06source\x12K\n" +
+	"\bfeatures\x18\a \x03(\v2/.knowledge.v1.TopicRouteCandidate.FeaturesEntryR\bfeatures\x1a;\n" +
 	"\rFeaturesEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\x01R\x05value:\x028\x01\"\xe8\x02\n" +
+	"\x05value\x18\x02 \x01(\x01R\x05value:\x028\x01\"\xde\x02\n" +
 	"\x16DocumentRouteCandidate\x12\x1f\n" +
 	"\vdocument_id\x18\x01 \x01(\x03R\n" +
 	"documentId\x12#\n" +
@@ -1765,15 +1614,15 @@ const file_proto_knowagent_knowledge_v1_knowledge_proto_rawDesc = "" +
 	"\x12last_index_task_id\x18\x03 \x01(\x03R\x0flastIndexTaskId\x12\x14\n" +
 	"\x05score\x18\x04 \x01(\x01R\x05score\x12\x16\n" +
 	"\x06reason\x18\x05 \x01(\tR\x06reason\x12\x16\n" +
-	"\x06source\x18\x06 \x01(\tR\x06source\x12X\n" +
-	"\bfeatures\x18\a \x03(\v2<.knowagent.knowledge.v1.DocumentRouteCandidate.FeaturesEntryR\bfeatures\x1a;\n" +
+	"\x06source\x18\x06 \x01(\tR\x06source\x12N\n" +
+	"\bfeatures\x18\a \x03(\v22.knowledge.v1.DocumentRouteCandidate.FeaturesEntryR\bfeatures\x1a;\n" +
 	"\rFeaturesEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\x01R\x05value:\x028\x01\"\xaa\x03\n" +
-	"\x16KnowledgeRouteDecision\x12C\n" +
-	"\x06scopes\x18\x01 \x03(\v2+.knowagent.knowledge.v1.ScopeRouteCandidateR\x06scopes\x12C\n" +
-	"\x06topics\x18\x02 \x03(\v2+.knowagent.knowledge.v1.TopicRouteCandidateR\x06topics\x12L\n" +
-	"\tdocuments\x18\x03 \x03(\v2..knowagent.knowledge.v1.DocumentRouteCandidateR\tdocuments\x12\x1e\n" +
+	"\x05value\x18\x02 \x01(\x01R\x05value:\x028\x01\"\x8c\x03\n" +
+	"\x16KnowledgeRouteDecision\x129\n" +
+	"\x06scopes\x18\x01 \x03(\v2!.knowledge.v1.ScopeRouteCandidateR\x06scopes\x129\n" +
+	"\x06topics\x18\x02 \x03(\v2!.knowledge.v1.TopicRouteCandidateR\x06topics\x12B\n" +
+	"\tdocuments\x18\x03 \x03(\v2$.knowledge.v1.DocumentRouteCandidateR\tdocuments\x12\x1e\n" +
 	"\n" +
 	"confidence\x18\x04 \x01(\x01R\n" +
 	"confidence\x12!\n" +
@@ -1796,21 +1645,20 @@ const file_proto_knowagent_knowledge_v1_knowledge_proto_rawDesc = "" +
 	"\x1eDetermineKnowledgeScopeRequest\x12\x1f\n" +
 	"\vselect_mode\x18\x01 \x01(\tR\n" +
 	"selectMode\x12\x15\n" +
-	"\x06kb_ids\x18\x02 \x03(\tR\x05kbIds\"Q\n" +
-	"\fRouteRequest\x12A\n" +
-	"\x05input\x18\x01 \x01(\v2+.knowagent.knowledge.v1.KnowledgeRouteInputR\x05input\"]\n" +
-	"\x18RecordShadowRouteRequest\x12A\n" +
-	"\x05input\x18\x01 \x01(\v2+.knowagent.knowledge.v1.KnowledgeRouteInputR\x05input\"<\n" +
+	"\x06kb_ids\x18\x02 \x03(\tR\x05kbIds\"G\n" +
+	"\fRouteRequest\x127\n" +
+	"\x05input\x18\x01 \x01(\v2!.knowledge.v1.KnowledgeRouteInputR\x05input\"S\n" +
+	"\x18RecordShadowRouteRequest\x127\n" +
+	"\x05input\x18\x01 \x01(\v2!.knowledge.v1.KnowledgeRouteInputR\x05input\"<\n" +
 	"\x0eResolveRequest\x12*\n" +
 	"\x11knowledge_base_id\x18\x01 \x01(\x03R\x0fknowledgeBaseId\"C\n" +
 	"\x15RequireEnabledRequest\x12*\n" +
 	"\x11knowledge_base_id\x18\x01 \x01(\x03R\x0fknowledgeBaseId\"?\n" +
 	"\x11GraphTypesRequest\x12*\n" +
-	"\x11knowledge_base_id\x18\x01 \x01(\x03R\x0fknowledgeBaseId\"\xdc\x01\n" +
-	"\x0fIndexingOptions\x12:\n" +
-	"\x05chunk\x18\x01 \x01(\v2$.knowagent.knowledge.v1.ChunkOptionsR\x05chunk\x12I\n" +
-	"\tgraph_rag\x18\x02 \x01(\v2,.knowagent.knowledge.v1.GraphRagBuildOptionsR\bgraphRag\x12B\n" +
-	"\x06raptor\x18\x03 \x01(\v2*.knowagent.knowledge.v1.RaptorBuildOptionsR\x06raptor\"\xb5\x04\n" +
+	"\x11knowledge_base_id\x18\x01 \x01(\x03R\x0fknowledgeBaseId\"\x84\x01\n" +
+	"\x0fIndexingOptions\x120\n" +
+	"\x05chunk\x18\x01 \x01(\v2\x1a.knowledge.v1.ChunkOptionsR\x05chunk\x12?\n" +
+	"\tgraph_rag\x18\x02 \x01(\v2\".knowledge.v1.GraphRagBuildOptionsR\bgraphRag\"\xb5\x04\n" +
 	"\fChunkOptions\x129\n" +
 	"\x19child_recursive_max_chars\x18\x01 \x01(\x05R\x16childRecursiveMaxChars\x12A\n" +
 	"\x1dchild_recursive_overlap_chars\x18\x02 \x01(\x05R\x1achildRecursiveOverlapChars\x127\n" +
@@ -1822,124 +1670,116 @@ const file_proto_knowagent_knowledge_v1_knowledge_proto_rawDesc = "" +
 	"\x19parent_semantic_max_chars\x18\b \x01(\x05R\x16parentSemanticMaxChars\x129\n" +
 	"\x19parent_semantic_min_chars\x18\t \x01(\x05R\x16parentSemanticMinChars\"M\n" +
 	"\x14GraphRagBuildOptions\x125\n" +
-	"\x17graph_rag_build_enabled\x18\x01 \x01(\bR\x14graphRagBuildEnabled\"\xa7\x02\n" +
-	"\x12RaptorBuildOptions\x120\n" +
-	"\x14raptor_build_enabled\x18\x01 \x01(\bR\x12raptorBuildEnabled\x125\n" +
-	"\x17raptor_max_cluster_size\x18\x02 \x01(\x05R\x14raptorMaxClusterSize\x12*\n" +
-	"\x11raptor_max_levels\x18\x03 \x01(\x05R\x0fraptorMaxLevels\x12;\n" +
-	"\x1araptor_llm_summary_enabled\x18\x04 \x01(\bR\x17raptorLlmSummaryEnabled\x12?\n" +
-	"\x1craptor_summary_quality_floor\x18\x05 \x01(\x01R\x19raptorSummaryQualityFloor\"f\n" +
-	"\x16RequireEnabledResponse\x12L\n" +
-	"\x0eknowledge_base\x18\x01 \x01(\v2%.knowagent.knowledge.v1.KnowledgeBaseR\rknowledgeBase\"^\n" +
+	"\x17graph_rag_build_enabled\x18\x01 \x01(\bR\x14graphRagBuildEnabled\"\\\n" +
+	"\x16RequireEnabledResponse\x12B\n" +
+	"\x0eknowledge_base\x18\x01 \x01(\v2\x1b.knowledge.v1.KnowledgeBaseR\rknowledgeBase\"^\n" +
 	"\x12GraphTypesResponse\x12!\n" +
 	"\fentity_types\x18\x01 \x03(\tR\ventityTypes\x12%\n" +
-	"\x0erelation_types\x18\x02 \x03(\tR\rrelationTypes2\x8e\x05\n" +
-	"\x10KnowledgeService\x12\x89\x01\n" +
-	"\x17DetermineKnowledgeScope\x126.knowagent.knowledge.v1.DetermineKnowledgeScopeRequest\x1a6.knowagent.knowledge.v1.KnowledgeBaseSelectionSnapshot\x12]\n" +
-	"\x05Route\x12$.knowagent.knowledge.v1.RouteRequest\x1a..knowagent.knowledge.v1.KnowledgeRouteDecision\x12]\n" +
-	"\x11RecordShadowRoute\x120.knowagent.knowledge.v1.RecordShadowRouteRequest\x1a\x16.google.protobuf.Empty\x12Z\n" +
-	"\aResolve\x12&.knowagent.knowledge.v1.ResolveRequest\x1a'.knowagent.knowledge.v1.IndexingOptions\x12o\n" +
-	"\x0eRequireEnabled\x12-.knowagent.knowledge.v1.RequireEnabledRequest\x1a..knowagent.knowledge.v1.RequireEnabledResponse\x12c\n" +
+	"\x0erelation_types\x18\x02 \x03(\tR\rrelationTypes2\x9f\x04\n" +
+	"\x10KnowledgeService\x12u\n" +
+	"\x17DetermineKnowledgeScope\x12,.knowledge.v1.DetermineKnowledgeScopeRequest\x1a,.knowledge.v1.KnowledgeBaseSelectionSnapshot\x12I\n" +
+	"\x05Route\x12\x1a.knowledge.v1.RouteRequest\x1a$.knowledge.v1.KnowledgeRouteDecision\x12S\n" +
+	"\x11RecordShadowRoute\x12&.knowledge.v1.RecordShadowRouteRequest\x1a\x16.google.protobuf.Empty\x12F\n" +
+	"\aResolve\x12\x1c.knowledge.v1.ResolveRequest\x1a\x1d.knowledge.v1.IndexingOptions\x12[\n" +
+	"\x0eRequireEnabled\x12#.knowledge.v1.RequireEnabledRequest\x1a$.knowledge.v1.RequireEnabledResponse\x12O\n" +
 	"\n" +
-	"GraphTypes\x12).knowagent.knowledge.v1.GraphTypesRequest\x1a*.knowagent.knowledge.v1.GraphTypesResponseBVZTgithub.com/swiftbit/know-agent/pkg/grpc/gen/proto/knowagent/knowledge/v1;knowledgev1b\x06proto3"
+	"GraphTypes\x12\x1f.knowledge.v1.GraphTypesRequest\x1a .knowledge.v1.GraphTypesResponseBFZDgithub.com/swiftbit/know-agent/pkg/grpc/gen/knowledge/v1;knowledgev1b\x06proto3"
 
 var (
-	file_proto_knowagent_knowledge_v1_knowledge_proto_rawDescOnce sync.Once
-	file_proto_knowagent_knowledge_v1_knowledge_proto_rawDescData []byte
+	file_proto_knowledge_v1_knowledge_proto_rawDescOnce sync.Once
+	file_proto_knowledge_v1_knowledge_proto_rawDescData []byte
 )
 
-func file_proto_knowagent_knowledge_v1_knowledge_proto_rawDescGZIP() []byte {
-	file_proto_knowagent_knowledge_v1_knowledge_proto_rawDescOnce.Do(func() {
-		file_proto_knowagent_knowledge_v1_knowledge_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_proto_knowagent_knowledge_v1_knowledge_proto_rawDesc), len(file_proto_knowagent_knowledge_v1_knowledge_proto_rawDesc)))
+func file_proto_knowledge_v1_knowledge_proto_rawDescGZIP() []byte {
+	file_proto_knowledge_v1_knowledge_proto_rawDescOnce.Do(func() {
+		file_proto_knowledge_v1_knowledge_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_proto_knowledge_v1_knowledge_proto_rawDesc), len(file_proto_knowledge_v1_knowledge_proto_rawDesc)))
 	})
-	return file_proto_knowagent_knowledge_v1_knowledge_proto_rawDescData
+	return file_proto_knowledge_v1_knowledge_proto_rawDescData
 }
 
-var file_proto_knowagent_knowledge_v1_knowledge_proto_msgTypes = make([]protoimpl.MessageInfo, 24)
-var file_proto_knowagent_knowledge_v1_knowledge_proto_goTypes = []any{
-	(*KnowledgeBase)(nil),                  // 0: knowagent.knowledge.v1.KnowledgeBase
-	(*HybridOptions)(nil),                  // 1: knowagent.knowledge.v1.HybridOptions
-	(*RagRuntimeOptions)(nil),              // 2: knowagent.knowledge.v1.RagRuntimeOptions
-	(*KnowledgeBaseSelectionSnapshot)(nil), // 3: knowagent.knowledge.v1.KnowledgeBaseSelectionSnapshot
-	(*ScopeRouteCandidate)(nil),            // 4: knowagent.knowledge.v1.ScopeRouteCandidate
-	(*TopicRouteCandidate)(nil),            // 5: knowagent.knowledge.v1.TopicRouteCandidate
-	(*DocumentRouteCandidate)(nil),         // 6: knowagent.knowledge.v1.DocumentRouteCandidate
-	(*KnowledgeRouteDecision)(nil),         // 7: knowagent.knowledge.v1.KnowledgeRouteDecision
-	(*KnowledgeRouteInput)(nil),            // 8: knowagent.knowledge.v1.KnowledgeRouteInput
-	(*DetermineKnowledgeScopeRequest)(nil), // 9: knowagent.knowledge.v1.DetermineKnowledgeScopeRequest
-	(*RouteRequest)(nil),                   // 10: knowagent.knowledge.v1.RouteRequest
-	(*RecordShadowRouteRequest)(nil),       // 11: knowagent.knowledge.v1.RecordShadowRouteRequest
-	(*ResolveRequest)(nil),                 // 12: knowagent.knowledge.v1.ResolveRequest
-	(*RequireEnabledRequest)(nil),          // 13: knowagent.knowledge.v1.RequireEnabledRequest
-	(*GraphTypesRequest)(nil),              // 14: knowagent.knowledge.v1.GraphTypesRequest
-	(*IndexingOptions)(nil),                // 15: knowagent.knowledge.v1.IndexingOptions
-	(*ChunkOptions)(nil),                   // 16: knowagent.knowledge.v1.ChunkOptions
-	(*GraphRagBuildOptions)(nil),           // 17: knowagent.knowledge.v1.GraphRagBuildOptions
-	(*RaptorBuildOptions)(nil),             // 18: knowagent.knowledge.v1.RaptorBuildOptions
-	(*RequireEnabledResponse)(nil),         // 19: knowagent.knowledge.v1.RequireEnabledResponse
-	(*GraphTypesResponse)(nil),             // 20: knowagent.knowledge.v1.GraphTypesResponse
-	nil,                                    // 21: knowagent.knowledge.v1.ScopeRouteCandidate.FeaturesEntry
-	nil,                                    // 22: knowagent.knowledge.v1.TopicRouteCandidate.FeaturesEntry
-	nil,                                    // 23: knowagent.knowledge.v1.DocumentRouteCandidate.FeaturesEntry
-	(*v1.DocumentMetadata)(nil),            // 24: knowagent.document.v1.DocumentMetadata
-	(*emptypb.Empty)(nil),                  // 25: google.protobuf.Empty
+var file_proto_knowledge_v1_knowledge_proto_msgTypes = make([]protoimpl.MessageInfo, 23)
+var file_proto_knowledge_v1_knowledge_proto_goTypes = []any{
+	(*KnowledgeBase)(nil),                  // 0: knowledge.v1.KnowledgeBase
+	(*HybridOptions)(nil),                  // 1: knowledge.v1.HybridOptions
+	(*RagRuntimeOptions)(nil),              // 2: knowledge.v1.RagRuntimeOptions
+	(*KnowledgeBaseSelectionSnapshot)(nil), // 3: knowledge.v1.KnowledgeBaseSelectionSnapshot
+	(*ScopeRouteCandidate)(nil),            // 4: knowledge.v1.ScopeRouteCandidate
+	(*TopicRouteCandidate)(nil),            // 5: knowledge.v1.TopicRouteCandidate
+	(*DocumentRouteCandidate)(nil),         // 6: knowledge.v1.DocumentRouteCandidate
+	(*KnowledgeRouteDecision)(nil),         // 7: knowledge.v1.KnowledgeRouteDecision
+	(*KnowledgeRouteInput)(nil),            // 8: knowledge.v1.KnowledgeRouteInput
+	(*DetermineKnowledgeScopeRequest)(nil), // 9: knowledge.v1.DetermineKnowledgeScopeRequest
+	(*RouteRequest)(nil),                   // 10: knowledge.v1.RouteRequest
+	(*RecordShadowRouteRequest)(nil),       // 11: knowledge.v1.RecordShadowRouteRequest
+	(*ResolveRequest)(nil),                 // 12: knowledge.v1.ResolveRequest
+	(*RequireEnabledRequest)(nil),          // 13: knowledge.v1.RequireEnabledRequest
+	(*GraphTypesRequest)(nil),              // 14: knowledge.v1.GraphTypesRequest
+	(*IndexingOptions)(nil),                // 15: knowledge.v1.IndexingOptions
+	(*ChunkOptions)(nil),                   // 16: knowledge.v1.ChunkOptions
+	(*GraphRagBuildOptions)(nil),           // 17: knowledge.v1.GraphRagBuildOptions
+	(*RequireEnabledResponse)(nil),         // 18: knowledge.v1.RequireEnabledResponse
+	(*GraphTypesResponse)(nil),             // 19: knowledge.v1.GraphTypesResponse
+	nil,                                    // 20: knowledge.v1.ScopeRouteCandidate.FeaturesEntry
+	nil,                                    // 21: knowledge.v1.TopicRouteCandidate.FeaturesEntry
+	nil,                                    // 22: knowledge.v1.DocumentRouteCandidate.FeaturesEntry
+	(*v1.DocumentMetadata)(nil),            // 23: document.v1.DocumentMetadata
+	(*emptypb.Empty)(nil),                  // 24: google.protobuf.Empty
 }
-var file_proto_knowagent_knowledge_v1_knowledge_proto_depIdxs = []int32{
-	1,  // 0: knowagent.knowledge.v1.RagRuntimeOptions.hybrid:type_name -> knowagent.knowledge.v1.HybridOptions
-	0,  // 1: knowagent.knowledge.v1.KnowledgeBaseSelectionSnapshot.selected_knowledge_bases:type_name -> knowagent.knowledge.v1.KnowledgeBase
-	24, // 2: knowagent.knowledge.v1.KnowledgeBaseSelectionSnapshot.allowed_documents:type_name -> knowagent.document.v1.DocumentMetadata
-	2,  // 3: knowagent.knowledge.v1.KnowledgeBaseSelectionSnapshot.rag_runtime_options:type_name -> knowagent.knowledge.v1.RagRuntimeOptions
-	21, // 4: knowagent.knowledge.v1.ScopeRouteCandidate.features:type_name -> knowagent.knowledge.v1.ScopeRouteCandidate.FeaturesEntry
-	22, // 5: knowagent.knowledge.v1.TopicRouteCandidate.features:type_name -> knowagent.knowledge.v1.TopicRouteCandidate.FeaturesEntry
-	23, // 6: knowagent.knowledge.v1.DocumentRouteCandidate.features:type_name -> knowagent.knowledge.v1.DocumentRouteCandidate.FeaturesEntry
-	4,  // 7: knowagent.knowledge.v1.KnowledgeRouteDecision.scopes:type_name -> knowagent.knowledge.v1.ScopeRouteCandidate
-	5,  // 8: knowagent.knowledge.v1.KnowledgeRouteDecision.topics:type_name -> knowagent.knowledge.v1.TopicRouteCandidate
-	6,  // 9: knowagent.knowledge.v1.KnowledgeRouteDecision.documents:type_name -> knowagent.knowledge.v1.DocumentRouteCandidate
-	8,  // 10: knowagent.knowledge.v1.RouteRequest.input:type_name -> knowagent.knowledge.v1.KnowledgeRouteInput
-	8,  // 11: knowagent.knowledge.v1.RecordShadowRouteRequest.input:type_name -> knowagent.knowledge.v1.KnowledgeRouteInput
-	16, // 12: knowagent.knowledge.v1.IndexingOptions.chunk:type_name -> knowagent.knowledge.v1.ChunkOptions
-	17, // 13: knowagent.knowledge.v1.IndexingOptions.graph_rag:type_name -> knowagent.knowledge.v1.GraphRagBuildOptions
-	18, // 14: knowagent.knowledge.v1.IndexingOptions.raptor:type_name -> knowagent.knowledge.v1.RaptorBuildOptions
-	0,  // 15: knowagent.knowledge.v1.RequireEnabledResponse.knowledge_base:type_name -> knowagent.knowledge.v1.KnowledgeBase
-	9,  // 16: knowagent.knowledge.v1.KnowledgeService.DetermineKnowledgeScope:input_type -> knowagent.knowledge.v1.DetermineKnowledgeScopeRequest
-	10, // 17: knowagent.knowledge.v1.KnowledgeService.Route:input_type -> knowagent.knowledge.v1.RouteRequest
-	11, // 18: knowagent.knowledge.v1.KnowledgeService.RecordShadowRoute:input_type -> knowagent.knowledge.v1.RecordShadowRouteRequest
-	12, // 19: knowagent.knowledge.v1.KnowledgeService.Resolve:input_type -> knowagent.knowledge.v1.ResolveRequest
-	13, // 20: knowagent.knowledge.v1.KnowledgeService.RequireEnabled:input_type -> knowagent.knowledge.v1.RequireEnabledRequest
-	14, // 21: knowagent.knowledge.v1.KnowledgeService.GraphTypes:input_type -> knowagent.knowledge.v1.GraphTypesRequest
-	3,  // 22: knowagent.knowledge.v1.KnowledgeService.DetermineKnowledgeScope:output_type -> knowagent.knowledge.v1.KnowledgeBaseSelectionSnapshot
-	7,  // 23: knowagent.knowledge.v1.KnowledgeService.Route:output_type -> knowagent.knowledge.v1.KnowledgeRouteDecision
-	25, // 24: knowagent.knowledge.v1.KnowledgeService.RecordShadowRoute:output_type -> google.protobuf.Empty
-	15, // 25: knowagent.knowledge.v1.KnowledgeService.Resolve:output_type -> knowagent.knowledge.v1.IndexingOptions
-	19, // 26: knowagent.knowledge.v1.KnowledgeService.RequireEnabled:output_type -> knowagent.knowledge.v1.RequireEnabledResponse
-	20, // 27: knowagent.knowledge.v1.KnowledgeService.GraphTypes:output_type -> knowagent.knowledge.v1.GraphTypesResponse
-	22, // [22:28] is the sub-list for method output_type
-	16, // [16:22] is the sub-list for method input_type
-	16, // [16:16] is the sub-list for extension type_name
-	16, // [16:16] is the sub-list for extension extendee
-	0,  // [0:16] is the sub-list for field type_name
+var file_proto_knowledge_v1_knowledge_proto_depIdxs = []int32{
+	1,  // 0: knowledge.v1.RagRuntimeOptions.hybrid:type_name -> knowledge.v1.HybridOptions
+	0,  // 1: knowledge.v1.KnowledgeBaseSelectionSnapshot.selected_knowledge_bases:type_name -> knowledge.v1.KnowledgeBase
+	23, // 2: knowledge.v1.KnowledgeBaseSelectionSnapshot.allowed_documents:type_name -> document.v1.DocumentMetadata
+	2,  // 3: knowledge.v1.KnowledgeBaseSelectionSnapshot.rag_runtime_options:type_name -> knowledge.v1.RagRuntimeOptions
+	20, // 4: knowledge.v1.ScopeRouteCandidate.features:type_name -> knowledge.v1.ScopeRouteCandidate.FeaturesEntry
+	21, // 5: knowledge.v1.TopicRouteCandidate.features:type_name -> knowledge.v1.TopicRouteCandidate.FeaturesEntry
+	22, // 6: knowledge.v1.DocumentRouteCandidate.features:type_name -> knowledge.v1.DocumentRouteCandidate.FeaturesEntry
+	4,  // 7: knowledge.v1.KnowledgeRouteDecision.scopes:type_name -> knowledge.v1.ScopeRouteCandidate
+	5,  // 8: knowledge.v1.KnowledgeRouteDecision.topics:type_name -> knowledge.v1.TopicRouteCandidate
+	6,  // 9: knowledge.v1.KnowledgeRouteDecision.documents:type_name -> knowledge.v1.DocumentRouteCandidate
+	8,  // 10: knowledge.v1.RouteRequest.input:type_name -> knowledge.v1.KnowledgeRouteInput
+	8,  // 11: knowledge.v1.RecordShadowRouteRequest.input:type_name -> knowledge.v1.KnowledgeRouteInput
+	16, // 12: knowledge.v1.IndexingOptions.chunk:type_name -> knowledge.v1.ChunkOptions
+	17, // 13: knowledge.v1.IndexingOptions.graph_rag:type_name -> knowledge.v1.GraphRagBuildOptions
+	0,  // 14: knowledge.v1.RequireEnabledResponse.knowledge_base:type_name -> knowledge.v1.KnowledgeBase
+	9,  // 15: knowledge.v1.KnowledgeService.DetermineKnowledgeScope:input_type -> knowledge.v1.DetermineKnowledgeScopeRequest
+	10, // 16: knowledge.v1.KnowledgeService.Route:input_type -> knowledge.v1.RouteRequest
+	11, // 17: knowledge.v1.KnowledgeService.RecordShadowRoute:input_type -> knowledge.v1.RecordShadowRouteRequest
+	12, // 18: knowledge.v1.KnowledgeService.Resolve:input_type -> knowledge.v1.ResolveRequest
+	13, // 19: knowledge.v1.KnowledgeService.RequireEnabled:input_type -> knowledge.v1.RequireEnabledRequest
+	14, // 20: knowledge.v1.KnowledgeService.GraphTypes:input_type -> knowledge.v1.GraphTypesRequest
+	3,  // 21: knowledge.v1.KnowledgeService.DetermineKnowledgeScope:output_type -> knowledge.v1.KnowledgeBaseSelectionSnapshot
+	7,  // 22: knowledge.v1.KnowledgeService.Route:output_type -> knowledge.v1.KnowledgeRouteDecision
+	24, // 23: knowledge.v1.KnowledgeService.RecordShadowRoute:output_type -> google.protobuf.Empty
+	15, // 24: knowledge.v1.KnowledgeService.Resolve:output_type -> knowledge.v1.IndexingOptions
+	18, // 25: knowledge.v1.KnowledgeService.RequireEnabled:output_type -> knowledge.v1.RequireEnabledResponse
+	19, // 26: knowledge.v1.KnowledgeService.GraphTypes:output_type -> knowledge.v1.GraphTypesResponse
+	21, // [21:27] is the sub-list for method output_type
+	15, // [15:21] is the sub-list for method input_type
+	15, // [15:15] is the sub-list for extension type_name
+	15, // [15:15] is the sub-list for extension extendee
+	0,  // [0:15] is the sub-list for field type_name
 }
 
-func init() { file_proto_knowagent_knowledge_v1_knowledge_proto_init() }
-func file_proto_knowagent_knowledge_v1_knowledge_proto_init() {
-	if File_proto_knowagent_knowledge_v1_knowledge_proto != nil {
+func init() { file_proto_knowledge_v1_knowledge_proto_init() }
+func file_proto_knowledge_v1_knowledge_proto_init() {
+	if File_proto_knowledge_v1_knowledge_proto != nil {
 		return
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_knowagent_knowledge_v1_knowledge_proto_rawDesc), len(file_proto_knowagent_knowledge_v1_knowledge_proto_rawDesc)),
+			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_knowledge_v1_knowledge_proto_rawDesc), len(file_proto_knowledge_v1_knowledge_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   24,
+			NumMessages:   23,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
-		GoTypes:           file_proto_knowagent_knowledge_v1_knowledge_proto_goTypes,
-		DependencyIndexes: file_proto_knowagent_knowledge_v1_knowledge_proto_depIdxs,
-		MessageInfos:      file_proto_knowagent_knowledge_v1_knowledge_proto_msgTypes,
+		GoTypes:           file_proto_knowledge_v1_knowledge_proto_goTypes,
+		DependencyIndexes: file_proto_knowledge_v1_knowledge_proto_depIdxs,
+		MessageInfos:      file_proto_knowledge_v1_knowledge_proto_msgTypes,
 	}.Build()
-	File_proto_knowagent_knowledge_v1_knowledge_proto = out.File
-	file_proto_knowagent_knowledge_v1_knowledge_proto_goTypes = nil
-	file_proto_knowagent_knowledge_v1_knowledge_proto_depIdxs = nil
+	File_proto_knowledge_v1_knowledge_proto = out.File
+	file_proto_knowledge_v1_knowledge_proto_goTypes = nil
+	file_proto_knowledge_v1_knowledge_proto_depIdxs = nil
 }

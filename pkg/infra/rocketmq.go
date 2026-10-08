@@ -52,8 +52,8 @@ func (m *RocketMQMessageProducer) Send(ctx context.Context, topic, key string, m
 	return err
 }
 
-// Close 关闭生产者
-func (m *RocketMQMessageProducer) Close() {
+// Stop 停止生产者
+func (m *RocketMQMessageProducer) Stop() {
 	if err := m.p.Shutdown(); err != nil {
 		logx.Errorf("rocketmq producer shutdown failed: %v", err)
 	}

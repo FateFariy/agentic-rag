@@ -33,7 +33,7 @@ type ollamaEmbedResp struct {
 }
 
 // NewOllamaEmbedder 创建一个调用 Ollama 的 Embedder
-func NewOllamaEmbedder(conf Config) *OllamaEmbedder {
+func NewOllamaEmbedder(conf EmbeddingConf) *OllamaEmbedder {
 	return &OllamaEmbedder{
 		endpoint:   strings.TrimRight(conf.BaseURL, "/") + "/api/embed",
 		model:      conf.Model,

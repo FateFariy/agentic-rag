@@ -114,7 +114,6 @@ func (k *KnowledgeBaseLogicImpl) UpdateKnowledgeBaseSetting(ctx context.Context,
 	// 仅更新配置JSON字段
 	existing.RetrievalConfigJson = config.RetrievalConfigJson
 	existing.GraphRagConfigJson = config.GraphRagConfigJson
-	existing.RaptorConfigJson = config.RaptorConfigJson
 	existing.MetadataFilterJson = config.MetadataFilterJson
 
 	if err = k.repo.UpdateKnowledgeBaseById(ctx, existing); err != nil {

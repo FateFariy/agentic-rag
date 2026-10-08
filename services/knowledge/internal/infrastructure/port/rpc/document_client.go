@@ -1,9 +1,7 @@
-package gateway
+package rpc
 
 import (
 	"context"
-
-	"google.golang.org/grpc"
 
 	documentv1 "github.com/swiftbit/know-agent/pkg/grpc/gen/document/v1"
 	"github.com/swiftbit/know-agent/pkg/utils"
@@ -14,8 +12,8 @@ type KnowledgeDocumentClient struct {
 	client documentv1.DocumentServiceClient
 }
 
-func NewKnowledgeDocumentClient(cc *grpc.ClientConn) *KnowledgeDocumentClient {
-	return &KnowledgeDocumentClient{client: documentv1.NewDocumentServiceClient(cc)}
+func NewKnowledgeDocumentClient(client documentv1.DocumentServiceClient) *KnowledgeDocumentClient {
+	return &KnowledgeDocumentClient{client: client}
 }
 
 func (c *KnowledgeDocumentClient) CountDocumentsByKbIds(ctx context.Context, kbIds []int64) (map[int64]int64, error) {

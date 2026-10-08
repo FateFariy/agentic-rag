@@ -11,7 +11,6 @@ type KnowledgeBase struct {
 	EmbeddingModel           string          `gorm:"column:embedding_model;"`                                // 嵌入模型
 	RetrievalConfigJson      json.RawMessage `gorm:"column:retrieval_config_json;type:json;serializer:json"` // 检索配置JSON
 	GraphRagConfigJson       json.RawMessage `gorm:"column:graph_rag_config_json;type:json;serializer:json"` // 图谱RAG配置JSON
-	RaptorConfigJson         json.RawMessage `gorm:"column:raptor_config_json;type:json;serializer:json"`    // RAPTOR配置JSON
 	MetadataFilterJson       json.RawMessage `gorm:"column:metadata_filter_json;type:json;serializer:json"`  // 元数据过滤JSON
 	EntityTypes              []string        `gorm:"column:entity_types;type:json;serializer:json"`          // 图谱实体类型白名单
 	RelationTypes            []string        `gorm:"column:relation_types;type:json;serializer:json"`        // 图谱关系类型白名单

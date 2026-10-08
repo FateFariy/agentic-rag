@@ -15,23 +15,20 @@ message KnowledgeBase {
   string embedding_model = 4;
   string retrieval_config_json = 5;
   string graph_rag_config_json = 6;
-  string raptor_config_json = 7;
-  string metadata_filter_json = 8;
-  int32 is_default = 9;
-  int32 sort_order = 10;
+  string metadata_filter_json = 7;
+  int32 is_default = 8;
+  int32 sort_order = 9;
 }
 
 // HybridOptions 混合检索权重
 message HybridOptions {
   double vector_weight = 1;
   double keyword_weight = 2;
-  double table_weight = 3;
-  double graph_rag_weight = 4;
-  double raptor_weight = 5;
-  double rank_weight = 6;
-  double original_score_weight = 7;
-  double metadata_boost_weight = 8;
-  double max_metadata_boost = 9;
+  double graph_rag_weight = 3;
+  double rank_weight = 4;
+  double original_score_weight = 5;
+  double metadata_boost_weight = 6;
+  double max_metadata_boost = 7;
 }
 
 // RagRuntimeOptions RAG 运行时参数
@@ -40,22 +37,18 @@ message RagRuntimeOptions {
   int32 keyword_top_k = 2;
   int32 graph_rag_top_k = 3;
   int32 graph_rag_max_hops = 4;
-  int32 raptor_top_k = 5;
-  int32 raptor_source_chunk_top_k = 6;
-  int32 candidate_top_k = 7;
-  int32 rerank_candidate_top_k = 8;
-  int32 final_top_k = 9;
-  bool rerank_enabled = 10;
-  int64 channel_timeout_ms = 11;
-  int64 sub_question_timeout_ms = 12;
-  double min_vector_similarity = 13;
-  double keyword_relative_score_floor = 14;
-  bool keyword_channel_enabled = 15;
-  bool table_channel_enabled = 16;
-  bool graph_rag_channel_enabled = 17;
-  bool raptor_channel_enabled = 18;
-  HybridOptions hybrid = 19;
-  repeated string kb_config_conflict_fields = 20;
+  int32 candidate_top_k = 5;
+  int32 rerank_candidate_top_k = 6;
+  int32 final_top_k = 7;
+  bool rerank_enabled = 8;
+  int64 channel_timeout_ms = 9;
+  int64 sub_question_timeout_ms = 10;
+  double min_vector_similarity = 11;
+  double keyword_relative_score_floor = 12;
+  bool keyword_channel_enabled = 13;
+  bool graph_rag_channel_enabled = 14;
+  HybridOptions hybrid = 15;
+  repeated string kb_config_conflict_fields = 16;
 }
 
 // KnowledgeBaseSelectionSnapshot 知识库选择快照
@@ -132,7 +125,6 @@ message GraphTypesRequest { int64 knowledge_base_id = 1; }
 message IndexingOptions {
   ChunkOptions chunk = 1;
   GraphRagBuildOptions graph_rag = 2;
-  RaptorBuildOptions raptor = 3;
 }
 message ChunkOptions {
   int32 child_recursive_max_chars = 1;
@@ -146,13 +138,6 @@ message ChunkOptions {
   int32 parent_semantic_min_chars = 9;
 }
 message GraphRagBuildOptions { bool graph_rag_build_enabled = 1; }
-message RaptorBuildOptions {
-  bool raptor_build_enabled = 1;
-  int32 raptor_max_cluster_size = 2;
-  int32 raptor_max_levels = 3;
-  bool raptor_llm_summary_enabled = 4;
-  double raptor_summary_quality_floor = 5;
-}
 message RequireEnabledResponse { KnowledgeBase knowledge_base = 1; }
 message GraphTypesResponse {
   repeated string entity_types = 1;

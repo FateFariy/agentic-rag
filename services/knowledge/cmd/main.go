@@ -5,28 +5,23 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/swiftbit/know-agent/pkg/infra"
 	"github.com/swiftbit/know-agent/services/knowledge/internal/config"
-	"github.com/swiftbit/know-agent/services/knowledge/internal/infrastructure/port/gateway"
 )
 
 func main() {
 	c := config.MustLoad()
 	applyEnv(c)
-	if c.Grpc.KnowledgeRpc.ListenOn == "" {
-		c.Grpc.KnowledgeRpc.ListenOn = ":50052"
+	if c.Rpc.ListenOn == "" {
+		c.Rpc.ListenOn = ":50052"
 	}
 
-	documentConn, err := infra.DialGrpc(c.Grpc.DocumentAddr)
+	server, err := Build(c)
 	if err != nil {
-		log.Fatalf("dial document service: %v", err)
+		log.Fatalf("build knowledge service: %v", err)
 	}
-	documentClient := gateway.NewKnowledgeDocumentClient(documentConn)
-
-	knowledgeApp := Build(c, documentClient)
 
 	log.Printf("knowledge service starting, http :%d", c.Http.Port)
-	knowledgeApp.Start()
+	server.Start()
 }
 
 func applyEnv(c *config.Config) {
@@ -39,6 +34,6 @@ func applyEnv(c *config.Config) {
 		c.Grpc.DocumentAddr = v
 	}
 	if v := os.Getenv("KNOWLEDGE_GRPC_LISTEN"); v != "" {
-		c.Grpc.KnowledgeRpc.ListenOn = v
+		c.Rpc.ListenOn = v
 	}
 }

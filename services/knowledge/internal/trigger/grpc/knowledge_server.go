@@ -131,7 +131,6 @@ func knowledgeBaseToProto(item *entity.KnowledgeBase) *knowledgev1.KnowledgeBase
 		EmbeddingModel:      item.EmbeddingModel,
 		RetrievalConfigJson: string(item.RetrievalConfigJson),
 		GraphRagConfigJson:  string(item.GraphRagConfigJson),
-		RaptorConfigJson:    string(item.RaptorConfigJson),
 		MetadataFilterJson:  string(item.MetadataFilterJson),
 		IsDefault:           isDefault,
 		SortOrder:           int32(item.SortOrder),
@@ -233,8 +232,6 @@ func ragRuntimeOptionsToProto(o *vo.RagRuntimeOptions) *knowledgev1.RagRuntimeOp
 		KeywordTopK:               int32(o.KeywordTopK),
 		GraphRagTopK:              int32(o.GraphRagTopK),
 		GraphRagMaxHops:           int32(o.GraphRagMaxHops),
-		RaptorTopK:                int32(o.RaptorTopK),
-		RaptorSourceChunkTopK:     int32(o.RaptorSourceChunkTopK),
 		CandidateTopK:             int32(o.CandidateTopK),
 		RerankCandidateTopK:       int32(o.RerankCandidateTopK),
 		FinalTopK:                 int32(o.FinalTopK),
@@ -245,7 +242,6 @@ func ragRuntimeOptionsToProto(o *vo.RagRuntimeOptions) *knowledgev1.RagRuntimeOp
 		KeywordRelativeScoreFloor: o.KeywordRelativeScoreFloor,
 		KeywordChannelEnabled:     o.KeywordChannelEnabled,
 		GraphRagChannelEnabled:    o.GraphRagChannelEnabled,
-		RaptorChannelEnabled:      o.RaptorChannelEnabled,
 		Hybrid:                    hybridOptionsToProto(o.Hybrid),
 		KbConfigConflictFields:    o.KbConfigConflictFields,
 	}
@@ -259,7 +255,6 @@ func hybridOptionsToProto(o *vo.HybridOptions) *knowledgev1.HybridOptions {
 		VectorWeight:        o.VectorWeight,
 		KeywordWeight:       o.KeywordWeight,
 		GraphRagWeight:      o.GraphRagWeight,
-		RaptorWeight:        o.RaptorWeight,
 		RankWeight:          o.RankWeight,
 		OriginalScoreWeight: o.OriginalScoreWeight,
 		MetadataBoostWeight: o.MetadataBoostWeight,
@@ -285,13 +280,6 @@ func indexingOptionsToProto(o *vo.IndexingOptions) *knowledgev1.IndexingOptions 
 		},
 		GraphRag: &knowledgev1.GraphRagBuildOptions{
 			GraphRagBuildEnabled: o.GraphRag.GraphRagBuildEnabled,
-		},
-		Raptor: &knowledgev1.RaptorBuildOptions{
-			RaptorBuildEnabled:        o.Raptor.RaptorBuildEnabled,
-			RaptorMaxClusterSize:      int32(o.Raptor.RaptorMaxClusterSize),
-			RaptorMaxLevels:           int32(o.Raptor.RaptorMaxLevels),
-			RaptorLlmSummaryEnabled:   o.Raptor.RaptorLlmSummaryEnabled,
-			RaptorSummaryQualityFloor: o.Raptor.RaptorSummaryQualityFloor,
 		},
 	}
 }

@@ -2,7 +2,7 @@ package embedding
 
 import "context"
 
-// EmbeddingConf 嵌入模型配置；由 pkg/config 内嵌复用。
+// EmbeddingConf 嵌入模型配置
 type EmbeddingConf struct {
 	Model      string // 模型名称
 	Dimensions int    // 嵌入维度

@@ -83,7 +83,6 @@ func ToKnowledgeBaseEntity(source *model.KnowledgeBase) *entity.KnowledgeBase {
 		entityKnowledgeBase.EmbeddingModel = NormalizeString((*source).EmbeddingModel)
 		entityKnowledgeBase.RetrievalConfigJson = datatypesJSONToJsonRawMessage((*source).RetrievalConfigJson)
 		entityKnowledgeBase.GraphRagConfigJson = datatypesJSONToJsonRawMessage((*source).GraphRagConfigJson)
-		entityKnowledgeBase.RaptorConfigJson = datatypesJSONToJsonRawMessage((*source).RaptorConfigJson)
 		entityKnowledgeBase.MetadataFilterJson = datatypesJSONToJsonRawMessage((*source).MetadataFilterJson)
 		entityKnowledgeBase.EntityTypes = (*source).EntityTypes
 		entityKnowledgeBase.RelationTypes = (*source).RelationTypes
@@ -113,7 +112,6 @@ func ToKnowledgeBaseModel(source *entity.KnowledgeBase) *model.KnowledgeBase {
 		modelKnowledgeBase.EmbeddingModel = NormalizeString((*source).EmbeddingModel)
 		modelKnowledgeBase.RetrievalConfigJson = jsonRawMessageToDatatypesJSON((*source).RetrievalConfigJson)
 		modelKnowledgeBase.GraphRagConfigJson = jsonRawMessageToDatatypesJSON((*source).GraphRagConfigJson)
-		modelKnowledgeBase.RaptorConfigJson = jsonRawMessageToDatatypesJSON((*source).RaptorConfigJson)
 		modelKnowledgeBase.MetadataFilterJson = jsonRawMessageToDatatypesJSON((*source).MetadataFilterJson)
 		modelKnowledgeBase.EntityTypes = (*source).EntityTypes
 		modelKnowledgeBase.RelationTypes = (*source).RelationTypes
@@ -376,7 +374,6 @@ func pEntityKnowledgeBaseToPApiKnowledgeBaseItemResp(source *entity.KnowledgeBas
 		apiKnowledgeBaseItemResp.EmbeddingModel = NormalizeString((*source).EmbeddingModel)
 		apiKnowledgeBaseItemResp.RetrievalConfigJson = RawMessageToString((*source).RetrievalConfigJson)
 		apiKnowledgeBaseItemResp.GraphRagConfigJson = RawMessageToString((*source).GraphRagConfigJson)
-		apiKnowledgeBaseItemResp.RaptorConfigJson = RawMessageToString((*source).RaptorConfigJson)
 		apiKnowledgeBaseItemResp.MetadataFilterJson = RawMessageToString((*source).MetadataFilterJson)
 		if (*source).IsDefault != nil {
 			apiKnowledgeBaseItemResp.IsDefault = *(*source).IsDefault

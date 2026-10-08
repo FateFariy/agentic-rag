@@ -3,7 +3,6 @@ package vo
 type IndexingOptions struct {
 	Chunk    ChunkOptions         `json:"chunk"`
 	GraphRag GraphRagBuildOptions `json:"graphRag"`
-	Raptor   RaptorBuildOptions   `json:"raptor"`
 }
 
 type ChunkOptions struct {
@@ -20,12 +19,4 @@ type ChunkOptions struct {
 
 type GraphRagBuildOptions struct {
 	GraphRagBuildEnabled bool `json:"graphRagBuildEnabled"`
-}
-
-type RaptorBuildOptions struct {
-	RaptorBuildEnabled        bool    `json:"raptorBuildEnabled"`
-	RaptorMaxClusterSize      int     `json:"raptorMaxClusterSize"`
-	RaptorMaxLevels           int     `json:"raptorMaxLevels"`
-	RaptorLlmSummaryEnabled   bool    `json:"raptorLlmSummaryEnabled"`
-	RaptorSummaryQualityFloor float64 `json:"raptorSummaryQualityFloor"`
 }

@@ -9,7 +9,6 @@ type HybridOptions struct {
 	VectorWeight        float64
 	KeywordWeight       float64
 	GraphRagWeight      float64
-	RaptorWeight        float64
 	RankWeight          float64
 	OriginalScoreWeight float64
 	MetadataBoostWeight float64
@@ -21,7 +20,6 @@ func NewDefaultHybridOptions() *HybridOptions {
 		VectorWeight:        1.0,
 		KeywordWeight:       1.0,
 		GraphRagWeight:      1.1,
-		RaptorWeight:        1.05,
 		RankWeight:          1.0,
 		OriginalScoreWeight: 0.08,
 		MetadataBoostWeight: 0.04,
@@ -35,8 +33,6 @@ type RagRuntimeOptions struct {
 	KeywordTopK               int
 	GraphRagTopK              int
 	GraphRagMaxHops           int
-	RaptorTopK                int
-	RaptorSourceChunkTopK     int
 	CandidateTopK             int
 	RerankCandidateTopK       int
 	FinalTopK                 int
@@ -47,7 +43,6 @@ type RagRuntimeOptions struct {
 	KeywordRelativeScoreFloor float64
 	KeywordChannelEnabled     bool
 	GraphRagChannelEnabled    bool
-	RaptorChannelEnabled      bool
 	Hybrid                    *HybridOptions
 	KbConfigConflictFields    []string
 }
@@ -59,8 +54,6 @@ func NewDefaultRagRuntimeOptions() *RagRuntimeOptions {
 		KeywordTopK:               10,
 		GraphRagTopK:              5,
 		GraphRagMaxHops:           2,
-		RaptorTopK:                5,
-		RaptorSourceChunkTopK:     3,
 		CandidateTopK:             40,
 		RerankCandidateTopK:       24,
 		FinalTopK:                 6,
@@ -71,7 +64,6 @@ func NewDefaultRagRuntimeOptions() *RagRuntimeOptions {
 		KeywordRelativeScoreFloor: 0.35,
 		KeywordChannelEnabled:     true,
 		GraphRagChannelEnabled:    true,
-		RaptorChannelEnabled:      true,
 		Hybrid:                    NewDefaultHybridOptions(),
 		KbConfigConflictFields:    []string{},
 	}

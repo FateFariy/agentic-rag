@@ -65,8 +65,6 @@ func (r *Resolver) parseConfig(kb *entity.KnowledgeBase) *RuntimeConfig {
 		KeywordTopK:               new(int),
 		GraphRagTopK:              new(int),
 		GraphRagMaxHops:           new(int),
-		RaptorTopK:                new(int),
-		RaptorSourceChunkTopK:     new(int),
 		CandidateTopK:             new(int),
 		RerankCandidateTopK:       new(int),
 		FinalTopK:                 new(int),
@@ -77,12 +75,10 @@ func (r *Resolver) parseConfig(kb *entity.KnowledgeBase) *RuntimeConfig {
 		KeywordRelativeScoreFloor: new(float64),
 		KeywordChannelEnabled:     new(bool),
 		GraphRagChannelEnabled:    new(bool),
-		RaptorChannelEnabled:      new(bool),
 		Hybrid: &HybridConfig{
 			VectorWeight:        new(float64),
 			KeywordWeight:       new(float64),
 			GraphRagWeight:      new(float64),
-			RaptorWeight:        new(float64),
 			RankWeight:          new(float64),
 			OriginalScoreWeight: new(float64),
 			MetadataBoostWeight: new(float64),
@@ -92,7 +88,6 @@ func (r *Resolver) parseConfig(kb *entity.KnowledgeBase) *RuntimeConfig {
 	// 顺序合并，后解析的覆盖先解析的（如果有同名字段）
 	r.mergeInto(merged, r.parseJSON(kb.RetrievalConfigJson, kb))
 	r.mergeInto(merged, r.parseJSON(kb.GraphRagConfigJson, kb))
-	r.mergeInto(merged, r.parseJSON(kb.RaptorConfigJson, kb))
 	return merged
 }
 
@@ -124,8 +119,6 @@ func (r *Resolver) mergeInto(target, source *RuntimeConfig) {
 	setIfNotNil(source.KeywordTopK, target.KeywordTopK)
 	setIfNotNil(source.GraphRagTopK, target.GraphRagTopK)
 	setIfNotNil(source.GraphRagMaxHops, target.GraphRagMaxHops)
-	setIfNotNil(source.RaptorTopK, target.RaptorTopK)
-	setIfNotNil(source.RaptorSourceChunkTopK, target.RaptorSourceChunkTopK)
 	setIfNotNil(source.CandidateTopK, target.CandidateTopK)
 	setIfNotNil(source.RerankCandidateTopK, target.RerankCandidateTopK)
 	setIfNotNil(source.FinalTopK, target.FinalTopK)
@@ -136,7 +129,6 @@ func (r *Resolver) mergeInto(target, source *RuntimeConfig) {
 	setIfNotNil(source.KeywordRelativeScoreFloor, target.KeywordRelativeScoreFloor)
 	setIfNotNil(source.KeywordChannelEnabled, target.KeywordChannelEnabled)
 	setIfNotNil(source.GraphRagChannelEnabled, target.GraphRagChannelEnabled)
-	setIfNotNil(source.RaptorChannelEnabled, target.RaptorChannelEnabled)
 
 	if source.Hybrid != nil {
 		if target.Hybrid == nil {
@@ -151,7 +143,6 @@ func (r *Resolver) mergeHybridInto(target, source *HybridConfig) {
 	setIfNotNil(source.VectorWeight, target.VectorWeight)
 	setIfNotNil(source.KeywordWeight, target.KeywordWeight)
 	setIfNotNil(source.GraphRagWeight, target.GraphRagWeight)
-	setIfNotNil(source.RaptorWeight, target.RaptorWeight)
 	setIfNotNil(source.RankWeight, target.RankWeight)
 	setIfNotNil(source.OriginalScoreWeight, target.OriginalScoreWeight)
 	setIfNotNil(source.MetadataBoostWeight, target.MetadataBoostWeight)
@@ -164,8 +155,6 @@ func (r *Resolver) applySingle(options *vo.RagRuntimeOptions, cfg *RuntimeConfig
 	setIfNotNil(cfg.KeywordTopK, &options.KeywordTopK)
 	setIfNotNil(cfg.GraphRagTopK, &options.GraphRagTopK)
 	setIfNotNil(cfg.GraphRagMaxHops, &options.GraphRagMaxHops)
-	setIfNotNil(cfg.RaptorTopK, &options.RaptorTopK)
-	setIfNotNil(cfg.RaptorSourceChunkTopK, &options.RaptorSourceChunkTopK)
 	setIfNotNil(cfg.CandidateTopK, &options.CandidateTopK)
 	setIfNotNil(cfg.RerankCandidateTopK, &options.RerankCandidateTopK)
 	setIfNotNil(cfg.FinalTopK, &options.FinalTopK)
@@ -176,7 +165,6 @@ func (r *Resolver) applySingle(options *vo.RagRuntimeOptions, cfg *RuntimeConfig
 	setIfNotNil(cfg.KeywordRelativeScoreFloor, &options.KeywordRelativeScoreFloor)
 	setIfNotNil(cfg.KeywordChannelEnabled, &options.KeywordChannelEnabled)
 	setIfNotNil(cfg.GraphRagChannelEnabled, &options.GraphRagChannelEnabled)
-	setIfNotNil(cfg.RaptorChannelEnabled, &options.RaptorChannelEnabled)
 
 	if cfg.Hybrid != nil {
 		if options.Hybrid == nil {
@@ -191,7 +179,6 @@ func (r *Resolver) applySingleHybrid(target *vo.HybridOptions, source *HybridCon
 	setIfNotNil(source.VectorWeight, &target.VectorWeight)
 	setIfNotNil(source.KeywordWeight, &target.KeywordWeight)
 	setIfNotNil(source.GraphRagWeight, &target.GraphRagWeight)
-	setIfNotNil(source.RaptorWeight, &target.RaptorWeight)
 	setIfNotNil(source.RankWeight, &target.RankWeight)
 	setIfNotNil(source.OriginalScoreWeight, &target.OriginalScoreWeight)
 	setIfNotNil(source.MetadataBoostWeight, &target.MetadataBoostWeight)
@@ -208,8 +195,6 @@ func (r *Resolver) applyMerged(options *vo.RagRuntimeOptions, configs []*Runtime
 	mergeField(configs, func(c *RuntimeConfig) *int { return c.KeywordTopK }, func(v int) { options.KeywordTopK = v }, "keywordTopK", &conflicts)
 	mergeField(configs, func(c *RuntimeConfig) *int { return c.GraphRagTopK }, func(v int) { options.GraphRagTopK = v }, "graphRagTopK", &conflicts)
 	mergeField(configs, func(c *RuntimeConfig) *int { return c.GraphRagMaxHops }, func(v int) { options.GraphRagMaxHops = v }, "graphRagMaxHops", &conflicts)
-	mergeField(configs, func(c *RuntimeConfig) *int { return c.RaptorTopK }, func(v int) { options.RaptorTopK = v }, "raptorTopK", &conflicts)
-	mergeField(configs, func(c *RuntimeConfig) *int { return c.RaptorSourceChunkTopK }, func(v int) { options.RaptorSourceChunkTopK = v }, "raptorSourceChunkTopK", &conflicts)
 	mergeField(configs, func(c *RuntimeConfig) *int { return c.CandidateTopK }, func(v int) { options.CandidateTopK = v }, "candidateTopK", &conflicts)
 	mergeField(configs, func(c *RuntimeConfig) *int { return c.RerankCandidateTopK }, func(v int) { options.RerankCandidateTopK = v }, "rerankCandidateTopK", &conflicts)
 	mergeField(configs, func(c *RuntimeConfig) *int { return c.FinalTopK }, func(v int) { options.FinalTopK = v }, "finalTopK", &conflicts)
@@ -220,8 +205,6 @@ func (r *Resolver) applyMerged(options *vo.RagRuntimeOptions, configs []*Runtime
 	mergeField(configs, func(c *RuntimeConfig) *float64 { return c.KeywordRelativeScoreFloor }, func(v float64) { options.KeywordRelativeScoreFloor = v }, "keywordRelativeScoreFloor", &conflicts)
 	mergeField(configs, func(c *RuntimeConfig) *bool { return c.KeywordChannelEnabled }, func(v bool) { options.KeywordChannelEnabled = v }, "keywordChannelEnabled", &conflicts)
 	mergeField(configs, func(c *RuntimeConfig) *bool { return c.GraphRagChannelEnabled }, func(v bool) { options.GraphRagChannelEnabled = v }, "graphRagChannelEnabled", &conflicts)
-	mergeField(configs, func(c *RuntimeConfig) *bool { return c.RaptorChannelEnabled }, func(v bool) { options.RaptorChannelEnabled = v }, "raptorChannelEnabled", &conflicts)
-
 	// Hybrid 字段冲突检测
 	if options.Hybrid == nil {
 		options.Hybrid = vo.NewDefaultHybridOptions()
@@ -232,8 +215,6 @@ func (r *Resolver) applyMerged(options *vo.RagRuntimeOptions, configs []*Runtime
 		func(v float64) { options.Hybrid.KeywordWeight = v }, "hybrid.keywordWeight", &conflicts)
 	mergeHybridField(configs, func(h *HybridConfig) *float64 { return h.GraphRagWeight },
 		func(v float64) { options.Hybrid.GraphRagWeight = v }, "hybrid.graphRagWeight", &conflicts)
-	mergeHybridField(configs, func(h *HybridConfig) *float64 { return h.RaptorWeight },
-		func(v float64) { options.Hybrid.RaptorWeight = v }, "hybrid.raptorWeight", &conflicts)
 	mergeHybridField(configs, func(h *HybridConfig) *float64 { return h.RankWeight },
 		func(v float64) { options.Hybrid.RankWeight = v }, "hybrid.rankWeight", &conflicts)
 	mergeHybridField(configs, func(h *HybridConfig) *float64 { return h.OriginalScoreWeight },
@@ -369,7 +350,6 @@ type HybridConfig struct {
 	VectorWeight        *float64 `json:"vectorWeight,omitempty"`
 	KeywordWeight       *float64 `json:"keywordWeight,omitempty"`
 	GraphRagWeight      *float64 `json:"graphRagWeight,omitempty"`
-	RaptorWeight        *float64 `json:"raptorWeight,omitempty"`
 	RankWeight          *float64 `json:"rankWeight,omitempty"`
 	OriginalScoreWeight *float64 `json:"originalScoreWeight,omitempty"`
 	MetadataBoostWeight *float64 `json:"metadataBoostWeight,omitempty"`
@@ -381,8 +361,6 @@ type RuntimeConfig struct {
 	KeywordTopK               *int           `json:"keywordTopK,omitempty"`
 	GraphRagTopK              *int           `json:"graphRagTopK,omitempty"`
 	GraphRagMaxHops           *int           `json:"graphRagMaxHops,omitempty"`
-	RaptorTopK                *int           `json:"raptorTopK,omitempty"`
-	RaptorSourceChunkTopK     *int           `json:"raptorSourceChunkTopK,omitempty"`
 	CandidateTopK             *int           `json:"candidateTopK,omitempty"`
 	RerankCandidateTopK       *int           `json:"rerankCandidateTopK,omitempty"`
 	FinalTopK                 *int           `json:"finalTopK,omitempty"`
@@ -393,6 +371,5 @@ type RuntimeConfig struct {
 	KeywordRelativeScoreFloor *float64       `json:"keywordRelativeScoreFloor,omitempty"`
 	KeywordChannelEnabled     *bool          `json:"keywordChannelEnabled,omitempty"`
 	GraphRagChannelEnabled    *bool          `json:"graphRagChannelEnabled,omitempty"`
-	RaptorChannelEnabled      *bool          `json:"raptorChannelEnabled,omitempty"`
 	Hybrid                    *HybridConfig  `json:"hybrid,omitempty"`
 }

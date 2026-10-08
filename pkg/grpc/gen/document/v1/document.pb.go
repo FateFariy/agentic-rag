@@ -2,18 +2,17 @@
 // versions:
 // 	protoc-gen-go v1.36.12
 // 	protoc        (unknown)
-// source: proto/knowagent/document/v1/document.proto
+// source: proto/document/v1/document.proto
 
 package documentv1
 
 import (
-	reflect "reflect"
-	sync "sync"
-	unsafe "unsafe"
-
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	structpb "google.golang.org/protobuf/types/known/structpb"
+	reflect "reflect"
+	sync "sync"
+	unsafe "unsafe"
 )
 
 const (
@@ -37,7 +36,7 @@ type DocumentMetadata struct {
 
 func (x *DocumentMetadata) Reset() {
 	*x = DocumentMetadata{}
-	mi := &file_proto_knowagent_document_v1_document_proto_msgTypes[0]
+	mi := &file_proto_document_v1_document_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -49,7 +48,7 @@ func (x *DocumentMetadata) String() string {
 func (*DocumentMetadata) ProtoMessage() {}
 
 func (x *DocumentMetadata) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_knowagent_document_v1_document_proto_msgTypes[0]
+	mi := &file_proto_document_v1_document_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -62,7 +61,7 @@ func (x *DocumentMetadata) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DocumentMetadata.ProtoReflect.Descriptor instead.
 func (*DocumentMetadata) Descriptor() ([]byte, []int) {
-	return file_proto_knowagent_document_v1_document_proto_rawDescGZIP(), []int{0}
+	return file_proto_document_v1_document_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *DocumentMetadata) GetDocumentId() int64 {
@@ -141,7 +140,7 @@ type DocumentChunk struct {
 
 func (x *DocumentChunk) Reset() {
 	*x = DocumentChunk{}
-	mi := &file_proto_knowagent_document_v1_document_proto_msgTypes[1]
+	mi := &file_proto_document_v1_document_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -153,7 +152,7 @@ func (x *DocumentChunk) String() string {
 func (*DocumentChunk) ProtoMessage() {}
 
 func (x *DocumentChunk) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_knowagent_document_v1_document_proto_msgTypes[1]
+	mi := &file_proto_document_v1_document_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -166,7 +165,7 @@ func (x *DocumentChunk) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DocumentChunk.ProtoReflect.Descriptor instead.
 func (*DocumentChunk) Descriptor() ([]byte, []int) {
-	return file_proto_knowagent_document_v1_document_proto_rawDescGZIP(), []int{1}
+	return file_proto_document_v1_document_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *DocumentChunk) GetId() string {
@@ -416,7 +415,7 @@ type GraphSection struct {
 
 func (x *GraphSection) Reset() {
 	*x = GraphSection{}
-	mi := &file_proto_knowagent_document_v1_document_proto_msgTypes[2]
+	mi := &file_proto_document_v1_document_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -428,7 +427,7 @@ func (x *GraphSection) String() string {
 func (*GraphSection) ProtoMessage() {}
 
 func (x *GraphSection) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_knowagent_document_v1_document_proto_msgTypes[2]
+	mi := &file_proto_document_v1_document_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -441,7 +440,7 @@ func (x *GraphSection) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GraphSection.ProtoReflect.Descriptor instead.
 func (*GraphSection) Descriptor() ([]byte, []int) {
-	return file_proto_knowagent_document_v1_document_proto_rawDescGZIP(), []int{2}
+	return file_proto_document_v1_document_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *GraphSection) GetNodeId() int64 {
@@ -556,7 +555,7 @@ type DocumentProfile struct {
 
 func (x *DocumentProfile) Reset() {
 	*x = DocumentProfile{}
-	mi := &file_proto_knowagent_document_v1_document_proto_msgTypes[3]
+	mi := &file_proto_document_v1_document_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -568,7 +567,7 @@ func (x *DocumentProfile) String() string {
 func (*DocumentProfile) ProtoMessage() {}
 
 func (x *DocumentProfile) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_knowagent_document_v1_document_proto_msgTypes[3]
+	mi := &file_proto_document_v1_document_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -581,7 +580,7 @@ func (x *DocumentProfile) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DocumentProfile.ProtoReflect.Descriptor instead.
 func (*DocumentProfile) Descriptor() ([]byte, []int) {
-	return file_proto_knowagent_document_v1_document_proto_rawDescGZIP(), []int{3}
+	return file_proto_document_v1_document_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *DocumentProfile) GetDocumentId() int64 {
@@ -629,7 +628,7 @@ type Int64CountMap struct {
 
 func (x *Int64CountMap) Reset() {
 	*x = Int64CountMap{}
-	mi := &file_proto_knowagent_document_v1_document_proto_msgTypes[4]
+	mi := &file_proto_document_v1_document_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -641,7 +640,7 @@ func (x *Int64CountMap) String() string {
 func (*Int64CountMap) ProtoMessage() {}
 
 func (x *Int64CountMap) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_knowagent_document_v1_document_proto_msgTypes[4]
+	mi := &file_proto_document_v1_document_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -654,7 +653,7 @@ func (x *Int64CountMap) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Int64CountMap.ProtoReflect.Descriptor instead.
 func (*Int64CountMap) Descriptor() ([]byte, []int) {
-	return file_proto_knowagent_document_v1_document_proto_rawDescGZIP(), []int{4}
+	return file_proto_document_v1_document_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *Int64CountMap) GetCounts() map[int64]int64 {
@@ -673,7 +672,7 @@ type DocumentMetadataList struct {
 
 func (x *DocumentMetadataList) Reset() {
 	*x = DocumentMetadataList{}
-	mi := &file_proto_knowagent_document_v1_document_proto_msgTypes[5]
+	mi := &file_proto_document_v1_document_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -685,7 +684,7 @@ func (x *DocumentMetadataList) String() string {
 func (*DocumentMetadataList) ProtoMessage() {}
 
 func (x *DocumentMetadataList) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_knowagent_document_v1_document_proto_msgTypes[5]
+	mi := &file_proto_document_v1_document_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -698,7 +697,7 @@ func (x *DocumentMetadataList) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DocumentMetadataList.ProtoReflect.Descriptor instead.
 func (*DocumentMetadataList) Descriptor() ([]byte, []int) {
-	return file_proto_knowagent_document_v1_document_proto_rawDescGZIP(), []int{5}
+	return file_proto_document_v1_document_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *DocumentMetadataList) GetItems() []*DocumentMetadata {
@@ -717,7 +716,7 @@ type DocumentChunkList struct {
 
 func (x *DocumentChunkList) Reset() {
 	*x = DocumentChunkList{}
-	mi := &file_proto_knowagent_document_v1_document_proto_msgTypes[6]
+	mi := &file_proto_document_v1_document_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -729,7 +728,7 @@ func (x *DocumentChunkList) String() string {
 func (*DocumentChunkList) ProtoMessage() {}
 
 func (x *DocumentChunkList) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_knowagent_document_v1_document_proto_msgTypes[6]
+	mi := &file_proto_document_v1_document_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -742,7 +741,7 @@ func (x *DocumentChunkList) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DocumentChunkList.ProtoReflect.Descriptor instead.
 func (*DocumentChunkList) Descriptor() ([]byte, []int) {
-	return file_proto_knowagent_document_v1_document_proto_rawDescGZIP(), []int{6}
+	return file_proto_document_v1_document_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *DocumentChunkList) GetItems() []*DocumentChunk {
@@ -761,7 +760,7 @@ type GraphSectionList struct {
 
 func (x *GraphSectionList) Reset() {
 	*x = GraphSectionList{}
-	mi := &file_proto_knowagent_document_v1_document_proto_msgTypes[7]
+	mi := &file_proto_document_v1_document_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -773,7 +772,7 @@ func (x *GraphSectionList) String() string {
 func (*GraphSectionList) ProtoMessage() {}
 
 func (x *GraphSectionList) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_knowagent_document_v1_document_proto_msgTypes[7]
+	mi := &file_proto_document_v1_document_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -786,7 +785,7 @@ func (x *GraphSectionList) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GraphSectionList.ProtoReflect.Descriptor instead.
 func (*GraphSectionList) Descriptor() ([]byte, []int) {
-	return file_proto_knowagent_document_v1_document_proto_rawDescGZIP(), []int{7}
+	return file_proto_document_v1_document_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *GraphSectionList) GetItems() []*GraphSection {
@@ -805,7 +804,7 @@ type DocumentProfileList struct {
 
 func (x *DocumentProfileList) Reset() {
 	*x = DocumentProfileList{}
-	mi := &file_proto_knowagent_document_v1_document_proto_msgTypes[8]
+	mi := &file_proto_document_v1_document_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -817,7 +816,7 @@ func (x *DocumentProfileList) String() string {
 func (*DocumentProfileList) ProtoMessage() {}
 
 func (x *DocumentProfileList) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_knowagent_document_v1_document_proto_msgTypes[8]
+	mi := &file_proto_document_v1_document_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -830,7 +829,7 @@ func (x *DocumentProfileList) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DocumentProfileList.ProtoReflect.Descriptor instead.
 func (*DocumentProfileList) Descriptor() ([]byte, []int) {
-	return file_proto_knowagent_document_v1_document_proto_rawDescGZIP(), []int{8}
+	return file_proto_document_v1_document_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *DocumentProfileList) GetItems() []*DocumentProfile {
@@ -849,7 +848,7 @@ type GraphSectionOrEmpty struct {
 
 func (x *GraphSectionOrEmpty) Reset() {
 	*x = GraphSectionOrEmpty{}
-	mi := &file_proto_knowagent_document_v1_document_proto_msgTypes[9]
+	mi := &file_proto_document_v1_document_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -861,7 +860,7 @@ func (x *GraphSectionOrEmpty) String() string {
 func (*GraphSectionOrEmpty) ProtoMessage() {}
 
 func (x *GraphSectionOrEmpty) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_knowagent_document_v1_document_proto_msgTypes[9]
+	mi := &file_proto_document_v1_document_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -874,7 +873,7 @@ func (x *GraphSectionOrEmpty) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GraphSectionOrEmpty.ProtoReflect.Descriptor instead.
 func (*GraphSectionOrEmpty) Descriptor() ([]byte, []int) {
-	return file_proto_knowagent_document_v1_document_proto_rawDescGZIP(), []int{9}
+	return file_proto_document_v1_document_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *GraphSectionOrEmpty) GetSection() *GraphSection {
@@ -893,7 +892,7 @@ type FindRetrievableByKbIdsRequest struct {
 
 func (x *FindRetrievableByKbIdsRequest) Reset() {
 	*x = FindRetrievableByKbIdsRequest{}
-	mi := &file_proto_knowagent_document_v1_document_proto_msgTypes[10]
+	mi := &file_proto_document_v1_document_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -905,7 +904,7 @@ func (x *FindRetrievableByKbIdsRequest) String() string {
 func (*FindRetrievableByKbIdsRequest) ProtoMessage() {}
 
 func (x *FindRetrievableByKbIdsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_knowagent_document_v1_document_proto_msgTypes[10]
+	mi := &file_proto_document_v1_document_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -918,7 +917,7 @@ func (x *FindRetrievableByKbIdsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FindRetrievableByKbIdsRequest.ProtoReflect.Descriptor instead.
 func (*FindRetrievableByKbIdsRequest) Descriptor() ([]byte, []int) {
-	return file_proto_knowagent_document_v1_document_proto_rawDescGZIP(), []int{10}
+	return file_proto_document_v1_document_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *FindRetrievableByKbIdsRequest) GetKbIds() []int64 {
@@ -937,7 +936,7 @@ type FindRetrieveDocumentByIdsRequest struct {
 
 func (x *FindRetrieveDocumentByIdsRequest) Reset() {
 	*x = FindRetrieveDocumentByIdsRequest{}
-	mi := &file_proto_knowagent_document_v1_document_proto_msgTypes[11]
+	mi := &file_proto_document_v1_document_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -949,7 +948,7 @@ func (x *FindRetrieveDocumentByIdsRequest) String() string {
 func (*FindRetrieveDocumentByIdsRequest) ProtoMessage() {}
 
 func (x *FindRetrieveDocumentByIdsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_knowagent_document_v1_document_proto_msgTypes[11]
+	mi := &file_proto_document_v1_document_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -962,7 +961,7 @@ func (x *FindRetrieveDocumentByIdsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FindRetrieveDocumentByIdsRequest.ProtoReflect.Descriptor instead.
 func (*FindRetrieveDocumentByIdsRequest) Descriptor() ([]byte, []int) {
-	return file_proto_knowagent_document_v1_document_proto_rawDescGZIP(), []int{11}
+	return file_proto_document_v1_document_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *FindRetrieveDocumentByIdsRequest) GetIds() []int64 {
@@ -981,7 +980,7 @@ type FindParentChunksRequest struct {
 
 func (x *FindParentChunksRequest) Reset() {
 	*x = FindParentChunksRequest{}
-	mi := &file_proto_knowagent_document_v1_document_proto_msgTypes[12]
+	mi := &file_proto_document_v1_document_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -993,7 +992,7 @@ func (x *FindParentChunksRequest) String() string {
 func (*FindParentChunksRequest) ProtoMessage() {}
 
 func (x *FindParentChunksRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_knowagent_document_v1_document_proto_msgTypes[12]
+	mi := &file_proto_document_v1_document_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1006,7 +1005,7 @@ func (x *FindParentChunksRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FindParentChunksRequest.ProtoReflect.Descriptor instead.
 func (*FindParentChunksRequest) Descriptor() ([]byte, []int) {
-	return file_proto_knowagent_document_v1_document_proto_rawDescGZIP(), []int{12}
+	return file_proto_document_v1_document_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *FindParentChunksRequest) GetIds() []int64 {
@@ -1025,7 +1024,7 @@ type ListSectionsRequest struct {
 
 func (x *ListSectionsRequest) Reset() {
 	*x = ListSectionsRequest{}
-	mi := &file_proto_knowagent_document_v1_document_proto_msgTypes[13]
+	mi := &file_proto_document_v1_document_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1037,7 +1036,7 @@ func (x *ListSectionsRequest) String() string {
 func (*ListSectionsRequest) ProtoMessage() {}
 
 func (x *ListSectionsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_knowagent_document_v1_document_proto_msgTypes[13]
+	mi := &file_proto_document_v1_document_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1050,7 +1049,7 @@ func (x *ListSectionsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListSectionsRequest.ProtoReflect.Descriptor instead.
 func (*ListSectionsRequest) Descriptor() ([]byte, []int) {
-	return file_proto_knowagent_document_v1_document_proto_rawDescGZIP(), []int{13}
+	return file_proto_document_v1_document_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *ListSectionsRequest) GetDocumentId() int64 {
@@ -1070,7 +1069,7 @@ type FindSectionByIdRequest struct {
 
 func (x *FindSectionByIdRequest) Reset() {
 	*x = FindSectionByIdRequest{}
-	mi := &file_proto_knowagent_document_v1_document_proto_msgTypes[14]
+	mi := &file_proto_document_v1_document_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1082,7 +1081,7 @@ func (x *FindSectionByIdRequest) String() string {
 func (*FindSectionByIdRequest) ProtoMessage() {}
 
 func (x *FindSectionByIdRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_knowagent_document_v1_document_proto_msgTypes[14]
+	mi := &file_proto_document_v1_document_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1095,7 +1094,7 @@ func (x *FindSectionByIdRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FindSectionByIdRequest.ProtoReflect.Descriptor instead.
 func (*FindSectionByIdRequest) Descriptor() ([]byte, []int) {
-	return file_proto_knowagent_document_v1_document_proto_rawDescGZIP(), []int{14}
+	return file_proto_document_v1_document_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *FindSectionByIdRequest) GetDocumentId() int64 {
@@ -1122,7 +1121,7 @@ type FindSectionByCodeRequest struct {
 
 func (x *FindSectionByCodeRequest) Reset() {
 	*x = FindSectionByCodeRequest{}
-	mi := &file_proto_knowagent_document_v1_document_proto_msgTypes[15]
+	mi := &file_proto_document_v1_document_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1134,7 +1133,7 @@ func (x *FindSectionByCodeRequest) String() string {
 func (*FindSectionByCodeRequest) ProtoMessage() {}
 
 func (x *FindSectionByCodeRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_knowagent_document_v1_document_proto_msgTypes[15]
+	mi := &file_proto_document_v1_document_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1147,7 +1146,7 @@ func (x *FindSectionByCodeRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FindSectionByCodeRequest.ProtoReflect.Descriptor instead.
 func (*FindSectionByCodeRequest) Descriptor() ([]byte, []int) {
-	return file_proto_knowagent_document_v1_document_proto_rawDescGZIP(), []int{15}
+	return file_proto_document_v1_document_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *FindSectionByCodeRequest) GetDocumentId() int64 {
@@ -1173,7 +1172,7 @@ type CountByKbIdsRequest struct {
 
 func (x *CountByKbIdsRequest) Reset() {
 	*x = CountByKbIdsRequest{}
-	mi := &file_proto_knowagent_document_v1_document_proto_msgTypes[16]
+	mi := &file_proto_document_v1_document_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1185,7 +1184,7 @@ func (x *CountByKbIdsRequest) String() string {
 func (*CountByKbIdsRequest) ProtoMessage() {}
 
 func (x *CountByKbIdsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_knowagent_document_v1_document_proto_msgTypes[16]
+	mi := &file_proto_document_v1_document_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1198,7 +1197,7 @@ func (x *CountByKbIdsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CountByKbIdsRequest.ProtoReflect.Descriptor instead.
 func (*CountByKbIdsRequest) Descriptor() ([]byte, []int) {
-	return file_proto_knowagent_document_v1_document_proto_rawDescGZIP(), []int{16}
+	return file_proto_document_v1_document_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *CountByKbIdsRequest) GetKbIds() []int64 {
@@ -1216,7 +1215,7 @@ type FindDocumentProfilesRequest struct {
 
 func (x *FindDocumentProfilesRequest) Reset() {
 	*x = FindDocumentProfilesRequest{}
-	mi := &file_proto_knowagent_document_v1_document_proto_msgTypes[17]
+	mi := &file_proto_document_v1_document_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1228,7 +1227,7 @@ func (x *FindDocumentProfilesRequest) String() string {
 func (*FindDocumentProfilesRequest) ProtoMessage() {}
 
 func (x *FindDocumentProfilesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_knowagent_document_v1_document_proto_msgTypes[17]
+	mi := &file_proto_document_v1_document_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1241,14 +1240,14 @@ func (x *FindDocumentProfilesRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FindDocumentProfilesRequest.ProtoReflect.Descriptor instead.
 func (*FindDocumentProfilesRequest) Descriptor() ([]byte, []int) {
-	return file_proto_knowagent_document_v1_document_proto_rawDescGZIP(), []int{17}
+	return file_proto_document_v1_document_proto_rawDescGZIP(), []int{17}
 }
 
-var File_proto_knowagent_document_v1_document_proto protoreflect.FileDescriptor
+var File_proto_document_v1_document_proto protoreflect.FileDescriptor
 
-const file_proto_knowagent_document_v1_document_proto_rawDesc = "" +
+const file_proto_document_v1_document_proto_rawDesc = "" +
 	"\n" +
-	"*proto/knowagent/document/v1/document.proto\x12\x15knowagent.document.v1\x1a\x1cgoogle/protobuf/struct.proto\"\xe1\x01\n" +
+	" proto/document/v1/document.proto\x12\vdocument.v1\x1a\x1cgoogle/protobuf/struct.proto\"\xe1\x01\n" +
 	"\x10DocumentMetadata\x12\x1f\n" +
 	"\vdocument_id\x18\x01 \x01(\x03R\n" +
 	"documentId\x12#\n" +
@@ -1319,22 +1318,22 @@ const file_proto_knowagent_document_v1_document_proto_rawDesc = "" +
 	"\vcore_topics\x18\x03 \x01(\tR\n" +
 	"coreTopics\x12+\n" +
 	"\x11example_questions\x18\x04 \x01(\tR\x10exampleQuestions\x12#\n" +
-	"\rdocument_type\x18\x05 \x01(\tR\fdocumentType\"\x94\x01\n" +
-	"\rInt64CountMap\x12H\n" +
-	"\x06counts\x18\x01 \x03(\v20.knowagent.document.v1.Int64CountMap.CountsEntryR\x06counts\x1a9\n" +
+	"\rdocument_type\x18\x05 \x01(\tR\fdocumentType\"\x8a\x01\n" +
+	"\rInt64CountMap\x12>\n" +
+	"\x06counts\x18\x01 \x03(\v2&.document.v1.Int64CountMap.CountsEntryR\x06counts\x1a9\n" +
 	"\vCountsEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\x03R\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\x03R\x05value:\x028\x01\"U\n" +
-	"\x14DocumentMetadataList\x12=\n" +
-	"\x05items\x18\x01 \x03(\v2'.knowagent.document.v1.DocumentMetadataR\x05items\"O\n" +
-	"\x11DocumentChunkList\x12:\n" +
-	"\x05items\x18\x01 \x03(\v2$.knowagent.document.v1.DocumentChunkR\x05items\"M\n" +
-	"\x10GraphSectionList\x129\n" +
-	"\x05items\x18\x01 \x03(\v2#.knowagent.document.v1.GraphSectionR\x05items\"S\n" +
-	"\x13DocumentProfileList\x12<\n" +
-	"\x05items\x18\x01 \x03(\v2&.knowagent.document.v1.DocumentProfileR\x05items\"T\n" +
-	"\x13GraphSectionOrEmpty\x12=\n" +
-	"\asection\x18\x01 \x01(\v2#.knowagent.document.v1.GraphSectionR\asection\"6\n" +
+	"\x05value\x18\x02 \x01(\x03R\x05value:\x028\x01\"K\n" +
+	"\x14DocumentMetadataList\x123\n" +
+	"\x05items\x18\x01 \x03(\v2\x1d.document.v1.DocumentMetadataR\x05items\"E\n" +
+	"\x11DocumentChunkList\x120\n" +
+	"\x05items\x18\x01 \x03(\v2\x1a.document.v1.DocumentChunkR\x05items\"C\n" +
+	"\x10GraphSectionList\x12/\n" +
+	"\x05items\x18\x01 \x03(\v2\x19.document.v1.GraphSectionR\x05items\"I\n" +
+	"\x13DocumentProfileList\x122\n" +
+	"\x05items\x18\x01 \x03(\v2\x1c.document.v1.DocumentProfileR\x05items\"J\n" +
+	"\x13GraphSectionOrEmpty\x123\n" +
+	"\asection\x18\x01 \x01(\v2\x19.document.v1.GraphSectionR\asection\"6\n" +
 	"\x1dFindRetrievableByKbIdsRequest\x12\x15\n" +
 	"\x06kb_ids\x18\x01 \x03(\x03R\x05kbIds\"4\n" +
 	" FindRetrieveDocumentByIdsRequest\x12\x10\n" +
@@ -1354,82 +1353,82 @@ const file_proto_knowagent_document_v1_document_proto_rawDesc = "" +
 	"\fsection_code\x18\x02 \x01(\tR\vsectionCode\",\n" +
 	"\x13CountByKbIdsRequest\x12\x15\n" +
 	"\x06kb_ids\x18\x01 \x03(\x03R\x05kbIds\"\x1d\n" +
-	"\x1bFindDocumentProfilesRequest2\xa3\t\n" +
-	"\x0fDocumentService\x12{\n" +
-	"\x16FindRetrievableByKbIds\x124.knowagent.document.v1.FindRetrievableByKbIdsRequest\x1a+.knowagent.document.v1.DocumentMetadataList\x12\x81\x01\n" +
-	"\x19FindRetrieveDocumentByIds\x127.knowagent.document.v1.FindRetrieveDocumentByIdsRequest\x1a+.knowagent.document.v1.DocumentMetadataList\x12l\n" +
-	"\x10FindParentChunks\x12..knowagent.document.v1.FindParentChunksRequest\x1a(.knowagent.document.v1.DocumentChunkList\x12c\n" +
-	"\fListSections\x12*.knowagent.document.v1.ListSectionsRequest\x1a'.knowagent.document.v1.GraphSectionList\x12l\n" +
-	"\x0fFindSectionById\x12-.knowagent.document.v1.FindSectionByIdRequest\x1a*.knowagent.document.v1.GraphSectionOrEmpty\x12p\n" +
-	"\x11FindSectionByCode\x12/.knowagent.document.v1.FindSectionByCodeRequest\x1a*.knowagent.document.v1.GraphSectionOrEmpty\x12i\n" +
-	"\x15CountDocumentsByKbIds\x12*.knowagent.document.v1.CountByKbIdsRequest\x1a$.knowagent.document.v1.Int64CountMap\x12t\n" +
-	" CountRetrievableDocumentsByKbIds\x12*.knowagent.document.v1.CountByKbIdsRequest\x1a$.knowagent.document.v1.Int64CountMap\x12\x82\x01\n" +
-	"\x1bFindDocumentProfileByDocIds\x127.knowagent.document.v1.FindRetrieveDocumentByIdsRequest\x1a*.knowagent.document.v1.DocumentProfileList\x12v\n" +
-	"\x14FindDocumentProfiles\x122.knowagent.document.v1.FindDocumentProfilesRequest\x1a*.knowagent.document.v1.DocumentProfileListBTZRgithub.com/swiftbit/know-agent/pkg/grpc/gen/proto/knowagent/document/v1;documentv1b\x06proto3"
+	"\x1bFindDocumentProfilesRequest2\xd9\a\n" +
+	"\x0fDocumentService\x12g\n" +
+	"\x16FindRetrievableByKbIds\x12*.document.v1.FindRetrievableByKbIdsRequest\x1a!.document.v1.DocumentMetadataList\x12m\n" +
+	"\x19FindRetrieveDocumentByIds\x12-.document.v1.FindRetrieveDocumentByIdsRequest\x1a!.document.v1.DocumentMetadataList\x12X\n" +
+	"\x10FindParentChunks\x12$.document.v1.FindParentChunksRequest\x1a\x1e.document.v1.DocumentChunkList\x12O\n" +
+	"\fListSections\x12 .document.v1.ListSectionsRequest\x1a\x1d.document.v1.GraphSectionList\x12X\n" +
+	"\x0fFindSectionById\x12#.document.v1.FindSectionByIdRequest\x1a .document.v1.GraphSectionOrEmpty\x12\\\n" +
+	"\x11FindSectionByCode\x12%.document.v1.FindSectionByCodeRequest\x1a .document.v1.GraphSectionOrEmpty\x12U\n" +
+	"\x15CountDocumentsByKbIds\x12 .document.v1.CountByKbIdsRequest\x1a\x1a.document.v1.Int64CountMap\x12`\n" +
+	" CountRetrievableDocumentsByKbIds\x12 .document.v1.CountByKbIdsRequest\x1a\x1a.document.v1.Int64CountMap\x12n\n" +
+	"\x1bFindDocumentProfileByDocIds\x12-.document.v1.FindRetrieveDocumentByIdsRequest\x1a .document.v1.DocumentProfileList\x12b\n" +
+	"\x14FindDocumentProfiles\x12(.document.v1.FindDocumentProfilesRequest\x1a .document.v1.DocumentProfileListBDZBgithub.com/swiftbit/know-agent/pkg/grpc/gen/document/v1;documentv1b\x06proto3"
 
 var (
-	file_proto_knowagent_document_v1_document_proto_rawDescOnce sync.Once
-	file_proto_knowagent_document_v1_document_proto_rawDescData []byte
+	file_proto_document_v1_document_proto_rawDescOnce sync.Once
+	file_proto_document_v1_document_proto_rawDescData []byte
 )
 
-func file_proto_knowagent_document_v1_document_proto_rawDescGZIP() []byte {
-	file_proto_knowagent_document_v1_document_proto_rawDescOnce.Do(func() {
-		file_proto_knowagent_document_v1_document_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_proto_knowagent_document_v1_document_proto_rawDesc), len(file_proto_knowagent_document_v1_document_proto_rawDesc)))
+func file_proto_document_v1_document_proto_rawDescGZIP() []byte {
+	file_proto_document_v1_document_proto_rawDescOnce.Do(func() {
+		file_proto_document_v1_document_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_proto_document_v1_document_proto_rawDesc), len(file_proto_document_v1_document_proto_rawDesc)))
 	})
-	return file_proto_knowagent_document_v1_document_proto_rawDescData
+	return file_proto_document_v1_document_proto_rawDescData
 }
 
-var file_proto_knowagent_document_v1_document_proto_msgTypes = make([]protoimpl.MessageInfo, 19)
-var file_proto_knowagent_document_v1_document_proto_goTypes = []any{
-	(*DocumentMetadata)(nil),                 // 0: knowagent.document.v1.DocumentMetadata
-	(*DocumentChunk)(nil),                    // 1: knowagent.document.v1.DocumentChunk
-	(*GraphSection)(nil),                     // 2: knowagent.document.v1.GraphSection
-	(*DocumentProfile)(nil),                  // 3: knowagent.document.v1.DocumentProfile
-	(*Int64CountMap)(nil),                    // 4: knowagent.document.v1.Int64CountMap
-	(*DocumentMetadataList)(nil),             // 5: knowagent.document.v1.DocumentMetadataList
-	(*DocumentChunkList)(nil),                // 6: knowagent.document.v1.DocumentChunkList
-	(*GraphSectionList)(nil),                 // 7: knowagent.document.v1.GraphSectionList
-	(*DocumentProfileList)(nil),              // 8: knowagent.document.v1.DocumentProfileList
-	(*GraphSectionOrEmpty)(nil),              // 9: knowagent.document.v1.GraphSectionOrEmpty
-	(*FindRetrievableByKbIdsRequest)(nil),    // 10: knowagent.document.v1.FindRetrievableByKbIdsRequest
-	(*FindRetrieveDocumentByIdsRequest)(nil), // 11: knowagent.document.v1.FindRetrieveDocumentByIdsRequest
-	(*FindParentChunksRequest)(nil),          // 12: knowagent.document.v1.FindParentChunksRequest
-	(*ListSectionsRequest)(nil),              // 13: knowagent.document.v1.ListSectionsRequest
-	(*FindSectionByIdRequest)(nil),           // 14: knowagent.document.v1.FindSectionByIdRequest
-	(*FindSectionByCodeRequest)(nil),         // 15: knowagent.document.v1.FindSectionByCodeRequest
-	(*CountByKbIdsRequest)(nil),              // 16: knowagent.document.v1.CountByKbIdsRequest
-	(*FindDocumentProfilesRequest)(nil),      // 17: knowagent.document.v1.FindDocumentProfilesRequest
-	nil,                                      // 18: knowagent.document.v1.Int64CountMap.CountsEntry
+var file_proto_document_v1_document_proto_msgTypes = make([]protoimpl.MessageInfo, 19)
+var file_proto_document_v1_document_proto_goTypes = []any{
+	(*DocumentMetadata)(nil),                 // 0: document.v1.DocumentMetadata
+	(*DocumentChunk)(nil),                    // 1: document.v1.DocumentChunk
+	(*GraphSection)(nil),                     // 2: document.v1.GraphSection
+	(*DocumentProfile)(nil),                  // 3: document.v1.DocumentProfile
+	(*Int64CountMap)(nil),                    // 4: document.v1.Int64CountMap
+	(*DocumentMetadataList)(nil),             // 5: document.v1.DocumentMetadataList
+	(*DocumentChunkList)(nil),                // 6: document.v1.DocumentChunkList
+	(*GraphSectionList)(nil),                 // 7: document.v1.GraphSectionList
+	(*DocumentProfileList)(nil),              // 8: document.v1.DocumentProfileList
+	(*GraphSectionOrEmpty)(nil),              // 9: document.v1.GraphSectionOrEmpty
+	(*FindRetrievableByKbIdsRequest)(nil),    // 10: document.v1.FindRetrievableByKbIdsRequest
+	(*FindRetrieveDocumentByIdsRequest)(nil), // 11: document.v1.FindRetrieveDocumentByIdsRequest
+	(*FindParentChunksRequest)(nil),          // 12: document.v1.FindParentChunksRequest
+	(*ListSectionsRequest)(nil),              // 13: document.v1.ListSectionsRequest
+	(*FindSectionByIdRequest)(nil),           // 14: document.v1.FindSectionByIdRequest
+	(*FindSectionByCodeRequest)(nil),         // 15: document.v1.FindSectionByCodeRequest
+	(*CountByKbIdsRequest)(nil),              // 16: document.v1.CountByKbIdsRequest
+	(*FindDocumentProfilesRequest)(nil),      // 17: document.v1.FindDocumentProfilesRequest
+	nil,                                      // 18: document.v1.Int64CountMap.CountsEntry
 	(*structpb.Struct)(nil),                  // 19: google.protobuf.Struct
 }
-var file_proto_knowagent_document_v1_document_proto_depIdxs = []int32{
-	19, // 0: knowagent.document.v1.DocumentChunk.extra:type_name -> google.protobuf.Struct
-	18, // 1: knowagent.document.v1.Int64CountMap.counts:type_name -> knowagent.document.v1.Int64CountMap.CountsEntry
-	0,  // 2: knowagent.document.v1.DocumentMetadataList.items:type_name -> knowagent.document.v1.DocumentMetadata
-	1,  // 3: knowagent.document.v1.DocumentChunkList.items:type_name -> knowagent.document.v1.DocumentChunk
-	2,  // 4: knowagent.document.v1.GraphSectionList.items:type_name -> knowagent.document.v1.GraphSection
-	3,  // 5: knowagent.document.v1.DocumentProfileList.items:type_name -> knowagent.document.v1.DocumentProfile
-	2,  // 6: knowagent.document.v1.GraphSectionOrEmpty.section:type_name -> knowagent.document.v1.GraphSection
-	10, // 7: knowagent.document.v1.DocumentService.FindRetrievableByKbIds:input_type -> knowagent.document.v1.FindRetrievableByKbIdsRequest
-	11, // 8: knowagent.document.v1.DocumentService.FindRetrieveDocumentByIds:input_type -> knowagent.document.v1.FindRetrieveDocumentByIdsRequest
-	12, // 9: knowagent.document.v1.DocumentService.FindParentChunks:input_type -> knowagent.document.v1.FindParentChunksRequest
-	13, // 10: knowagent.document.v1.DocumentService.ListSections:input_type -> knowagent.document.v1.ListSectionsRequest
-	14, // 11: knowagent.document.v1.DocumentService.FindSectionById:input_type -> knowagent.document.v1.FindSectionByIdRequest
-	15, // 12: knowagent.document.v1.DocumentService.FindSectionByCode:input_type -> knowagent.document.v1.FindSectionByCodeRequest
-	16, // 13: knowagent.document.v1.DocumentService.CountDocumentsByKbIds:input_type -> knowagent.document.v1.CountByKbIdsRequest
-	16, // 14: knowagent.document.v1.DocumentService.CountRetrievableDocumentsByKbIds:input_type -> knowagent.document.v1.CountByKbIdsRequest
-	11, // 15: knowagent.document.v1.DocumentService.FindDocumentProfileByDocIds:input_type -> knowagent.document.v1.FindRetrieveDocumentByIdsRequest
-	17, // 16: knowagent.document.v1.DocumentService.FindDocumentProfiles:input_type -> knowagent.document.v1.FindDocumentProfilesRequest
-	5,  // 17: knowagent.document.v1.DocumentService.FindRetrievableByKbIds:output_type -> knowagent.document.v1.DocumentMetadataList
-	5,  // 18: knowagent.document.v1.DocumentService.FindRetrieveDocumentByIds:output_type -> knowagent.document.v1.DocumentMetadataList
-	6,  // 19: knowagent.document.v1.DocumentService.FindParentChunks:output_type -> knowagent.document.v1.DocumentChunkList
-	7,  // 20: knowagent.document.v1.DocumentService.ListSections:output_type -> knowagent.document.v1.GraphSectionList
-	9,  // 21: knowagent.document.v1.DocumentService.FindSectionById:output_type -> knowagent.document.v1.GraphSectionOrEmpty
-	9,  // 22: knowagent.document.v1.DocumentService.FindSectionByCode:output_type -> knowagent.document.v1.GraphSectionOrEmpty
-	4,  // 23: knowagent.document.v1.DocumentService.CountDocumentsByKbIds:output_type -> knowagent.document.v1.Int64CountMap
-	4,  // 24: knowagent.document.v1.DocumentService.CountRetrievableDocumentsByKbIds:output_type -> knowagent.document.v1.Int64CountMap
-	8,  // 25: knowagent.document.v1.DocumentService.FindDocumentProfileByDocIds:output_type -> knowagent.document.v1.DocumentProfileList
-	8,  // 26: knowagent.document.v1.DocumentService.FindDocumentProfiles:output_type -> knowagent.document.v1.DocumentProfileList
+var file_proto_document_v1_document_proto_depIdxs = []int32{
+	19, // 0: document.v1.DocumentChunk.extra:type_name -> google.protobuf.Struct
+	18, // 1: document.v1.Int64CountMap.counts:type_name -> document.v1.Int64CountMap.CountsEntry
+	0,  // 2: document.v1.DocumentMetadataList.items:type_name -> document.v1.DocumentMetadata
+	1,  // 3: document.v1.DocumentChunkList.items:type_name -> document.v1.DocumentChunk
+	2,  // 4: document.v1.GraphSectionList.items:type_name -> document.v1.GraphSection
+	3,  // 5: document.v1.DocumentProfileList.items:type_name -> document.v1.DocumentProfile
+	2,  // 6: document.v1.GraphSectionOrEmpty.section:type_name -> document.v1.GraphSection
+	10, // 7: document.v1.DocumentService.FindRetrievableByKbIds:input_type -> document.v1.FindRetrievableByKbIdsRequest
+	11, // 8: document.v1.DocumentService.FindRetrieveDocumentByIds:input_type -> document.v1.FindRetrieveDocumentByIdsRequest
+	12, // 9: document.v1.DocumentService.FindParentChunks:input_type -> document.v1.FindParentChunksRequest
+	13, // 10: document.v1.DocumentService.ListSections:input_type -> document.v1.ListSectionsRequest
+	14, // 11: document.v1.DocumentService.FindSectionById:input_type -> document.v1.FindSectionByIdRequest
+	15, // 12: document.v1.DocumentService.FindSectionByCode:input_type -> document.v1.FindSectionByCodeRequest
+	16, // 13: document.v1.DocumentService.CountDocumentsByKbIds:input_type -> document.v1.CountByKbIdsRequest
+	16, // 14: document.v1.DocumentService.CountRetrievableDocumentsByKbIds:input_type -> document.v1.CountByKbIdsRequest
+	11, // 15: document.v1.DocumentService.FindDocumentProfileByDocIds:input_type -> document.v1.FindRetrieveDocumentByIdsRequest
+	17, // 16: document.v1.DocumentService.FindDocumentProfiles:input_type -> document.v1.FindDocumentProfilesRequest
+	5,  // 17: document.v1.DocumentService.FindRetrievableByKbIds:output_type -> document.v1.DocumentMetadataList
+	5,  // 18: document.v1.DocumentService.FindRetrieveDocumentByIds:output_type -> document.v1.DocumentMetadataList
+	6,  // 19: document.v1.DocumentService.FindParentChunks:output_type -> document.v1.DocumentChunkList
+	7,  // 20: document.v1.DocumentService.ListSections:output_type -> document.v1.GraphSectionList
+	9,  // 21: document.v1.DocumentService.FindSectionById:output_type -> document.v1.GraphSectionOrEmpty
+	9,  // 22: document.v1.DocumentService.FindSectionByCode:output_type -> document.v1.GraphSectionOrEmpty
+	4,  // 23: document.v1.DocumentService.CountDocumentsByKbIds:output_type -> document.v1.Int64CountMap
+	4,  // 24: document.v1.DocumentService.CountRetrievableDocumentsByKbIds:output_type -> document.v1.Int64CountMap
+	8,  // 25: document.v1.DocumentService.FindDocumentProfileByDocIds:output_type -> document.v1.DocumentProfileList
+	8,  // 26: document.v1.DocumentService.FindDocumentProfiles:output_type -> document.v1.DocumentProfileList
 	17, // [17:27] is the sub-list for method output_type
 	7,  // [7:17] is the sub-list for method input_type
 	7,  // [7:7] is the sub-list for extension type_name
@@ -1437,26 +1436,26 @@ var file_proto_knowagent_document_v1_document_proto_depIdxs = []int32{
 	0,  // [0:7] is the sub-list for field type_name
 }
 
-func init() { file_proto_knowagent_document_v1_document_proto_init() }
-func file_proto_knowagent_document_v1_document_proto_init() {
-	if File_proto_knowagent_document_v1_document_proto != nil {
+func init() { file_proto_document_v1_document_proto_init() }
+func file_proto_document_v1_document_proto_init() {
+	if File_proto_document_v1_document_proto != nil {
 		return
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_knowagent_document_v1_document_proto_rawDesc), len(file_proto_knowagent_document_v1_document_proto_rawDesc)),
+			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_document_v1_document_proto_rawDesc), len(file_proto_document_v1_document_proto_rawDesc)),
 			NumEnums:      0,
 			NumMessages:   19,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
-		GoTypes:           file_proto_knowagent_document_v1_document_proto_goTypes,
-		DependencyIndexes: file_proto_knowagent_document_v1_document_proto_depIdxs,
-		MessageInfos:      file_proto_knowagent_document_v1_document_proto_msgTypes,
+		GoTypes:           file_proto_document_v1_document_proto_goTypes,
+		DependencyIndexes: file_proto_document_v1_document_proto_depIdxs,
+		MessageInfos:      file_proto_document_v1_document_proto_msgTypes,
 	}.Build()
-	File_proto_knowagent_document_v1_document_proto = out.File
-	file_proto_knowagent_document_v1_document_proto_goTypes = nil
-	file_proto_knowagent_document_v1_document_proto_depIdxs = nil
+	File_proto_document_v1_document_proto = out.File
+	file_proto_document_v1_document_proto_goTypes = nil
+	file_proto_document_v1_document_proto_depIdxs = nil
 }

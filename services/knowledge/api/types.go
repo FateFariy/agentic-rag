@@ -10,7 +10,6 @@ type KnowledgeBaseItemResp struct {
 	EmbeddingModel           string `json:"embeddingModel"`           // 嵌入模型
 	RetrievalConfigJson      string `json:"retrievalConfigJson"`      // 检索配置JSON
 	GraphRagConfigJson       string `json:"graphRagConfigJson"`       // 图谱RAG配置JSON
-	RaptorConfigJson         string `json:"raptorConfigJson"`         // RAPTOR配置JSON
 	MetadataFilterJson       string `json:"metadataFilterJson"`       // 元数据过滤JSON
 	IsDefault                int    `json:"isDefault"`                // 是否默认
 	SortOrder                int    `json:"sortOrder"`                // 排序
