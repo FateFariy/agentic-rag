@@ -9,9 +9,7 @@ import (
 	"github.com/duke-git/lancet/v2/slice"
 
 	"github.com/swiftbit/know-agent/pkg/logx"
-	"github.com/swiftbit/know-agent/pkg/svc"
 	"github.com/swiftbit/know-agent/services/chat/internal/domain/adapter"
-	"github.com/swiftbit/know-agent/services/chat/internal/domain/adapter/rerank"
 	"github.com/swiftbit/know-agent/services/chat/internal/domain/model/vo"
 )
 
@@ -20,9 +18,9 @@ type Engine struct {
 	pipeline *Pipeline
 }
 
-func NewRetrievalEngine(svcCtx *svc.ServiceContext, repo adapter.ChatRepository, reranker rerank.Reranker,
+func NewRetrievalEngine(parentEvidenceMaxChars int, repo adapter.ChatRepository, reranker adapter.Reranker,
 	channels []Retrieval, docGateway adapter.DocumentGateway, fusion Fusion) *Engine {
-	maxChars := svcCtx.Config.Chat.Rag.ParentEvidenceMaxChars
+	maxChars := parentEvidenceMaxChars
 	pipeline := NewPipeline(
 		NewChannelRetrievalStage(channels, docGateway),
 		NewFusionStage(fusion),

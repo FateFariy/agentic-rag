@@ -4,11 +4,10 @@ import (
 	"context"
 	"strings"
 
+	"github.com/swiftbit/know-agent/pkg/ai"
 	"github.com/swiftbit/know-agent/pkg/logx"
-	"github.com/swiftbit/know-agent/pkg/svc"
 	"github.com/swiftbit/know-agent/pkg/utils"
-	"github.com/swiftbit/know-agent/services/chat/internal/domain/adapter"
-	"github.com/swiftbit/know-agent/services/chat/internal/domain/adapter/model"
+	"github.com/swiftbit/know-agent/services/chat/internal/config"
 	"github.com/swiftbit/know-agent/services/chat/internal/domain/model/entity"
 	"github.com/swiftbit/know-agent/services/chat/internal/domain/model/enum"
 )
@@ -19,16 +18,16 @@ const (
 
 // QuestionRecommendImpl 追问推荐实现
 type QuestionRecommendImpl struct {
-	promptTemplate      adapter.PromptRenderer
-	chatModel           model.ChatModel
+	promptTemplate      ai.PromptRenderer
+	chatModel           ai.ChatModel
 	historyPreviewTurns int
 }
 
-func NewQuestionRecommendImpl(svcCtx *svc.ServiceContext, promptTemplate adapter.PromptRenderer, chatModel model.ChatModel) *QuestionRecommendImpl {
+func NewQuestionRecommendImpl(recommendConf config.RecommendationConf, promptTemplate ai.PromptRenderer, chatModel ai.ChatModel) *QuestionRecommendImpl {
 	return &QuestionRecommendImpl{
 		chatModel:           chatModel,
 		promptTemplate:      promptTemplate,
-		historyPreviewTurns: svcCtx.Config.Chat.Recommendation.HistoryPreviewTurns,
+		historyPreviewTurns: recommendConf.HistoryPreviewTurns,
 	}
 }
 
@@ -49,7 +48,7 @@ func (r *QuestionRecommendImpl) Generate(ctx context.Context, question, answer s
 	}
 
 	// 调用LLM生成推荐
-	content, err := r.chatModel.GenerateWithTrace(ctx, enum.ChatStageRecommend, "", userPrompt, model.WithThink(false))
+	content, err := r.chatModel.GenerateWithTrace(ctx, enum.ChatStageRecommend, "", userPrompt, ai.WithThink(false))
 	if err != nil {
 		return nil, err
 	}

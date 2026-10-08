@@ -5,9 +5,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/swiftbit/know-agent/pkg/ai"
 	"github.com/swiftbit/know-agent/pkg/utils"
-	"github.com/swiftbit/know-agent/services/chat/internal/domain/adapter"
-	"github.com/swiftbit/know-agent/services/chat/internal/domain/adapter/model"
 	"github.com/swiftbit/know-agent/services/chat/internal/domain/model/enum"
 )
 
@@ -18,7 +17,7 @@ type AnswerFaithfulnessEvaluator struct {
 	baseEvaluator
 }
 
-func NewAnswerFaithfulnessEvaluator(llm model.ChatModel, promptRenderer adapter.PromptRenderer) *AnswerFaithfulnessEvaluator {
+func NewAnswerFaithfulnessEvaluator(llm ai.ChatModel, promptRenderer ai.PromptRenderer) *AnswerFaithfulnessEvaluator {
 	a := &AnswerFaithfulnessEvaluator{}
 	a.baseEvaluator = baseEvaluator{
 		templateName:   enum.AnswerFaithfulnessEvaluate,

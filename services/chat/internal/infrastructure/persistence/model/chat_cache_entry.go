@@ -1,7 +1,7 @@
 package model
 
 import (
-	"github.com/swiftbit/know-agent/common"
+	"github.com/swiftbit/know-agent/pkg/common"
 	"github.com/swiftbit/know-agent/services/chat/internal/domain/model/vo"
 )
 

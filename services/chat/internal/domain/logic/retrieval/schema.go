@@ -26,7 +26,6 @@ type ExecutionInput struct {
 	TaskScope        []int64
 	Filters          *vo.RetrievalMetadataFilters
 	Channels         []*vo.RetrievalChannelPlan
-	TableIntent      *vo.TableIntent // 表格意图（暂未使用）
 	GraphIntent      *vo.GraphIntent // 图意图
 }
 
@@ -66,7 +65,6 @@ func newRetrievalExecutionInput(plan *vo.RetrievalPlan, query *vo.RetrievalExecu
 		TaskScope:        utils.Copy(plan.TaskScope),
 		Filters:          plan.MetadataFilters.Clone(),
 		Channels:         channelPlans,
-		TableIntent:      plan.TableIntent.Clone(),
 		GraphIntent:      plan.GraphIntent.Clone(),
 	}
 

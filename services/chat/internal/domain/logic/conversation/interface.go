@@ -55,14 +55,6 @@ type QueryRewriter interface {
 	Rewrite(ctx context.Context, question, historySummary string) (*vo.QuestionRewriteResult, error)
 }
 
-type RecognitionInput struct {
-	OriginalQuestion         string
-	RewrittenQuestion        string
-	SubQuestions             []string
-	HistorySummary           string
-	RecentQuestionTranscript string
-}
-
 type KnowledgeRouteInput struct {
 	ConversationId             string
 	ExchangeId                 int64

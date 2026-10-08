@@ -76,7 +76,6 @@ func resolveChannelMaxScoreMap(results []*RetrievalChannelResult) map[string]flo
 // DefaultMetadataBoost 默认的元数据提升计算函数
 //
 // 基于文档来源类型（chunk type）计算提升值：
-//   - table 类型：+0.03
 //   - image/figure 类型：+0.02
 func DefaultMetadataBoost(doc *vo.DocumentChunk, _ *vo.RetrievalPlan) float64 {
 	if doc == nil {
@@ -89,8 +88,6 @@ func DefaultMetadataBoost(doc *vo.DocumentChunk, _ *vo.RetrievalPlan) float64 {
 // chunkTypeBoost 根据文档来源类型计算基础提升值。
 func chunkTypeBoost(sourceType string) float64 {
 	switch sourceType {
-	case "table":
-		return 0.03
 	case "image", "figure":
 		return 0.02
 	default:

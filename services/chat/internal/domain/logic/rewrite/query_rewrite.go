@@ -5,11 +5,10 @@ import (
 
 	"github.com/duke-git/lancet/v2/strutil"
 
+	"github.com/swiftbit/know-agent/pkg/ai"
 	"github.com/swiftbit/know-agent/pkg/logx"
-	"github.com/swiftbit/know-agent/pkg/svc"
 	"github.com/swiftbit/know-agent/pkg/utils"
-	"github.com/swiftbit/know-agent/services/chat/internal/domain/adapter"
-	"github.com/swiftbit/know-agent/services/chat/internal/domain/adapter/model"
+	"github.com/swiftbit/know-agent/services/chat/internal/config"
 	"github.com/swiftbit/know-agent/services/chat/internal/domain/model/enum"
 	"github.com/swiftbit/know-agent/services/chat/internal/domain/model/vo"
 )
@@ -22,20 +21,20 @@ const (
 
 // QueryRewriteImpl 问题改写逻辑实现
 type QueryRewriteImpl struct {
-	chatModel      model.ChatModel
-	promptTemplate adapter.PromptRenderer
-	options        []model.Option
+	chatModel      ai.ChatModel
+	promptTemplate ai.PromptRenderer
+	options        []ai.Option
 }
 
 // NewQueryRewriteImpl 创建问题改写逻辑实例
-func NewQueryRewriteImpl(svcCtx *svc.ServiceContext, chatModel model.ChatModel,
-	promptTemplate adapter.PromptRenderer) *QueryRewriteImpl {
+func NewQueryRewriteImpl(rewriteConf config.RewriteConf, chatModel ai.ChatModel,
+	promptTemplate ai.PromptRenderer) *QueryRewriteImpl {
 	return &QueryRewriteImpl{
 		chatModel:      chatModel,
 		promptTemplate: promptTemplate,
-		options: []model.Option{
-			model.WithTemperature(svcCtx.Config.Chat.Rewrite.Temperature),
-			model.WithTopP(svcCtx.Config.Chat.Rewrite.TopP),
+		options: []ai.Option{
+			ai.WithTemperature(rewriteConf.Temperature),
+			ai.WithTopP(rewriteConf.TopP),
 		},
 	}
 }

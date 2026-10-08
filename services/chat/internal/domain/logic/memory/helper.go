@@ -1,37 +1,23 @@
-package strategy
+package memory
 
 import (
-	"context"
 	"strings"
 
 	"github.com/duke-git/lancet/v2/slice"
 	"github.com/duke-git/lancet/v2/strutil"
 
 	"github.com/swiftbit/know-agent/pkg/utils"
-	"github.com/swiftbit/know-agent/services/chat/internal/domain/model/aggregate"
 	"github.com/swiftbit/know-agent/services/chat/internal/domain/model/entity"
 	"github.com/swiftbit/know-agent/services/chat/internal/domain/model/enum"
 )
-
-// baseMemoryStrategy 记忆策略基类（封装公共渲染和裁剪方法）
-type baseMemoryStrategy struct {
-}
 
 const (
 	maxQuestionLength = 160
 	maxAnswerLength   = 320
 )
 
-func (b *baseMemoryStrategy) LoadMemoryContext(ctx context.Context, conversationId string) (*aggregate.Conversation, error) {
-	panic("implement me")
-}
-
-func (b *baseMemoryStrategy) GetStrategyType() string {
-	panic("implement me")
-}
-
 // renderRecentTranscript 渲染最近对话记录
-func (b *baseMemoryStrategy) renderRecentTranscript(exchanges []*entity.ChatExchange, keepRecentTurns, maxChars int) string {
+func renderRecentTranscript(exchanges []*entity.ChatExchange, keepRecentTurns, maxChars int) string {
 	// 过滤可渲染的对话（非进行中且有问答内容）
 	renderable := slice.Filter(exchanges, func(i int, item *entity.ChatExchange) bool {
 		return item != nil && item.TurnStatus != enum.ChatTurnStatusRunning && (strutil.IsNotBlank(item.Question) || strutil.IsNotBlank(item.Answer))
@@ -61,7 +47,7 @@ func (b *baseMemoryStrategy) renderRecentTranscript(exchanges []*entity.ChatExch
 }
 
 // renderRecentQuestionTranscript 渲染最近问题记录
-func (b *baseMemoryStrategy) renderRecentQuestionTranscript(exchanges []*entity.ChatExchange, keepRecentTurns, maxChars int) string {
+func renderRecentQuestionTranscript(exchanges []*entity.ChatExchange, keepRecentTurns, maxChars int) string {
 	// 过滤有问题的对话（非进行中且有提问）
 	renderable := slice.Filter(exchanges, func(i int, item *entity.ChatExchange) bool {
 		return item != nil && item.TurnStatus != enum.ChatTurnStatusRunning && strutil.IsNotBlank(item.Question)

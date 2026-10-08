@@ -5,9 +5,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/swiftbit/know-agent/pkg/ai"
 	"github.com/swiftbit/know-agent/pkg/utils"
-	"github.com/swiftbit/know-agent/services/chat/internal/domain/adapter"
-	"github.com/swiftbit/know-agent/services/chat/internal/domain/adapter/model"
 	"github.com/swiftbit/know-agent/services/chat/internal/domain/model/enum"
 )
 
@@ -19,7 +18,7 @@ type ContextRecallEvaluator struct {
 	baseEvaluator
 }
 
-func NewContextRecallEvaluator(llm model.ChatModel, promptRenderer adapter.PromptRenderer) *ContextRecallEvaluator {
+func NewContextRecallEvaluator(llm ai.ChatModel, promptRenderer ai.PromptRenderer) *ContextRecallEvaluator {
 	c := &ContextRecallEvaluator{}
 	c.baseEvaluator = baseEvaluator{
 		templateName:   enum.ContextRecallEvaluate,

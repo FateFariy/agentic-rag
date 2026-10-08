@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/swiftbit/know-agent/pkg/svc"
 	"github.com/swiftbit/know-agent/pkg/utils"
+	"github.com/swiftbit/know-agent/services/chat/internal/config"
 	"github.com/swiftbit/know-agent/services/chat/internal/domain/model/vo"
 )
 
@@ -16,10 +16,10 @@ type EvidenceRenderer struct {
 }
 
 // NewEvidenceRenderer 创建证据渲染器
-func NewEvidenceRenderer(svcCtx *svc.ServiceContext) *EvidenceRenderer {
+func NewEvidenceRenderer(ragConf config.RagConf) *EvidenceRenderer {
 	return &EvidenceRenderer{
-		totalEvidenceBudget:          svcCtx.Config.Chat.Rag.TotalEvidenceMaxChars,
-		perSubQuestionEvidenceBudget: svcCtx.Config.Chat.Rag.PerSubQuestionEvidenceMaxChars,
+		totalEvidenceBudget:          ragConf.TotalEvidenceMaxChars,
+		perSubQuestionEvidenceBudget: ragConf.PerSubQuestionEvidenceMaxChars,
 	}
 }
 

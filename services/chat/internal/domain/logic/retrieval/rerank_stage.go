@@ -4,16 +4,16 @@ import (
 	"context"
 
 	"github.com/swiftbit/know-agent/pkg/logx"
-	"github.com/swiftbit/know-agent/services/chat/internal/domain/adapter/rerank"
+	"github.com/swiftbit/know-agent/services/chat/internal/domain/adapter"
 )
 
 // RerankStage 重排序阶段，对父块提升后的文档执行重排序（如果启用）
 type RerankStage struct {
-	reranker rerank.Reranker
+	reranker adapter.Reranker
 }
 
 // NewRerankStage 创建重排序阶段
-func NewRerankStage(reranker rerank.Reranker) *RerankStage {
+func NewRerankStage(reranker adapter.Reranker) *RerankStage {
 	return &RerankStage{
 		reranker: reranker,
 	}

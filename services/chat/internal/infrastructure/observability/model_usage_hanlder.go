@@ -7,9 +7,8 @@ import (
 
 	"github.com/cloudwego/eino/schema"
 
+	"github.com/swiftbit/know-agent/pkg/ai"
 	"github.com/swiftbit/know-agent/pkg/callbacks"
-	"github.com/swiftbit/know-agent/pkg/config"
-	"github.com/swiftbit/know-agent/pkg/llm"
 	"github.com/swiftbit/know-agent/pkg/logx"
 	"github.com/swiftbit/know-agent/pkg/utils"
 	"github.com/swiftbit/know-agent/services/chat/internal/domain/model/vo"
@@ -21,11 +20,11 @@ var modelUsageRegisterOnce sync.Once
 
 // ModelUsageHandler 模型使用量追踪 Handler，实现 callbacks.Handler 接口
 type ModelUsageHandler struct {
-	configs map[string]*config.LLMConf
+	configs map[string]*ai.LLMConf
 }
 
 // RegisterModelUsageHandler 创建模型使用量追踪 Handler 并注册为全局 Handler
-func RegisterModelUsageHandler(configs map[string]*config.LLMConf) {
+func RegisterModelUsageHandler(configs map[string]*ai.LLMConf) {
 	modelUsageRegisterOnce.Do(func() {
 		callbacks.AppendGlobalHandlers(&ModelUsageHandler{configs: configs})
 	})
@@ -36,11 +35,11 @@ func (h *ModelUsageHandler) OnStart(ctx context.Context, info *callbacks.RunInfo
 	if info.Component != "model_usage" {
 		return ctx
 	}
-	modelInput, ok := input.(*llm.ModelCallInput)
+	modelInput, ok := input.(*ai.ModelCallInput)
 	if !ok || modelInput == nil {
 		return ctx
 	}
-	meta, _ := info.Payload.(*llm.ModelCallMeta)
+	meta, _ := info.Payload.(*ai.ModelCallMeta)
 	logStageCallOptions(meta, modelInput)
 	return ctx
 }
@@ -54,7 +53,7 @@ func (h *ModelUsageHandler) OnEnd(ctx context.Context, info *callbacks.RunInfo, 
 	if trace == nil {
 		return ctx
 	}
-	modelOutput, ok := output.(*llm.ModelCallOutput)
+	modelOutput, ok := output.(*ai.ModelCallOutput)
 	if !ok || modelOutput == nil {
 		return ctx
 	}
@@ -78,8 +77,8 @@ func (h *ModelUsageHandler) OnError(ctx context.Context, info *callbacks.RunInfo
 }
 
 // buildUsageTrace 构建成功的使用量轨迹
-func (h *ModelUsageHandler) buildUsageTrace(info *callbacks.RunInfo, output *llm.ModelCallOutput, startTime time.Time) *vo.ChatModelUsageTrace {
-	meta, _ := info.Payload.(*llm.ModelCallMeta)
+func (h *ModelUsageHandler) buildUsageTrace(info *callbacks.RunInfo, output *ai.ModelCallOutput, startTime time.Time) *vo.ChatModelUsageTrace {
+	meta, _ := info.Payload.(*ai.ModelCallMeta)
 
 	tokenUsage := resolveTokenUsage(output.Response)
 
@@ -120,7 +119,7 @@ func (h *ModelUsageHandler) buildUsageTrace(info *callbacks.RunInfo, output *llm
 
 // buildFailedUsageTrace 构建失败的使用量轨迹
 func (h *ModelUsageHandler) buildFailedUsageTrace(info *callbacks.RunInfo, startTime time.Time) *vo.ChatModelUsageTrace {
-	meta, _ := info.Payload.(*llm.ModelCallMeta)
+	meta, _ := info.Payload.(*ai.ModelCallMeta)
 	stageName := ""
 	if meta != nil {
 		stageName = meta.Stage
@@ -135,7 +134,7 @@ func (h *ModelUsageHandler) buildFailedUsageTrace(info *callbacks.RunInfo, start
 }
 
 // resolveProvider 获取 provider
-func (h *ModelUsageHandler) resolveProvider(meta *llm.ModelCallMeta) string {
+func (h *ModelUsageHandler) resolveProvider(meta *ai.ModelCallMeta) string {
 	if meta != nil && meta.Provider != "" {
 		return meta.Provider
 	}
@@ -143,7 +142,7 @@ func (h *ModelUsageHandler) resolveProvider(meta *llm.ModelCallMeta) string {
 }
 
 // resolveModel 获取 model name
-func (h *ModelUsageHandler) resolveModel(meta *llm.ModelCallMeta) string {
+func (h *ModelUsageHandler) resolveModel(meta *ai.ModelCallMeta) string {
 	if meta != nil && meta.ModelName != "" {
 		return meta.ModelName
 	}
@@ -151,7 +150,7 @@ func (h *ModelUsageHandler) resolveModel(meta *llm.ModelCallMeta) string {
 }
 
 // estimateCost 估算调用成本
-func (h *ModelUsageHandler) estimateCost(meta *llm.ModelCallMeta, promptTokens, completionTokens int) float64 {
+func (h *ModelUsageHandler) estimateCost(meta *ai.ModelCallMeta, promptTokens, completionTokens int) float64 {
 	if promptTokens <= 0 && completionTokens <= 0 {
 		return 0
 	}
@@ -166,7 +165,7 @@ func (h *ModelUsageHandler) estimateCost(meta *llm.ModelCallMeta, promptTokens, 
 }
 
 // logStageCallOptions 记录阶段调用选项日志
-func logStageCallOptions(meta *llm.ModelCallMeta, input *llm.ModelCallInput) {
+func logStageCallOptions(meta *ai.ModelCallMeta, input *ai.ModelCallInput) {
 	modelName := ""
 	stage := ""
 	provider := ""

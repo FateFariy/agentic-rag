@@ -4,8 +4,8 @@ import (
 	"context"
 	"strings"
 
-	"github.com/swiftbit/know-agent/pkg/svc"
 	"github.com/swiftbit/know-agent/pkg/utils"
+	"github.com/swiftbit/know-agent/services/chat/internal/config"
 	"github.com/swiftbit/know-agent/services/chat/internal/domain/logic/conversation"
 	"github.com/swiftbit/know-agent/services/chat/internal/domain/logic/conversation/tools"
 )
@@ -27,8 +27,8 @@ type ContextInjectMiddleware struct {
 }
 
 // NewContextInjectMiddleware 创建动态上下文注入中间件
-func NewContextInjectMiddleware(svcCtx *svc.ServiceContext) *ContextInjectMiddleware {
-	return &ContextInjectMiddleware{renderer: tools.NewEvidenceRenderer(svcCtx)}
+func NewContextInjectMiddleware(ragConf config.RagConf) *ContextInjectMiddleware {
+	return &ContextInjectMiddleware{renderer: tools.NewEvidenceRenderer(ragConf)}
 }
 
 // Name 中间件名称

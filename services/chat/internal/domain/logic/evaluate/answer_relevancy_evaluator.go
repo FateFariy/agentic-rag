@@ -5,9 +5,8 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/swiftbit/know-agent/pkg/ai"
 	"github.com/swiftbit/know-agent/pkg/utils"
-	"github.com/swiftbit/know-agent/services/chat/internal/domain/adapter"
-	"github.com/swiftbit/know-agent/services/chat/internal/domain/adapter/model"
 	"github.com/swiftbit/know-agent/services/chat/internal/domain/model/enum"
 )
 
@@ -23,7 +22,7 @@ type AnswerRelevancyEvaluator struct {
 	baseEvaluator
 }
 
-func NewAnswerRelevancyEvaluator(llm model.ChatModel, promptRenderer adapter.PromptRenderer, emb Embedder) *AnswerRelevancyEvaluator {
+func NewAnswerRelevancyEvaluator(llm ai.ChatModel, promptRenderer ai.PromptRenderer, emb Embedder) *AnswerRelevancyEvaluator {
 	a := &AnswerRelevancyEvaluator{
 		emb: emb,
 	}

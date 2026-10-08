@@ -5,8 +5,8 @@ import (
 	"strconv"
 
 	"github.com/swiftbit/know-agent/pkg/logx"
-	"github.com/swiftbit/know-agent/pkg/svc"
 	"github.com/swiftbit/know-agent/pkg/utils"
+	"github.com/swiftbit/know-agent/services/chat/internal/config"
 	"github.com/swiftbit/know-agent/services/chat/internal/domain/adapter"
 	"github.com/swiftbit/know-agent/services/chat/internal/domain/model/entity"
 	"github.com/swiftbit/know-agent/services/chat/internal/domain/model/enum"
@@ -31,8 +31,7 @@ var _ Stage = (*CacheWriteStage)(nil)
 
 var _ ConditionalStage = (*CacheWriteStage)(nil)
 
-func NewCacheWriteStage(sevCtx *svc.ServiceContext, store SemanticCacheStore, producer adapter.MessageProducer) *CacheWriteStage {
-	sc := sevCtx.Config.Chat.SemanticCache
+func NewCacheWriteStage(store SemanticCacheStore, producer adapter.MessageProducer, sc config.SemanticCacheConf) *CacheWriteStage {
 	return &CacheWriteStage{
 		store:      store,
 		producer:   producer,

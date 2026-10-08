@@ -4,8 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/swiftbit/know-agent/services/chat/internal/domain/adapter"
-	"github.com/swiftbit/know-agent/services/chat/internal/domain/adapter/model"
+	"github.com/swiftbit/know-agent/pkg/ai"
 )
 
 type evaluator interface {
@@ -17,8 +16,8 @@ type evaluator interface {
 // ========== 基础评估器 ==========
 type baseEvaluator struct {
 	templateName   string
-	promptRenderer adapter.PromptRenderer
-	llm            model.ChatModel
+	promptRenderer ai.PromptRenderer
+	llm            ai.ChatModel
 	evaluator
 }
 
@@ -38,7 +37,7 @@ func (e *baseEvaluator) Evaluate(ctx context.Context, input *EvaluationInput) (f
 	}
 
 	// 调用LLM（仅做判断，分数由本地计算）
-	response, err := e.llm.Generate(ctx, "", prompt, model.WithTemperature(0), model.WithFunction("judge"), model.WithThink(false))
+	response, err := e.llm.Generate(ctx, "", prompt, ai.WithTemperature(0), ai.WithFunction("judge"), ai.WithThink(false))
 	if err != nil {
 		return 0, fmt.Errorf("LLM调用失败: %w", err)
 	}

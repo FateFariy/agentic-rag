@@ -3,7 +3,7 @@ package model
 import (
 	"time"
 
-	"github.com/swiftbit/know-agent/common"
+	"github.com/swiftbit/know-agent/pkg/common"
 )
 
 type ChatExchangeTraceStage struct {

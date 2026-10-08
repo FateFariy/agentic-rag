@@ -7,8 +7,8 @@ import (
 	"github.com/duke-git/lancet/v2/strutil"
 
 	"github.com/swiftbit/know-agent/pkg/logx"
-	"github.com/swiftbit/know-agent/pkg/svc"
 	"github.com/swiftbit/know-agent/pkg/utils"
+	"github.com/swiftbit/know-agent/services/chat/internal/config"
 	"github.com/swiftbit/know-agent/services/chat/internal/domain/model/enum"
 	"github.com/swiftbit/know-agent/services/chat/internal/domain/model/vo"
 )
@@ -23,14 +23,14 @@ type QueryRewriteStage struct {
 	thinking    bool
 }
 
-func NewQueryRewriteStage(svcCtx *svc.ServiceContext, rewriter QueryRewriter) *QueryRewriteStage {
+func NewQueryRewriteStage(rewriter QueryRewriter, rewriteConf config.RewriteConf, ragConf config.RagConf) *QueryRewriteStage {
 	return &QueryRewriteStage{
 		rewriter:    rewriter,
-		enabled:     svcCtx.Config.Chat.Rewrite.Enabled,
-		ragEnabled:  svcCtx.Config.Chat.Rag.Enabled,
-		temperature: svcCtx.Config.Chat.Rewrite.Temperature,
-		thinking:    svcCtx.Config.Chat.Rewrite.Thinking,
-		topP:        svcCtx.Config.Chat.Rewrite.TopP,
+		enabled:     rewriteConf.Enabled,
+		ragEnabled:  ragConf.Enabled,
+		temperature: rewriteConf.Temperature,
+		thinking:    rewriteConf.Thinking,
+		topP:        rewriteConf.TopP,
 	}
 }
 

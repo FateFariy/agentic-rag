@@ -9,8 +9,7 @@ import (
 	"github.com/duke-git/lancet/v2/slice"
 	"gorm.io/gorm"
 
-	"github.com/swiftbit/know-agent/pkg/gormtx"
-	"github.com/swiftbit/know-agent/pkg/svc"
+	"github.com/swiftbit/know-agent/pkg/infra"
 	"github.com/swiftbit/know-agent/pkg/utils"
 	"github.com/swiftbit/know-agent/services/chat/internal/convert"
 	"github.com/swiftbit/know-agent/services/chat/internal/domain/adapter"
@@ -24,12 +23,12 @@ import (
 var _ adapter.ChatRepository = (*ChatRepositoryImpl)(nil)
 
 type ChatRepositoryImpl struct {
-	*gormtx.Manager
+	*infra.TxManager
 }
 
-func NewChatRepository(svcCtx *svc.ServiceContext) *ChatRepositoryImpl {
+func NewChatRepository(db *gorm.DB) *ChatRepositoryImpl {
 	return &ChatRepositoryImpl{
-		Manager: gormtx.New(svcCtx.Db),
+		TxManager: infra.NewTxManager(db),
 	}
 }
 

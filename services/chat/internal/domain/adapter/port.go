@@ -3,6 +3,7 @@ package adapter
 import (
 	"context"
 
+	"github.com/swiftbit/know-agent/pkg/common"
 	"github.com/swiftbit/know-agent/services/chat/internal/domain/model/vo"
 )
 
@@ -58,11 +59,6 @@ type Sink interface {
 	Finish(conversationId string, exchangeId int64) error
 }
 
-// PromptRenderer 提示词渲染端口
-type PromptRenderer interface {
-	Render(templateName string, variables map[string]any) (string, error)
-}
-
 // MessageProducer 消息生产端口
 type MessageProducer interface {
 	Send(ctx context.Context, topic, key string, message any) error
@@ -71,4 +67,15 @@ type MessageProducer interface {
 type KnowledgeBaseGateway interface {
 	// DetermineKnowledgeScope 确定知识范围
 	DetermineKnowledgeScope(ctx context.Context, selectMode string, kbIds []string) (*vo.KnowledgeBaseSelectionSnapshot, error)
+}
+
+// Reranker 重排序器
+type Reranker interface {
+	// Process 重排序
+	Process(ctx context.Context, question string, chunks []*vo.DocumentChunk, opts ...common.Option) ([]*vo.DocumentChunk, error)
+}
+
+type Options struct {
+	Model string
+	TopN  int
 }

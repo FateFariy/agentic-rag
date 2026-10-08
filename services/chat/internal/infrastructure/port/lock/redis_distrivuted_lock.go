@@ -7,7 +7,6 @@ import (
 
 	"github.com/go-redsync/redsync/v4"
 
-	"github.com/swiftbit/know-agent/pkg/svc"
 	"github.com/swiftbit/know-agent/services/chat/internal/domain/adapter"
 	"github.com/swiftbit/know-agent/services/chat/internal/error"
 )
@@ -19,9 +18,9 @@ type RedisMutexLock struct {
 
 var _ adapter.DistributedLock = (*RedisMutexLock)(nil)
 
-func NewRedisMutexLock(svcCtx *svc.ServiceContext) *RedisMutexLock {
+func NewRedisMutexLock(redSync *redsync.Redsync) *RedisMutexLock {
 	return &RedisMutexLock{
-		redSync: svcCtx.RedSync,
+		redSync: redSync,
 	}
 }
 

@@ -12,7 +12,6 @@ import (
 	"github.com/cloudwego/eino/schema"
 
 	"github.com/swiftbit/know-agent/pkg/logx"
-	"github.com/swiftbit/know-agent/pkg/svc"
 	"github.com/swiftbit/know-agent/pkg/utils"
 	"github.com/swiftbit/know-agent/services/chat/internal/domain/logic/conversation"
 	"github.com/swiftbit/know-agent/services/chat/internal/domain/logic/conversation/middleware"
@@ -67,12 +66,12 @@ func WithMiddleware(middlewares ...middleware.AgentMiddleware) Option {
 }
 
 // NewEinoAgentRunner 构造 deep agent 执行器
-func NewEinoAgentRunner(svcCtx *svc.ServiceContext, opts ...Option) *EinoAgentRunner {
+func NewEinoAgentRunner(chatModel model.BaseChatModel, opts ...Option) *EinoAgentRunner {
 	r := &EinoAgentRunner{
 		name:        "know-agent-assistant",
 		description: "一个可以调用知识库检索工具回答企业知识问题的助手。",
 		instruction: defaultInstruction,
-		chatModel:   svcCtx.ChatModel,
+		chatModel:   chatModel,
 	}
 	for _, o := range opts {
 		o(r)

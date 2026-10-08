@@ -3,7 +3,7 @@ package model
 import (
 	"time"
 
-	"github.com/swiftbit/know-agent/common"
+	"github.com/swiftbit/know-agent/pkg/common"
 )
 
 // ChatMemorySummary 会话记忆摘要

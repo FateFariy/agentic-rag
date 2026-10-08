@@ -3,8 +3,8 @@ package conversation
 import (
 	"context"
 
-	"github.com/swiftbit/know-agent/pkg/svc"
 	"github.com/swiftbit/know-agent/pkg/utils"
+	"github.com/swiftbit/know-agent/services/chat/internal/config"
 	"github.com/swiftbit/know-agent/services/chat/internal/domain/adapter"
 	"github.com/swiftbit/know-agent/services/chat/internal/domain/model/aggregate"
 	"github.com/swiftbit/know-agent/services/chat/internal/domain/model/enum"
@@ -19,11 +19,11 @@ type MemoryLoadStage struct {
 	planningHistoryMaxChars int
 }
 
-func NewMemoryLoadStage(svcCtx *svc.ServiceContext, memoryManager SessionMemoryManager, repo adapter.ChatRepository) *MemoryLoadStage {
+func NewMemoryLoadStage(memoryManager SessionMemoryManager, repo adapter.ChatRepository, ragConf config.RagConf) *MemoryLoadStage {
 	return &MemoryLoadStage{
 		memoryManager:           memoryManager,
 		repo:                    repo,
-		planningHistoryMaxChars: svcCtx.Config.Chat.Rag.PlanningHistoryMaxChars,
+		planningHistoryMaxChars: ragConf.PlanningHistoryMaxChars,
 	}
 }
 
@@ -135,8 +135,6 @@ func newChannelPlans(runtime *vo.RagRuntimeOptions, hybrid *vo.HybridOptions) []
 	return []*vo.RetrievalChannelPlan{
 		vo.NewVectorChannelPlan(true, runtime.VectorTopK, runtime.ChannelTimeout, hybrid.VectorWeight, runtime.MinVectorSimilarity),
 		vo.NewKeywordChannelPlan(runtime.KeywordChannelEnabled, runtime.KeywordTopK, runtime.ChannelTimeout, hybrid.KeywordWeight, runtime.KeywordRelativeScoreFloor),
-		vo.NewTableChannelPlan(runtime.TableChannelEnabled, runtime.CandidateTopK, runtime.ChannelTimeout, hybrid.TableWeight),
 		vo.NewGraphRAGChannelPlan(runtime.GraphRagChannelEnabled, runtime.GraphRagTopK, runtime.ChannelTimeout, hybrid.GraphRagWeight),
-		vo.NewRaptorChannelPlan(runtime.RaptorChannelEnabled, runtime.RaptorTopK, runtime.ChannelTimeout, hybrid.RaptorWeight),
 	}
 }

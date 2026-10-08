@@ -11,7 +11,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/cloudwego/eino/components/embedding"
 	milvuscol "github.com/milvus-io/milvus/client/v2/column"
 	milvusentity "github.com/milvus-io/milvus/client/v2/entity"
 	"github.com/milvus-io/milvus/client/v2/index"
@@ -19,8 +18,8 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 
+	"github.com/swiftbit/know-agent/pkg/embedding"
 	"github.com/swiftbit/know-agent/pkg/logx"
-	"github.com/swiftbit/know-agent/pkg/svc"
 	"github.com/swiftbit/know-agent/pkg/utils"
 	"github.com/swiftbit/know-agent/services/chat/internal/convert"
 	"github.com/swiftbit/know-agent/services/chat/internal/domain/logic/conversation"
@@ -56,7 +55,7 @@ const (
 // 集合由外部 etc/semantic_cache_collection.json 建表；缺失时仅告警并降级为未命中，不在此处建表。
 type SemanticCache struct {
 	milvusClient *milvusclient.Client
-	emb          embedding.Embedder
+	emb          embedding.Embedding
 	db           *gorm.DB
 	collection   string
 	dim          int
@@ -64,24 +63,23 @@ type SemanticCache struct {
 
 var _ conversation.SemanticCacheStore = (*SemanticCache)(nil)
 
-func NewSemanticCache(svcCtx *svc.ServiceContext, emb embedding.Embedder) *SemanticCache {
-	collection := svcCtx.Config.Chat.SemanticCache.Collection
+func NewSemanticCache(milvusClient *milvusclient.Client, db *gorm.DB, emb embedding.Embedding, collection string) *SemanticCache {
 	if collection == "" {
 		collection = defaultCollName
 	}
 	sc := &SemanticCache{
-		milvusClient: svcCtx.Milvus,
+		milvusClient: milvusClient,
 		emb:          emb,
-		db:           svcCtx.Db,
+		db:           db,
 		collection:   collection,
-		dim:          svcCtx.Config.Embedding.Dimensions,
+		dim:          emb.Dimension(),
 	}
 	return sc
 }
 
 // embed 文本向量化
 func (s *SemanticCache) embed(ctx context.Context, text string) (milvusentity.FloatVector, error) {
-	vecs, err := s.emb.EmbedStrings(ctx, []string{text})
+	vecs, err := s.emb.Embedding(ctx, text)
 	if err != nil {
 		return nil, err
 	}
@@ -93,21 +91,16 @@ func (s *SemanticCache) embed(ctx context.Context, text string) (milvusentity.Fl
 	}), nil
 }
 
-// Search 在 scope 内对查询文本做向量候选召回（向量化在内部完成），
-// 返回相似度 ≥ Threshold 且按相似度降序的完整候选；无候选返回 (nil, nil)
+// Search 在 scope 内对查询文本做向量候选召回（向量化在内部完成），返回相似度 ≥ Threshold 且按相似度降序的完整候选
 func (s *SemanticCache) Search(ctx context.Context, input *conversation.SearchInput) ([]*conversation.CacheHit, error) {
 	topK := max(input.TopK, searchTopK)
 	entries, err := s.annSearch(ctx, input, topK)
 	if err != nil {
 		return nil, err
 	}
-	hits := make([]*conversation.CacheHit, 0, len(entries))
-	for _, cand := range entries {
-		entry, err := s.loadEntry(ctx, cand.ID)
-		if err != nil {
-			return nil, err
-		}
-		hits = append(hits, &conversation.CacheHit{Entry: entry, Similarity: cand.Similarity})
+	hits, err := s.loadHits(ctx, entries)
+	if err != nil {
+		return nil, err
 	}
 	return hits, nil
 }
@@ -151,16 +144,22 @@ func (s *SemanticCache) annSearch(ctx context.Context, input *conversation.Searc
 	return entries, nil
 }
 
-// loadEntry 按主键从 MySQL 回查完整缓存真值
-func (s *SemanticCache) loadEntry(ctx context.Context, id int64) (*entity.ChatCacheEntry, error) {
-	entry := &entity.ChatCacheEntry{}
-	if err := s.db.WithContext(ctx).Where("id = ?", id).First(entry).Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, nil
-		}
+// loadHits 批量按主键从 MySQL 回查完整缓存真值：一次 IN 查询取回全部候选，
+// 再按候选原有顺序（相似度降序）组装命中列表；真值已不存在的候选直接跳过
+func (s *SemanticCache) loadHits(ctx context.Context, candidates []*entity.ChatCacheEntry) ([]*conversation.CacheHit, error) {
+	if len(candidates) == 0 {
+		return nil, nil
+	}
+	ids := utils.Map(candidates, func(c *entity.ChatCacheEntry) int64 { return c.ID })
+
+	var entries []*entity.ChatCacheEntry
+	if err := s.db.WithContext(ctx).Where("id IN ?", ids).Find(&entries).Error; err != nil {
 		return nil, fmt.Errorf("语义缓存: 读取 MySQL 失败: %w", err)
 	}
-	return entry, nil
+	entryMap := utils.MapBy(entries, func(e *entity.ChatCacheEntry) (int64, *entity.ChatCacheEntry) { return e.ID, e })
+	return utils.Map(candidates, func(c *entity.ChatCacheEntry) *conversation.CacheHit {
+		return &conversation.CacheHit{Entry: entryMap[c.ID], Similarity: c.Similarity}
+	}), nil
 }
 
 // Put 写入/更新一条缓存：写 MySQL 真值（主键回填） + 向量化后写一条 Milvus 向量记录（先删后插，幂等）

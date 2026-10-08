@@ -5,11 +5,10 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/swiftbit/know-agent/pkg/ai"
 	"github.com/swiftbit/know-agent/pkg/logx"
-	"github.com/swiftbit/know-agent/pkg/svc"
 	"github.com/swiftbit/know-agent/pkg/utils"
-	"github.com/swiftbit/know-agent/services/chat/internal/domain/adapter"
-	"github.com/swiftbit/know-agent/services/chat/internal/domain/adapter/model"
+	"github.com/swiftbit/know-agent/services/chat/internal/config"
 	"github.com/swiftbit/know-agent/services/chat/internal/domain/model/enum"
 	"github.com/swiftbit/know-agent/services/chat/internal/domain/model/vo"
 )
@@ -33,8 +32,8 @@ import (
 // 软复用（未命中但挂载检索结果）不打标，Agent 全程运行、自行决定是否采用挂载的检索结果。
 type SemanticCacheStage struct {
 	store    SemanticCacheStore
-	llm      model.ChatModel
-	renderer adapter.PromptRenderer
+	llm      ai.ChatModel
+	renderer ai.PromptRenderer
 	*cacheOptions
 }
 
@@ -53,8 +52,7 @@ var _ Stage = (*SemanticCacheStage)(nil)
 
 var _ ConditionalStage = (*SemanticCacheStage)(nil)
 
-func NewSemanticCacheStage(sevCtx *svc.ServiceContext, store SemanticCacheStore, judgeLLM model.ChatModel, renderer adapter.PromptRenderer) *SemanticCacheStage {
-	sc := sevCtx.Config.Chat.SemanticCache
+func NewSemanticCacheStage(store SemanticCacheStore, judgeLLM ai.ChatModel, renderer ai.PromptRenderer, sc config.SemanticCacheConf) *SemanticCacheStage {
 	return &SemanticCacheStage{
 		store:    store,
 		llm:      judgeLLM,
@@ -277,7 +275,7 @@ func (s *SemanticCacheStage) renderAndJudge(ctx context.Context, query string, c
 	if err != nil {
 		return nil, fmt.Errorf("渲染语义缓存判定模板失败: %w", err)
 	}
-	response, err := s.llm.Generate(ctx, "", prompt, model.WithFunction("judge"), model.WithTemperature(s.judgeTemperature), model.WithThink(false))
+	response, err := s.llm.Generate(ctx, "", prompt, ai.WithFunction("judge"), ai.WithTemperature(s.judgeTemperature), ai.WithThink(false))
 	if err != nil {
 		return nil, fmt.Errorf("调用大模型判定失败: %w", err)
 	}

@@ -5,8 +5,8 @@ import (
 	"time"
 
 	"github.com/swiftbit/know-agent/pkg/logx"
-	"github.com/swiftbit/know-agent/pkg/svc"
 	"github.com/swiftbit/know-agent/pkg/utils"
+	"github.com/swiftbit/know-agent/services/chat/internal/config"
 	"github.com/swiftbit/know-agent/services/chat/internal/domain/adapter"
 	"github.com/swiftbit/know-agent/services/chat/internal/domain/model/entity"
 	"github.com/swiftbit/know-agent/services/chat/internal/domain/model/enum"
@@ -22,15 +22,15 @@ type RecommendStage struct {
 	historyPreviewTurns int
 }
 
-func NewRecommendStage(svcCtx *svc.ServiceContext, repo adapter.ChatRepository,
-	manager SessionMemoryManager, recommender QuestionRecommender) *RecommendStage {
+func NewRecommendStage(repo adapter.ChatRepository,
+	manager SessionMemoryManager, recommender QuestionRecommender, recConf config.RecommendationConf) *RecommendStage {
 	return &RecommendStage{
 		repo:                repo,
 		manager:             manager,
 		recommender:         recommender,
-		timeout:             svcCtx.Config.Chat.Recommendation.Timeout,
-		enabled:             svcCtx.Config.Chat.Recommendation.Enabled,
-		historyPreviewTurns: svcCtx.Config.Chat.Recommendation.HistoryPreviewTurns,
+		timeout:             recConf.Timeout,
+		enabled:             recConf.Enabled,
+		historyPreviewTurns: recConf.HistoryPreviewTurns,
 	}
 }
 

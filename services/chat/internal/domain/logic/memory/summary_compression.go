@@ -1,4 +1,4 @@
-package strategy
+package memory
 
 import (
 	"context"
@@ -10,12 +10,12 @@ import (
 	"github.com/duke-git/lancet/v2/slice"
 	"github.com/duke-git/lancet/v2/strutil"
 
-	"github.com/swiftbit/know-agent/pkg/config"
+	"github.com/swiftbit/know-agent/pkg/ai"
 	"github.com/swiftbit/know-agent/pkg/logx"
-	"github.com/swiftbit/know-agent/pkg/svc"
 	"github.com/swiftbit/know-agent/pkg/utils"
+	"github.com/swiftbit/know-agent/services/chat/internal/config"
 	"github.com/swiftbit/know-agent/services/chat/internal/domain/adapter"
-	"github.com/swiftbit/know-agent/services/chat/internal/domain/adapter/model"
+	"github.com/swiftbit/know-agent/services/chat/internal/domain/logic/conversation"
 	"github.com/swiftbit/know-agent/services/chat/internal/domain/model/aggregate"
 	"github.com/swiftbit/know-agent/services/chat/internal/domain/model/entity"
 	"github.com/swiftbit/know-agent/services/chat/internal/domain/model/enum"
@@ -26,23 +26,24 @@ const (
 	maxSectionItems        = 6
 	maxItemLength          = 80
 	maxGoalLength          = 120
-	SummaryCompression     = "summary_compression" // 摘要压缩策略
-	summarySectionCount    = 5                     // 摘要 JSON 中的数组字段数量
-	summaryJsonOverhead    = 256                   // JSON 键名、括号与转义字符的预估开销
-	summaryReasoningBudget = 1024                  // 推理模型思维链预留，其 token 同样计入 max_tokens
-	summaryMinMaxTokens    = 2048                  // 摘要阶段输出 token 下限
+	summarySectionCount    = 5    // 摘要 JSON 中的数组字段数量
+	summaryJsonOverhead    = 256  // JSON 键名、括号与转义字符的预估开销
+	summaryReasoningBudget = 1024 // 推理模型思维链预留，其 token 同样计入 max_tokens
+	summaryMinMaxTokens    = 2048 // 摘要阶段输出 token 下限
 )
 
 var (
 	retrievalHintPattern = regexp.MustCompile(`[a-zA-Z0-9._-]{2,}|\p{Han}{2,12}`)
 )
 
+// 编译期断言：摘要压缩策略直接作为会话记忆管理器实现，无需额外包装层
+var _ conversation.SessionMemoryManager = (*SummaryCompressionStrategy)(nil)
+
 // SummaryCompressionStrategy 摘要压缩策略实现
 type SummaryCompressionStrategy struct {
-	baseMemoryStrategy
 	repo                      adapter.ChatRepository
-	chatModel                 model.ChatModel
-	promptTemplate            adapter.PromptRenderer
+	chatModel                 ai.ChatModel
+	promptTemplate            ai.PromptRenderer
 	refreshingConversationIds sync.Map
 	historySummary            config.HistorySummaryConf
 	questionHistoryMaxChars   int
@@ -50,12 +51,12 @@ type SummaryCompressionStrategy struct {
 }
 
 // NewSummaryCompressionStrategy 创建摘要压缩策略实例
-func NewSummaryCompressionStrategy(svcCtx *svc.ServiceContext, repo adapter.ChatRepository, chatModel model.ChatModel, promptTemplate adapter.PromptRenderer) *SummaryCompressionStrategy {
+func NewSummaryCompressionStrategy(memoryConf config.MemoryConf, repo adapter.ChatRepository, chatModel ai.ChatModel, promptTemplate ai.PromptRenderer) *SummaryCompressionStrategy {
 	return &SummaryCompressionStrategy{
 		repo:                     repo,
-		historySummary:           svcCtx.Config.Chat.Memory.HistorySummary,
-		questionHistoryMaxChars:  svcCtx.Config.Chat.Memory.QuestionHistoryMaxChars,
-		recentTranscriptMaxChars: svcCtx.Config.Chat.Memory.RecentTranscriptMaxChars,
+		historySummary:           memoryConf.HistorySummary,
+		questionHistoryMaxChars:  memoryConf.QuestionHistoryMaxChars,
+		recentTranscriptMaxChars: memoryConf.RecentTranscriptMaxChars,
 		chatModel:                chatModel,
 		promptTemplate:           promptTemplate,
 	}
@@ -89,8 +90,8 @@ func (s *SummaryCompressionStrategy) LoadMemoryContext(ctx context.Context, conv
 	}
 
 	// 渲染最近对话记录
-	memoryCtx.RecentTranscript = s.renderRecentTranscript(recentExchanges, s.historySummary.KeepRecentTurns, s.recentTranscriptMaxChars)
-	memoryCtx.RecentQuestionTranscript = s.renderRecentQuestionTranscript(recentExchanges, s.historySummary.KeepRecentTurns, s.questionHistoryMaxChars)
+	memoryCtx.RecentTranscript = renderRecentTranscript(recentExchanges, s.historySummary.KeepRecentTurns, s.recentTranscriptMaxChars)
+	memoryCtx.RecentQuestionTranscript = renderRecentQuestionTranscript(recentExchanges, s.historySummary.KeepRecentTurns, s.questionHistoryMaxChars)
 
 	// 反序列化摘要JSON
 	memoryCtx.Summary = s.normalizeSummary(summaryState.ToConversationSummary())
@@ -105,10 +106,6 @@ func (s *SummaryCompressionStrategy) LoadMemoryContext(ctx context.Context, conv
 	}
 
 	return memoryCtx, nil
-}
-
-func (s *SummaryCompressionStrategy) GetStrategyType() string {
-	return SummaryCompression
 }
 
 // RefreshConversationSummaryAsync 异步刷新会话摘要
@@ -305,7 +302,7 @@ func (s *SummaryCompressionStrategy) mergeSummaryByLLM(ctx context.Context, oldS
 	// 调用LLM生成合并后的摘要，摘要需一次性输出全部结构化字段，
 	// 输出预算必须覆盖各字段长度上限之和，否则 JSON 会在 max_tokens 处被截断
 	content, err := s.chatModel.GenerateWithTrace(ctx, enum.ChatStageSummary, systemPrompt, userPrompt,
-		model.WithMaxTokens(s.summaryMaxTokens()))
+		ai.WithMaxTokens(s.summaryMaxTokens()))
 	if err != nil {
 		return nil, err
 	}
