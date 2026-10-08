@@ -1,6 +1,8 @@
 package model
 
-import "github.com/swiftbit/know-agent/common"
+import (
+	"github.com/swiftbit/know-agent/pkg/common"
+)
 
 type DocumentBlock struct {
 	common.Model
@@ -16,7 +18,6 @@ type DocumentBlock struct {
 	BboxJson          string         `gorm:"column:bbox_json;type:text"`                     // 边界框JSON
 	Text              string         `gorm:"column:text;type:text"`                          // 文本内容
 	ContentWithWeight string         `gorm:"column:content_with_weight;type:text"`           // 加权内容
-	TableHTML         string         `gorm:"column:table_html;type:text"`                    // 表格HTML
 	ImageObjectName   string         `gorm:"column:image_object_name;type:varchar(255)"`     // 图片对象名
 	ImageCaption      string         `gorm:"column:image_caption;type:text"`                 // 图片标题
 	Metadata          map[string]any `gorm:"column:metadata_json;type:json;serializer:json"` // 元数据JSON

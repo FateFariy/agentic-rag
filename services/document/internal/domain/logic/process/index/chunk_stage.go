@@ -11,6 +11,7 @@ import (
 
 	"github.com/swiftbit/know-agent/pkg/common"
 	"github.com/swiftbit/know-agent/pkg/logx"
+	"github.com/swiftbit/know-agent/pkg/tokenize"
 	"github.com/swiftbit/know-agent/pkg/utils"
 	"github.com/swiftbit/know-agent/services/document/internal/domain/adapter"
 	"github.com/swiftbit/know-agent/services/document/internal/domain/logic/process/chunk"
@@ -36,7 +37,7 @@ type ChunkingStage struct {
 }
 
 // NewChunkingStage 创建切块阶段
-func NewChunkingStage(repo adapter.DocumentRepository, registry *chunk.Registry, resolver IndexingConfigResolver, tokenizer Tokenizer) *ChunkingStage {
+func NewChunkingStage(repo adapter.DocumentRepository, registry *chunk.Registry, resolver IndexingConfigResolver, tokenizer tokenize.Tokenizer) *ChunkingStage {
 	return &ChunkingStage{
 		repo:     repo,
 		builder:  NewChunkBuilder(registry, tokenizer),
@@ -134,11 +135,11 @@ func (p *ChunkingStage) Execute(ctx context.Context, buildCtx *Context) error {
 // ChunkBuilder 承载具体的分块算法：父/子种子构建、策略流水线调度、短子块合并与候选对象构造
 type ChunkBuilder struct {
 	registry  *chunk.Registry
-	tokenizer Tokenizer
+	tokenizer tokenize.Tokenizer
 }
 
 // NewChunkBuilder 创建分块逻辑执行器
-func NewChunkBuilder(registry *chunk.Registry, tokenizer Tokenizer) *ChunkBuilder {
+func NewChunkBuilder(registry *chunk.Registry, tokenizer tokenize.Tokenizer) *ChunkBuilder {
 	return &ChunkBuilder{
 		registry:  registry,
 		tokenizer: tokenizer,

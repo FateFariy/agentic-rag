@@ -3,7 +3,7 @@ package model
 import (
 	"time"
 
-	"github.com/swiftbit/know-agent/common"
+	"github.com/swiftbit/know-agent/pkg/common"
 )
 
 // DocumentStrategyPlan 策略方案
@@ -29,7 +29,6 @@ type DocumentStrategyStep struct {
 	StepNo          int    `gorm:"column:step_no;type:int"`                // 步骤序号
 	PipelineType    string `gorm:"column:pipeline_type;type:varchar(255)"` // 管道类型
 	StrategyType    int    `gorm:"column:strategy_type;type:int"`          // 策略类型
-	StrategyRole    int    `gorm:"column:strategy_role;type:int"`          // 策略角色
 	SourceType      int    `gorm:"column:source_type;type:int"`            // 来源类型
 	ExecuteStatus   int    `gorm:"column:execute_status;type:int"`         // 执行状态
 	RecommendReason string `gorm:"column:recommend_reason;type:text"`      // 推荐理由

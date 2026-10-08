@@ -13,7 +13,7 @@ import (
 	"github.com/cloudwego/eino/schema"
 	"github.com/milvus-io/milvus/client/v2/milvusclient"
 
-	"github.com/swiftbit/know-agent/pkg/config"
+	"github.com/swiftbit/know-agent/pkg/infra"
 	"github.com/swiftbit/know-agent/pkg/logx"
 	"github.com/swiftbit/know-agent/pkg/utils"
 	"github.com/swiftbit/know-agent/services/document/internal/domain/model/entity"
@@ -29,7 +29,7 @@ type MilvusIndexer struct {
 }
 
 // NewMilvusIndexer 构造 document 向量索引器
-func NewMilvusIndexer(client *milvusclient.Client, c config.MilvusConf, embeddingDim int, embeddingModel string, embedder embedding.Embedder) *MilvusIndexer {
+func NewMilvusIndexer(client *milvusclient.Client, c infra.MilvusConf, embeddingDim int, embeddingModel string, embedder embedding.Embedder) *MilvusIndexer {
 	indexerConfig := &indexmilvus.IndexerConfig{
 		ClientConfig: &milvusclient.ClientConfig{
 			Address: c.Addr,

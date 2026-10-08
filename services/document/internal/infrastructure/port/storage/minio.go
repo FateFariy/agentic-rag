@@ -1,20 +1,12 @@
 package storage
 
 import (
-	"bytes"
 	"context"
 	"fmt"
-	"io"
 	"strings"
 	"time"
 
-	"github.com/duke-git/lancet/v2/condition"
-	"github.com/minio/minio-go/v7"
-
-	"github.com/swiftbit/know-agent/common"
-	miniosdk "github.com/swiftbit/know-agent/pkg/clients"
-	"github.com/swiftbit/know-agent/pkg/errorx"
-	"github.com/swiftbit/know-agent/pkg/svc"
+	"github.com/swiftbit/know-agent/pkg/infra"
 	"github.com/swiftbit/know-agent/pkg/utils"
 	"github.com/swiftbit/know-agent/services/document/internal/domain/adapter"
 	"github.com/swiftbit/know-agent/services/document/internal/domain/model/enum"
@@ -22,17 +14,13 @@ import (
 )
 
 type MinioStorage struct {
-	Client *minio.Client
-	Config miniosdk.MinioConf
+	*infra.MinioClient
 }
 
 var _ adapter.Storage = (*MinioStorage)(nil)
 
-func NewMinioStorage(svcCtx *svc.ServiceContext) *MinioStorage {
-	return &MinioStorage{
-		Client: svcCtx.Minio,
-		Config: svcCtx.Config.Minio,
-	}
+func NewMinioStorage(minioConf infra.MinioConf) *MinioStorage {
+	return &MinioStorage{MinioClient: infra.NewMinioClient(minioConf)}
 }
 
 func (s *MinioStorage) Name() int {
@@ -41,17 +29,17 @@ func (s *MinioStorage) Name() int {
 
 // UploadOriginalFile 上传原始文件
 func (s *MinioStorage) UploadOriginalFile(ctx context.Context, documentId int64, fileName string, bytes []byte, contentType string) (*vo.StoredObjectInfo, error) {
-	objectName := fmt.Sprintf("%s/%d/%d-%s", s.Config.ObjectPrefix, documentId, time.Now().Unix(), fileName)
-	if err := s.upload(ctx, objectName, bytes, contentType); err != nil {
+	objectName := fmt.Sprintf("%s/%d/%d-%s", s.ObjectPrefix, documentId, time.Now().Unix(), fileName)
+	if err := s.Upload(ctx, objectName, bytes, contentType); err != nil {
 		return nil, err
 	}
-	return &vo.StoredObjectInfo{BucketName: s.Config.BucketName, ObjectName: objectName, ObjectUrl: s.buildObjectUrl(objectName)}, nil
+	return &vo.StoredObjectInfo{BucketName: s.BucketName, ObjectName: objectName, ObjectUrl: s.ObjectURL(objectName)}, nil
 }
 
 // UploadParsedText 上传解析后的文本
 func (s *MinioStorage) UploadParsedText(ctx context.Context, documentId int64, parsedText string) (string, error) {
-	objectName := fmt.Sprintf("%s/%d/%d.txt", s.Config.ParsedTextPrefix, documentId, time.Now().Unix())
-	if err := s.upload(ctx, objectName, []byte(parsedText), "text/plain;charset=UTF-8"); err != nil {
+	objectName := fmt.Sprintf("%s/%d/%d.txt", s.ParsedTextPrefix, documentId, time.Now().Unix())
+	if err := s.Upload(ctx, objectName, []byte(parsedText), "text/plain;charset=UTF-8"); err != nil {
 		return "", err
 	}
 	return objectName, nil
@@ -62,95 +50,9 @@ func (s *MinioStorage) UploadParseArtifact(ctx context.Context, documentId, task
 	safeFileName := utils.BlankToDefault(name, "artifact.bin")
 	safeFileName = strings.ReplaceAll(safeFileName, "/", "-")
 	safeFileName = strings.ReplaceAll(safeFileName, "\\", "-")
-	objectName := fmt.Sprintf("%s/%d/%d/%d-%s", s.Config.ParseArtifactPrefix, documentId, taskId, time.Now().UnixMilli(), safeFileName)
-	if err := s.upload(ctx, objectName, content, contentType); err != nil {
+	objectName := fmt.Sprintf("%s/%d/%d/%d-%s", s.ParseArtifactPrefix, documentId, taskId, time.Now().UnixMilli(), safeFileName)
+	if err := s.Upload(ctx, objectName, content, contentType); err != nil {
 		return "", err
 	}
 	return objectName, nil
-}
-
-// DownloadObject 下载对象
-func (s *MinioStorage) DownloadObject(ctx context.Context, objectName string) ([]byte, error) {
-	object, err := s.Client.GetObject(ctx, s.Config.BucketName, objectName, minio.GetObjectOptions{})
-	if err != nil {
-		return nil, common.WrapErr(err, errorx.ErrDocumentStorageFailed.Code, "下载 MinIO 文件失败: "+err.Error())
-	}
-	defer func() {
-		_ = object.Close()
-	}()
-
-	b, err := io.ReadAll(object)
-	if err != nil {
-		return nil, common.WrapErr(err, errorx.ErrDocumentStorageFailed.Code, "下载 MinIO 文件失败: "+err.Error())
-	}
-	return b, nil
-}
-
-// DownloadText 下载文本
-func (s *MinioStorage) DownloadText(ctx context.Context, objectName string) (string, error) {
-	b, err := s.DownloadObject(ctx, objectName)
-	return string(b), err
-}
-
-// DeleteObjects 删除对象
-func (s *MinioStorage) DeleteObjects(ctx context.Context, objectNameList []string) error {
-	validObjectNameList := utils.FilterUniqueLimit(objectNameList, -1, func(name string) (string, bool) {
-		trimmed := strings.TrimSpace(name)
-		return trimmed, trimmed != ""
-	})
-
-	if len(validObjectNameList) == 0 {
-		return nil
-	}
-
-	exists, err := s.Client.BucketExists(ctx, s.Config.BucketName)
-	if !exists {
-		return nil
-	}
-
-	for _, objectName := range validObjectNameList {
-		if err = s.Client.RemoveObject(ctx, s.Config.BucketName, objectName, minio.RemoveObjectOptions{}); err != nil {
-			return common.WrapErr(err, errorx.ErrDocumentStorageFailed.Code, "删除 MinIO 文件失败: "+err.Error())
-		}
-	}
-
-	return nil
-}
-
-// upload 上传对象
-func (s *MinioStorage) upload(ctx context.Context, objectName string, b []byte, contentType string) error {
-	err := s.ensureBucketExists(ctx)
-	if err != nil {
-		return common.WrapErr(err, errorx.ErrDocumentStorageFailed.Code, "上传 MinIO 文件失败: "+err.Error())
-	}
-
-	options := minio.PutObjectOptions{
-		ContentType: condition.Ternary(contentType == "", "application/octet-stream", contentType),
-	}
-	if _, err = s.Client.PutObject(ctx, s.Config.BucketName, objectName, bytes.NewReader(b), int64(len(b)), options); err != nil {
-		return common.WrapErr(err, errorx.ErrDocumentStorageFailed.Code, "上传 MinIO 文件失败: "+err.Error())
-	}
-
-	return nil
-}
-
-// ensureBucketExists 确保 Bucket 存在
-func (s *MinioStorage) ensureBucketExists(ctx context.Context) error {
-	exists, err := s.Client.BucketExists(ctx, s.Config.BucketName)
-	if err != nil {
-		return err
-	}
-	if !exists {
-		return s.Client.MakeBucket(ctx, s.Config.BucketName, minio.MakeBucketOptions{})
-	}
-	return nil
-}
-
-// buildObjectUrl 构建对象 URL
-func (s *MinioStorage) buildObjectUrl(objectName string) string {
-	endpoint := s.Config.Addr
-	if strings.HasSuffix(endpoint, "/") {
-		endpoint = endpoint[:len(endpoint)-1]
-	}
-	return fmt.Sprintf("%s/%s/%s", endpoint, s.Config.BucketName, objectName)
 }

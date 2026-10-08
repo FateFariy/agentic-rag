@@ -1,6 +1,8 @@
 package model
 
-import "github.com/swiftbit/know-agent/common"
+import (
+	"github.com/swiftbit/know-agent/pkg/common"
+)
 
 // DocumentTaskLog 任务日志实体
 type DocumentTaskLog struct {

@@ -3,9 +3,7 @@ package markdown
 import (
 	"errors"
 	"sort"
-	"strings"
 
-	"github.com/swiftbit/know-agent/pkg/utils"
 	"github.com/swiftbit/know-agent/services/document/internal/domain/model/shared"
 )
 
@@ -95,48 +93,4 @@ func (s *sourceIndex) LineColumn(charOffset int) (int, int) {
 		lineIndex = 0
 	}
 	return lineIndex + 1, charOffset - s.lineStarts[lineIndex] + 1
-}
-
-func (s *sourceIndex) TableCellSpan(rowCharSpan [2]int, columnIndex int) (int, int) {
-	runes := []rune(s.sourceText)
-	rowStart, rowEnd := rowCharSpan[0], rowCharSpan[1]
-	rowText := string(runes[rowStart:rowEnd])
-
-	rowText = strings.TrimSuffix(rowText, "\r\n")
-	rowText = strings.TrimSuffix(rowText, "\n")
-	rowText = strings.TrimSuffix(rowText, "\r")
-
-	leftTrimmed := strings.TrimLeft(rowText, " ")
-	contentStart := rowStart + utils.Len(rowText) - utils.Len(leftTrimmed)
-	content := strings.TrimRight(leftTrimmed, " ")
-
-	var segments [][2]int
-	segStart := 0
-	escaped := false
-	contentRunes := []rune(content)
-	for i, r := range contentRunes {
-		if r == '|' && !escaped {
-			segments = append(segments, [2]int{segStart, i})
-			segStart = i + 1
-		}
-		escaped = r == '\\'
-	}
-	segments = append(segments, [2]int{segStart, len(contentRunes)})
-
-	if len(segments) > 0 && segments[0][0] == 0 && segments[0][1] == 0 {
-		segments = segments[1:]
-	}
-	if len(segments) > 0 && len(segments)-1 < len(segments) && segments[len(segments)-1][0] == len(contentRunes) {
-		segments = segments[:len(segments)-1]
-	}
-
-	if columnIndex >= len(segments) {
-		return contentStart, contentStart
-	}
-	start, end := segments[columnIndex][0], segments[columnIndex][1]
-	cellRunes := contentRunes[start:end]
-	trimL := len(cellRunes) - utils.Len(strings.TrimLeft(string(cellRunes), " "))
-	start += trimL
-	end = start + utils.Len(strings.TrimRight(string(cellRunes[trimL:]), " "))
-	return contentStart + start, contentStart + end
 }

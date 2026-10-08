@@ -7,7 +7,7 @@ import (
 
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 
-	neo4jsdk "github.com/swiftbit/know-agent/pkg/neo4j"
+	neo4jsdk "github.com/swiftbit/know-agent/pkg/infra"
 	"github.com/swiftbit/know-agent/services/document/internal/domain/model/entity"
 )
 

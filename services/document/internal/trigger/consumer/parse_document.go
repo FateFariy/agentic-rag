@@ -3,16 +3,12 @@ package consumer
 import (
 	"context"
 	"encoding/json"
-	"os"
-	"os/signal"
-	"syscall"
 
 	"github.com/apache/rocketmq-client-go/v2"
 	"github.com/apache/rocketmq-client-go/v2/consumer"
 	"github.com/apache/rocketmq-client-go/v2/primitive"
 	"github.com/zeromicro/go-zero/core/logx"
 
-	"github.com/swiftbit/know-agent/pkg/svc"
 	"github.com/swiftbit/know-agent/services/document/internal/domain/logic/process"
 	"github.com/swiftbit/know-agent/services/document/internal/domain/model/vo"
 )
@@ -23,10 +19,10 @@ type ParseDocumentConsumer struct {
 	topic string
 }
 
-func NewParseDocumentConsumer(svcCtx *svc.ServiceContext, l process.AsyncProcessor) *ParseDocumentConsumer {
+func NewParseDocumentConsumer(mqAddr string, parseTopic string, l process.AsyncProcessor) *ParseDocumentConsumer {
 	c, err := rocketmq.NewPushConsumer(
 		consumer.WithGroupName("parse-document-group"),
-		consumer.WithNameServer([]string{svcCtx.Config.MQ.Addr}),
+		consumer.WithNameServer([]string{mqAddr}),
 	)
 	if err != nil {
 		panic(err)
@@ -34,17 +30,13 @@ func NewParseDocumentConsumer(svcCtx *svc.ServiceContext, l process.AsyncProcess
 	return &ParseDocumentConsumer{
 		l:     l,
 		c:     c,
-		topic: svcCtx.Config.MQ.ParseTopic,
+		topic: parseTopic,
 	}
 }
 
 func (c *ParseDocumentConsumer) Start() {
 	logx.Info("启动文档解析消费者...")
 	go func() {
-		sig := make(chan os.Signal, 1)
-
-		signal.Notify(sig, syscall.SIGINT, syscall.SIGTERM)
-
 		callback := func(ctx context.Context, msgs ...*primitive.MessageExt) (consumer.ConsumeResult, error) {
 			var msg vo.DocumentParseRouteMessage
 			for i := range msgs {
@@ -68,11 +60,10 @@ func (c *ParseDocumentConsumer) Start() {
 		if err = c.c.Start(); err != nil {
 			panic(err)
 		}
-
-		// 阻塞等待信号，保持程序运行
-		<-sig
-
-		// 关闭消费者
-		_ = c.c.Shutdown()
 	}()
+}
+
+// Stop 关闭底层 PushConsumer
+func (c *ParseDocumentConsumer) Stop() {
+	_ = c.c.Shutdown()
 }

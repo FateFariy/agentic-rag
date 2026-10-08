@@ -12,9 +12,8 @@ import (
 	"gorm.io/gorm/clause"
 	"gorm.io/plugin/soft_delete"
 
-	"github.com/swiftbit/know-agent/common"
-	"github.com/swiftbit/know-agent/pkg/gormtx"
-	"github.com/swiftbit/know-agent/pkg/svc"
+	"github.com/swiftbit/know-agent/pkg/common"
+	"github.com/swiftbit/know-agent/pkg/infra"
 	"github.com/swiftbit/know-agent/pkg/utils"
 	"github.com/swiftbit/know-agent/services/document/internal/convert"
 	"github.com/swiftbit/know-agent/services/document/internal/domain/adapter"
@@ -28,16 +27,16 @@ import (
 type DocumentRepositoryImpl struct {
 	rdb     *redis.Client
 	storage adapter.Storage
-	*gormtx.Manager
+	*infra.TxManager
 }
 
 var _ adapter.DocumentRepository = (*DocumentRepositoryImpl)(nil)
 
-func NewDocumentRepository(svcCtx *svc.ServiceContext, storage adapter.Storage) *DocumentRepositoryImpl {
+func NewDocumentRepository(db *gorm.DB, rdb *redis.Client, storage adapter.Storage) *DocumentRepositoryImpl {
 	return &DocumentRepositoryImpl{
-		Manager: gormtx.New(svcCtx.Db),
-		rdb:     svcCtx.Rdb,
-		storage: storage,
+		TxManager: infra.NewTxManager(db),
+		rdb:       rdb,
+		storage:   storage,
 	}
 }
 

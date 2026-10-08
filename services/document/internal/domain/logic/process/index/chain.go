@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/swiftbit/know-agent/pkg/logx"
+	"github.com/swiftbit/know-agent/pkg/tokenize"
 	"github.com/swiftbit/know-agent/services/document/internal/domain/adapter"
 	"github.com/swiftbit/know-agent/services/document/internal/domain/logic/process/chunk"
 	"github.com/swiftbit/know-agent/services/document/internal/domain/model/enum"
@@ -26,7 +27,7 @@ func NewBuildIndexChain(
 	keyIndexer adapter.KeywordIndexer,
 	registry *chunk.Registry,
 	resolver IndexingConfigResolver,
-	tokenizer Tokenizer,
+	tokenizer tokenize.Tokenizer,
 	builder GraphRagBuilder,
 ) *BuildIndexChain {
 	stages := []Stage{

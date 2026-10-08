@@ -34,11 +34,6 @@ type RawGraph struct {
 	DroppedRelations int            // 被 grounding 校验丢弃的关系条数
 }
 
-// Tokenizer 中文分词接口（复用 gse），为抽取提示提供候选词
-type Tokenizer interface {
-	SegmentWords(text string) []string
-}
-
 // quotePairs quote 两端可能出现的成对包裹符号（引号/书名号）
 var quotePairs = [][2]string{
 	{`"`, `"`}, {`'`, `'`}, {`“`, `”`}, {`「`, `」`}, {`『`, `』`},

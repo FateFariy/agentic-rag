@@ -3,9 +3,6 @@ package consumer
 import (
 	"context"
 	"encoding/json"
-	"os"
-	"os/signal"
-	"syscall"
 
 	"github.com/apache/rocketmq-client-go/v2"
 	"github.com/apache/rocketmq-client-go/v2/consumer"
@@ -13,7 +10,6 @@ import (
 	"github.com/apache/rocketmq-client-go/v2/rlog"
 	"github.com/zeromicro/go-zero/core/logx"
 
-	"github.com/swiftbit/know-agent/pkg/svc"
 	"github.com/swiftbit/know-agent/services/document/internal/domain/logic/process"
 	"github.com/swiftbit/know-agent/services/document/internal/domain/model/vo"
 )
@@ -28,10 +24,10 @@ type BuildIndexConsumer struct {
 	topic string
 }
 
-func NewBuildIndexConsumer(svcCtx *svc.ServiceContext, l process.AsyncProcessor) *BuildIndexConsumer {
+func NewBuildIndexConsumer(mqAddr string, indexTopic string, l process.AsyncProcessor) *BuildIndexConsumer {
 	c, err := rocketmq.NewPushConsumer(
 		consumer.WithGroupName("build-index-group"),
-		consumer.WithNameServer([]string{svcCtx.Config.MQ.Addr}),
+		consumer.WithNameServer([]string{mqAddr}),
 	)
 	if err != nil {
 		panic(err)
@@ -39,17 +35,13 @@ func NewBuildIndexConsumer(svcCtx *svc.ServiceContext, l process.AsyncProcessor)
 	return &BuildIndexConsumer{
 		l:     l,
 		c:     c,
-		topic: svcCtx.Config.MQ.IndexTopic,
+		topic: indexTopic,
 	}
 }
 
 func (b *BuildIndexConsumer) Start() {
 	logx.Infof("启动索引构建消费者...")
 	go func() {
-		sig := make(chan os.Signal, 1)
-
-		signal.Notify(sig, syscall.SIGINT, syscall.SIGTERM)
-
 		callback := func(ctx context.Context, msgs ...*primitive.MessageExt) (consumer.ConsumeResult, error) {
 			var msg vo.DocumentIndexBuildMessage
 			for i := range msgs {
@@ -74,11 +66,11 @@ func (b *BuildIndexConsumer) Start() {
 		if err = b.c.Start(); err != nil {
 			panic(err)
 		}
-
-		// 阻塞等待信号，保持程序运行
-		<-sig
-
-		// 关闭消费者
-		_ = b.c.Shutdown()
 	}()
+}
+
+// Stop 关闭底层 PushConsumer。由聚合 Server 在统一关停阶段调用，
+// 未 ACK 的消息由 broker 重新投递。
+func (b *BuildIndexConsumer) Stop() {
+	_ = b.c.Shutdown()
 }

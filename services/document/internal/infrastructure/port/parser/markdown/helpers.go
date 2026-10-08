@@ -4,7 +4,6 @@ import (
 	"strings"
 
 	"github.com/yuin/goldmark/ast"
-	extensionAst "github.com/yuin/goldmark/extension/ast"
 )
 
 // mapNodeType maps an AST node to a node type string
@@ -26,14 +25,6 @@ func mapNodeType(n ast.Node) string {
 		return NodeListItem
 	case ast.KindBlockquote:
 		return NodeBlockquote
-	case extensionAst.KindTable:
-		return NodeTable
-	case extensionAst.KindTableHeader:
-		return NodeTableHead
-	case extensionAst.KindTableRow:
-		return NodeTableRow
-	case extensionAst.KindTableCell:
-		return NodeTableCell
 	case ast.KindFencedCodeBlock:
 		return NodeCodeBlock
 	case ast.KindCodeBlock:
@@ -50,10 +41,7 @@ func mapNodeType(n ast.Node) string {
 func isContainerNode(n ast.Node) bool {
 	switch n.Kind() {
 	case ast.KindHeading, ast.KindParagraph, ast.KindTextBlock, ast.KindList,
-		ast.KindListItem, ast.KindBlockquote,
-		extensionAst.KindTable, extensionAst.KindTableHeader,
-		extensionAst.KindTableRow,
-		extensionAst.KindTableCell:
+		ast.KindListItem, ast.KindBlockquote:
 		return true
 	}
 	return false
@@ -203,16 +191,7 @@ func fillContainerText(drafts []*nodeDraft) {
 				texts = append(texts, child.text)
 			}
 		}
-		if d.nodeType == NodeTableRow {
-			// For table rows, join cell texts with " | "
-			cellTexts := make([]string, 0, len(children))
-			for _, child := range children {
-				if child.nodeType == NodeTableCell && child.text != "" {
-					cellTexts = append(cellTexts, child.text)
-				}
-			}
-			d.text = strings.Join(cellTexts, " | ")
-		} else if len(texts) > 0 {
+		if len(texts) > 0 {
 			d.text = strings.Join(texts, "\n")
 		}
 	}

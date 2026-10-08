@@ -5,12 +5,9 @@ import (
 	"strings"
 
 	"github.com/duke-git/lancet/v2/strutil"
-)
 
-type Tokenizer interface {
-	// SegmentWords 返回词文本列表，适用于搜索索引等场景
-	SegmentWords(text string) []string
-}
+	"github.com/swiftbit/know-agent/pkg/tokenize"
+)
 
 var (
 	sectionSplitter = regexp.MustCompile(`[/\\.]`)
@@ -31,7 +28,7 @@ func NewKeywordSeed(title, sectionPath, text string) *KeywordSeed {
 	}
 }
 
-func (k *KeywordSeed) Build(tokenizer Tokenizer) []string {
+func (k *KeywordSeed) Build(tokenizer tokenize.Tokenizer) []string {
 	seen := make(map[string]bool, 12)
 	keywords := make([]string, 0, 12)
 

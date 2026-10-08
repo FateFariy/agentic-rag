@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/swiftbit/know-agent/pkg/ai"
+	"github.com/swiftbit/know-agent/pkg/tokenize"
 	"github.com/swiftbit/know-agent/pkg/utils"
 	"github.com/swiftbit/know-agent/services/document/internal/domain/model/entity"
 	"github.com/swiftbit/know-agent/services/document/internal/domain/model/enum"
@@ -15,12 +16,12 @@ import (
 type LLMExtractor struct {
 	chatModel     ai.ChatModel
 	renderer      ai.PromptRenderer
-	tokenizer     Tokenizer
+	tokenizer     tokenize.Tokenizer
 	chunkMaxChars int // 单 chunk 抽取截断上限
 }
 
 // NewLLMExtractor 创建大模型抽取器
-func NewLLMExtractor(chatModel ai.ChatModel, renderer ai.PromptRenderer, tokenizer Tokenizer, chunkMaxChars int) *LLMExtractor {
+func NewLLMExtractor(chatModel ai.ChatModel, renderer ai.PromptRenderer, tokenizer tokenize.Tokenizer, chunkMaxChars int) *LLMExtractor {
 	return &LLMExtractor{
 		chatModel:     chatModel,
 		renderer:      renderer,

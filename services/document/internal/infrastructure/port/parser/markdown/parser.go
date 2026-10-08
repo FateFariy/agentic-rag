@@ -6,17 +6,13 @@ import (
 	"encoding/hex"
 	"fmt"
 	"strconv"
-	"strings"
 
 	"github.com/yuin/goldmark"
 	"github.com/yuin/goldmark/ast"
-	"github.com/yuin/goldmark/extension"
-	extensionAst "github.com/yuin/goldmark/extension/ast"
 	"github.com/yuin/goldmark/text"
 
 	"github.com/swiftbit/know-agent/pkg/utils"
 	"github.com/swiftbit/know-agent/services/document/internal/domain/model/entity"
-	"github.com/swiftbit/know-agent/services/document/internal/domain/model/enum"
 	"github.com/swiftbit/know-agent/services/document/internal/domain/model/shared"
 )
 
@@ -25,7 +21,7 @@ type GoldmarkParser struct {
 }
 
 func NewGoldmarkParser() *GoldmarkParser {
-	md := goldmark.New(goldmark.WithExtensions(extension.Table))
+	md := goldmark.New()
 	return &GoldmarkParser{
 		parser: md,
 	}
@@ -43,23 +39,13 @@ type nodeDraft struct {
 	level        int
 	marker       string
 	ordinal      *int
-	isHeader     bool
-	alignment    string
-	rowIndex     *int
-	columnIndex  *int
 	codeInfo     string
 }
 
 type openingFields struct {
-	level        int
-	marker       string
-	ordinal      *int
-	isHeader     bool
-	alignment    string
-	rowIndex     *int
-	columnIndex  *int
-	cellSpanSet  bool
-	cellCharSpan [2]int
+	level   int
+	marker  string
+	ordinal *int
 }
 
 const Markdown = "md"
@@ -76,8 +62,6 @@ func (p *GoldmarkParser) Parse(_ context.Context, sourceText []byte) (entity.Doc
 	var drafts []*nodeDraft
 	draftMap := make(map[string]*nodeDraft)
 	var stack []string
-	tableRowCount := make(map[string]int)
-	rowColIndex := make(map[string]int)
 
 	appendNode := func(nodeType, parentId string, span [2]int, hasSpan bool) *nodeDraft {
 		oid := len(drafts)
@@ -120,19 +104,11 @@ func (p *GoldmarkParser) Parse(_ context.Context, sourceText []byte) (entity.Doc
 					span = [2]int{cs, ce}
 					hasSpan = true
 				}
-				fields := p.fillOpeningFields(n, nodeType, parentId, draftMap, tableRowCount, rowColIndex, si, span)
+				fields := p.fillOpeningFields(n, nodeType, parentId, draftMap, si, span)
 				draft := appendNode(nodeType, parentId, span, hasSpan)
 				draft.level = fields.level
 				draft.marker = fields.marker
 				draft.ordinal = fields.ordinal
-				draft.isHeader = fields.isHeader
-				draft.alignment = fields.alignment
-				draft.rowIndex = fields.rowIndex
-				draft.columnIndex = fields.columnIndex
-				if fields.cellSpanSet {
-					draft.charSpan = fields.cellCharSpan
-					draft.hasSpan = true
-				}
 				stack = append(stack, draft.nodeId)
 			} else {
 				lm := getNodeLineMap(n, sourceText)
@@ -176,10 +152,6 @@ func (p *GoldmarkParser) Parse(_ context.Context, sourceText []byte) (entity.Doc
 			Level:        d.level,
 			Marker:       d.marker,
 			Ordinal:      utils.PointerOrDefault(d.ordinal, 0),
-			IsHeader:     d.isHeader,
-			Alignment:    d.alignment,
-			RowIndex:     utils.PointerOrDefault(d.rowIndex, 0),
-			ColumnIndex:  utils.PointerOrDefault(d.columnIndex, 0),
 			CodeInfo:     d.codeInfo,
 			SourceSpan:   si.SourceSpan(d.charSpan),
 		})
@@ -211,26 +183,12 @@ func (p *GoldmarkParser) syntaxToBlocks(syntax *shared.MarkdownSyntax) entity.Do
 		}
 	}
 
-	childrenByParent := buildChildrenMap(syntax.Nodes)
-
 	var blocks []*entity.DocumentBlock
 	for _, node := range topLevel {
 		rawText := nodeSourceText(syntax, node)
 		blockType, txt := legacyBlockContent(node, rawText)
-		if txt == "" && blockType != enum.BlockTypeTable {
+		if txt == "" {
 			continue
-		}
-		rows := tableRows(node, childrenByParent)
-		if blockType == enum.BlockTypeTable && txt == "" {
-			var rowStrs []string
-			for _, row := range rows {
-				rowStrs = append(rowStrs, strings.Join(row, " | "))
-			}
-			txt = strings.Join(rowStrs, "\n")
-		}
-		tableHTML := ""
-		if blockType == enum.BlockTypeTable {
-			tableHTML = renderMarkdownTable(rawText)
 		}
 
 		metadata := map[string]any{
@@ -252,8 +210,6 @@ func (p *GoldmarkParser) syntaxToBlocks(syntax *shared.MarkdownSyntax) entity.Do
 			BlockNo:   len(blocks) + 1,
 			BlockType: blockType,
 			Text:      txt,
-			TableHTML: tableHTML,
-			TableRows: rows,
 			Metadata:  metadata,
 		}
 		blocks = append(blocks, block)
@@ -262,7 +218,7 @@ func (p *GoldmarkParser) syntaxToBlocks(syntax *shared.MarkdownSyntax) entity.Do
 }
 
 func (p *GoldmarkParser) fillOpeningFields(n ast.Node, nodeType string, parentId string,
-	draftsById map[string]*nodeDraft, rowCountByTable map[string]int, colCountByRow map[string]int,
+	draftsById map[string]*nodeDraft,
 	sourceIndex *sourceIndex, parentCharSpan [2]int) openingFields {
 	fields := openingFields{}
 	switch nodeType {
@@ -294,31 +250,6 @@ func (p *GoldmarkParser) fillOpeningFields(n ast.Node, nodeType string, parentId
 		} else {
 			fields.marker = string(lst.Marker)
 		}
-	case NodeTableRow:
-		tid := findAncestor(parentId, NodeTable, draftsById)
-		ridx := rowCountByTable[tid]
-		rowCountByTable[tid] = ridx + 1
-		fields.rowIndex = &ridx
-	case NodeTableCell:
-		rid := findAncestor(parentId, NodeTableRow, draftsById)
-		cidx := colCountByRow[rid]
-		colCountByRow[rid] = cidx + 1
-		fields.columnIndex = &cidx
-		tc := n.(*extensionAst.TableCell)
-		fields.isHeader = n.Parent().Kind() == extensionAst.KindTableHeader
-		switch tc.Alignment {
-		case extensionAst.AlignLeft:
-			fields.alignment = "LEFT"
-		case extensionAst.AlignCenter:
-			fields.alignment = "CENTER"
-		case extensionAst.AlignRight:
-			fields.alignment = "RIGHT"
-		default:
-			fields.alignment = "NONE"
-		}
-		s, e := sourceIndex.TableCellSpan(parentCharSpan, cidx)
-		fields.cellCharSpan = [2]int{s, e}
-		fields.cellSpanSet = true
 	}
 	return fields
 }
