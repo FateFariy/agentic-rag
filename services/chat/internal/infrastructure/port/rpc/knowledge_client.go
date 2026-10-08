@@ -1,16 +1,15 @@
-package client
+package rpc
 
 import (
 	"context"
 	"encoding/json"
 	"time"
 
-	documentv1 "github.com/swiftbit/know-agent/pkg/grpc/gen/proto/knowagent/document/v1"
-	knowledgev1 "github.com/swiftbit/know-agent/pkg/grpc/gen/proto/knowagent/knowledge/v1"
+	"github.com/swiftbit/know-agent/pkg/grpc/gen/document/v1"
+	knowledgev1 "github.com/swiftbit/know-agent/pkg/grpc/gen/knowledge/v1"
 	"github.com/swiftbit/know-agent/services/chat/internal/domain/logic/conversation"
 	"github.com/swiftbit/know-agent/services/chat/internal/domain/model/enum"
 	"github.com/swiftbit/know-agent/services/chat/internal/domain/model/vo"
-	"google.golang.org/grpc"
 )
 
 // KnowledgeClient 实现 chat 域出站消费 knowledge 服务的接口：
@@ -22,8 +21,8 @@ type KnowledgeClient struct {
 	client knowledgev1.KnowledgeServiceClient
 }
 
-func NewKnowledgeClient(cc *grpc.ClientConn) *KnowledgeClient {
-	return &KnowledgeClient{client: knowledgev1.NewKnowledgeServiceClient(cc)}
+func NewKnowledgeClient(client knowledgev1.KnowledgeServiceClient) *KnowledgeClient {
+	return &KnowledgeClient{client: client}
 }
 
 func (c *KnowledgeClient) DetermineKnowledgeScope(ctx context.Context, selectMode string, kbIds []string) (*vo.KnowledgeBaseSelectionSnapshot, error) {
@@ -88,7 +87,6 @@ func protoKnowledgeBaseListToChatVO(items []*knowledgev1.KnowledgeBase) []*vo.Kn
 			EmbeddingModel:      m.GetEmbeddingModel(),
 			RetrievalConfigJson: json.RawMessage(m.GetRetrievalConfigJson()),
 			GraphRagConfigJson:  json.RawMessage(m.GetGraphRagConfigJson()),
-			RaptorConfigJson:    json.RawMessage(m.GetRaptorConfigJson()),
 			MetadataFilterJson:  json.RawMessage(m.GetMetadataFilterJson()),
 			IsDefault:           int(m.GetIsDefault()),
 			SortOrder:           int(m.GetSortOrder()),
@@ -120,8 +118,6 @@ func protoRagRuntimeOptionsToChatVO(p *knowledgev1.RagRuntimeOptions) *vo.RagRun
 		KeywordTopK:               int(p.GetKeywordTopK()),
 		GraphRagTopK:              int(p.GetGraphRagTopK()),
 		GraphRagMaxHops:           int(p.GetGraphRagMaxHops()),
-		RaptorTopK:                int(p.GetRaptorTopK()),
-		RaptorSourceChunkTopK:     int(p.GetRaptorSourceChunkTopK()),
 		CandidateTopK:             int(p.GetCandidateTopK()),
 		RerankCandidateTopK:       int(p.GetRerankCandidateTopK()),
 		FinalTopK:                 int(p.GetFinalTopK()),
@@ -131,9 +127,7 @@ func protoRagRuntimeOptionsToChatVO(p *knowledgev1.RagRuntimeOptions) *vo.RagRun
 		MinVectorSimilarity:       p.GetMinVectorSimilarity(),
 		KeywordRelativeScoreFloor: p.GetKeywordRelativeScoreFloor(),
 		KeywordChannelEnabled:     p.GetKeywordChannelEnabled(),
-		TableChannelEnabled:       p.GetTableChannelEnabled(),
 		GraphRagChannelEnabled:    p.GetGraphRagChannelEnabled(),
-		RaptorChannelEnabled:      p.GetRaptorChannelEnabled(),
 		Hybrid:                    protoHybridOptionsToChatVO(p.GetHybrid()),
 		KbConfigConflictFields:    p.GetKbConfigConflictFields(),
 	}
@@ -146,9 +140,7 @@ func protoHybridOptionsToChatVO(p *knowledgev1.HybridOptions) *vo.HybridOptions 
 	return &vo.HybridOptions{
 		VectorWeight:        p.GetVectorWeight(),
 		KeywordWeight:       p.GetKeywordWeight(),
-		TableWeight:         p.GetTableWeight(),
 		GraphRagWeight:      p.GetGraphRagWeight(),
-		RaptorWeight:        p.GetRaptorWeight(),
 		RankWeight:          p.GetRankWeight(),
 		OriginalScoreWeight: p.GetOriginalScoreWeight(),
 		MetadataBoostWeight: p.GetMetadataBoostWeight(),

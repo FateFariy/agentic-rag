@@ -3,32 +3,28 @@ package consumer
 import (
 	"context"
 	"encoding/json"
-	"os"
-	"os/signal"
-	"syscall"
 
 	"github.com/apache/rocketmq-client-go/v2"
 	"github.com/apache/rocketmq-client-go/v2/consumer"
 	"github.com/apache/rocketmq-client-go/v2/primitive"
 	"github.com/zeromicro/go-zero/core/logx"
+	"github.com/zeromicro/go-zero/core/threading"
 
-	"github.com/swiftbit/know-agent/pkg/svc"
 	"github.com/swiftbit/know-agent/services/chat/internal/domain/logic/conversation"
 	"github.com/swiftbit/know-agent/services/chat/internal/domain/model/entity"
 )
 
-// SemanticCacheWriteConsumer 语义缓存异步写入消费者：订阅写入主题，幂等双写（MySQL + Milvus）。
-// 向量化在 store.Put 内部完成（消费端持有 Embedder），消息体不携带向量。
+// SemanticCacheWriteConsumer 语义缓存异步写入消费者：订阅写入主题，幂等双写（MySQL + Milvus）
 type SemanticCacheWriteConsumer struct {
 	store conversation.SemanticCacheStore
 	c     rocketmq.PushConsumer
 	topic string
 }
 
-func NewSemanticCacheWriteConsumer(svcCtx *svc.ServiceContext, store conversation.SemanticCacheStore) *SemanticCacheWriteConsumer {
+func NewSemanticCacheWriteConsumer(store conversation.SemanticCacheStore, mqAddr string, writeTopic string) *SemanticCacheWriteConsumer {
 	c, err := rocketmq.NewPushConsumer(
 		consumer.WithGroupName("semantic-cache-write-group"),
-		consumer.WithNameServer([]string{svcCtx.Config.MQ.Addr}),
+		consumer.WithNameServer([]string{mqAddr}),
 	)
 	if err != nil {
 		panic(err)
@@ -36,16 +32,13 @@ func NewSemanticCacheWriteConsumer(svcCtx *svc.ServiceContext, store conversatio
 	return &SemanticCacheWriteConsumer{
 		store: store,
 		c:     c,
-		topic: svcCtx.Config.Chat.SemanticCache.WriteTopic,
+		topic: writeTopic,
 	}
 }
 
 func (c *SemanticCacheWriteConsumer) Start() {
 	logx.Info("启动语义缓存写入消费者...")
-	go func() {
-		sig := make(chan os.Signal, 1)
-		signal.Notify(sig, syscall.SIGINT, syscall.SIGTERM)
-
+	threading.GoSafe(func() {
 		callback := func(ctx context.Context, msgs ...*primitive.MessageExt) (consumer.ConsumeResult, error) {
 			for i := range msgs {
 				var entry entity.ChatCacheEntry
@@ -67,8 +60,10 @@ func (c *SemanticCacheWriteConsumer) Start() {
 		if err := c.c.Start(); err != nil {
 			panic(err)
 		}
+	})
+}
 
-		<-sig
-		_ = c.c.Shutdown()
-	}()
+// Stop 关闭底层 PushConsumer
+func (c *SemanticCacheWriteConsumer) Stop() {
+	_ = c.c.Shutdown()
 }

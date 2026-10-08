@@ -3,7 +3,7 @@ package errorx
 import (
 	"errors"
 
-	"github.com/swiftbit/know-agent/common"
+	"github.com/swiftbit/know-agent/pkg/common"
 )
 
 var (

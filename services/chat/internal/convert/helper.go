@@ -7,7 +7,7 @@ import (
 
 	"github.com/swiftbit/know-agent/services/chat/api"
 	"github.com/swiftbit/know-agent/services/chat/internal/domain/model/enum"
-	cvo "github.com/swiftbit/know-agent/services/chat/internal/domain/model/vo"
+	"github.com/swiftbit/know-agent/services/chat/internal/domain/model/vo"
 )
 
 func TimeToString(t time.Time) string {
@@ -23,7 +23,7 @@ func ToChatQueryModeName(code int) string {
 }
 
 func ToChatDebugTrace(debugTraceJson string) *api.ChatDebugTrace {
-	var debugTrace cvo.ChatDebugTrace
+	var debugTrace vo.ChatDebugTrace
 	if err := json.Unmarshal([]byte(debugTraceJson), &debugTrace); err != nil {
 		return nil
 	}
@@ -59,7 +59,7 @@ func ToChatDebugTrace(debugTraceJson string) *api.ChatDebugTrace {
 	}
 }
 
-func ToChatDocumentNavigationDecision(src *cvo.DocumentNavigationDecision) *api.DocumentNavigationDecision {
+func ToChatDocumentNavigationDecision(src *vo.DocumentNavigationDecision) *api.DocumentNavigationDecision {
 	if src == nil {
 		return nil
 	}
@@ -72,7 +72,7 @@ func ToChatDocumentNavigationDecision(src *cvo.DocumentNavigationDecision) *api.
 	}
 }
 
-func ToChatStructureAnchor(src *cvo.ConversationStructureAnchor) *api.ConversationStructureAnchor {
+func ToChatStructureAnchor(src *vo.ConversationStructureAnchor) *api.ConversationStructureAnchor {
 	if src == nil {
 		return nil
 	}
@@ -86,7 +86,7 @@ func ToChatStructureAnchor(src *cvo.ConversationStructureAnchor) *api.Conversati
 	}
 }
 
-func ToChatItemAnchor(src *cvo.ConversationItemAnchor) *api.ConversationItemAnchor {
+func ToChatItemAnchor(src *vo.ConversationItemAnchor) *api.ConversationItemAnchor {
 	if src == nil {
 		return nil
 	}
@@ -98,7 +98,7 @@ func ToChatItemAnchor(src *cvo.ConversationItemAnchor) *api.ConversationItemAnch
 	}
 }
 
-func ToChatToolTraces(src []*cvo.ChatToolTrace) []*api.ChatToolTrace {
+func ToChatToolTraces(src []*vo.ChatToolTrace) []*api.ChatToolTrace {
 	if src == nil {
 		return nil
 	}
@@ -123,7 +123,7 @@ func ToChatToolTraces(src []*cvo.ChatToolTrace) []*api.ChatToolTrace {
 	return result
 }
 
-func ToChatModelUsageTraces(src []*cvo.ChatModelUsageTrace) []*api.ChatModelUsageTrace {
+func ToChatModelUsageTraces(src []*vo.ChatModelUsageTrace) []*api.ChatModelUsageTrace {
 	if src == nil {
 		return nil
 	}
@@ -148,7 +148,7 @@ func ToChatModelUsageTraces(src []*cvo.ChatModelUsageTrace) []*api.ChatModelUsag
 	return result
 }
 
-func ToChatLimitStats(src *cvo.ChatLimitStats) *api.ChatLimitStats {
+func ToChatLimitStats(src *vo.ChatLimitStats) *api.ChatLimitStats {
 	if src == nil {
 		return nil
 	}

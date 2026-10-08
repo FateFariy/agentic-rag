@@ -37,19 +37,9 @@ func NewKeywordChannelPlan(enabled bool, topK int, timeout time.Duration, weight
 	return newChannelPlan(enum.RetrievalChannelKeyword, enabled, topK, timeout, weight, 0, relativeFloor)
 }
 
-// NewTableChannelPlan 创建表格检索通道计划
-func NewTableChannelPlan(enabled bool, topK int, timeout time.Duration, weight float64) *RetrievalChannelPlan {
-	return newChannelPlan(enum.RetrievalChannelTable, enabled, topK, timeout, weight, 0, 0)
-}
-
 // NewGraphRAGChannelPlan 创建图RAG检索通道计划
 func NewGraphRAGChannelPlan(enabled bool, topK int, timeout time.Duration, weight float64) *RetrievalChannelPlan {
 	return newChannelPlan(enum.RetrievalChannelGraphRAG, enabled, topK, timeout, weight, 0, 0)
-}
-
-// NewRaptorChannelPlan 创建Raptor检索通道计划
-func NewRaptorChannelPlan(enabled bool, topK int, timeout time.Duration, weight float64) *RetrievalChannelPlan {
-	return newChannelPlan(enum.RetrievalChannelRaptor, enabled, topK, timeout, weight, 0, 0)
 }
 
 func newChannelPlan(channel enum.RetrievalChannel, enabled bool, topK int, timeout time.Duration, weight, minScore, relativeFloor float64) *RetrievalChannelPlan {

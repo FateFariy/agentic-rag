@@ -1,12 +1,10 @@
-package client
+package rpc
 
 import (
 	"context"
 
-	"google.golang.org/grpc"
-
-	documentv1 "github.com/swiftbit/know-agent/pkg/grpc/gen/proto/knowagent/document/v1"
-	
+	documentv1 "github.com/swiftbit/know-agent/pkg/grpc/gen/document/v1"
+	"github.com/swiftbit/know-agent/services/chat/internal/domain/model/vo"
 )
 
 // ChatDocumentClient 实现 chat 域消费 document 的两个接口：
@@ -16,8 +14,8 @@ type ChatDocumentClient struct {
 	client documentv1.DocumentServiceClient
 }
 
-func NewChatDocumentClient(cc *grpc.ClientConn) *ChatDocumentClient {
-	return &ChatDocumentClient{client: documentv1.NewDocumentServiceClient(cc)}
+func NewChatDocumentClient(client documentv1.DocumentServiceClient) *ChatDocumentClient {
+	return &ChatDocumentClient{client: client}
 }
 
 func (c *ChatDocumentClient) FindRetrievableByKbIds(ctx context.Context, kbIds []int64) ([]*vo.DocumentMetadata, error) {

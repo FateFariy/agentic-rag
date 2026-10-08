@@ -21,7 +21,6 @@ type RetrievalPlan struct {
 	StructureNavigationResult *StructureNavigationResult   // 结构导航结果
 	StructureAnchor           *ConversationStructureAnchor // 会话结构锚点
 	ItemAnchor                *ConversationItemAnchor      // 会话条目锚点
-	TableIntent               *TableIntent                 // 表格检索意图
 	GraphIntent               *GraphIntent                 // 图谱检索意图
 	RankFeatures              *RankFeatureBundle           // 排序特征包
 	CandidateTopK             int                          // 候选窗口大小

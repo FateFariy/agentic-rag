@@ -11,7 +11,6 @@ type KnowledgeBase struct {
 	EmbeddingModel      string
 	RetrievalConfigJson json.RawMessage
 	GraphRagConfigJson  json.RawMessage
-	RaptorConfigJson    json.RawMessage
 	MetadataFilterJson  json.RawMessage
 	IsDefault           int
 	SortOrder           int

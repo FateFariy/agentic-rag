@@ -1,6 +1,8 @@
 package vo
 
-import "github.com/swiftbit/know-agent/services/chat/internal/domain/model/enum"
+import (
+	"github.com/swiftbit/know-agent/services/chat/internal/domain/model/enum"
+)
 
 // DocumentNavigationDecision 文档问答路由结果
 type DocumentNavigationDecision struct {

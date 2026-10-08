@@ -4,13 +4,14 @@
 package convert
 
 import (
-	common "github.com/swiftbit/know-agent/common"
-	api "github.com/swiftbit/know-agent/services/chat/api"
-	aggregate "github.com/swiftbit/know-agent/services/chat/internal/domain/model/aggregate"
-	entity "github.com/swiftbit/know-agent/services/chat/internal/domain/model/entity"
-	vo "github.com/swiftbit/know-agent/services/chat/internal/domain/model/vo"
-	model "github.com/swiftbit/know-agent/services/chat/internal/infrastructure/persistence/model"
 	"time"
+
+	"github.com/swiftbit/know-agent/pkg/common"
+	api "github.com/swiftbit/know-agent/services/chat/api"
+	"github.com/swiftbit/know-agent/services/chat/internal/domain/model/aggregate"
+	"github.com/swiftbit/know-agent/services/chat/internal/domain/model/entity"
+	"github.com/swiftbit/know-agent/services/chat/internal/domain/model/vo"
+	model "github.com/swiftbit/know-agent/services/chat/internal/infrastructure/persistence/model"
 )
 
 func FromChatReq(source *api.ChatReq) *vo.ChatCommand {
