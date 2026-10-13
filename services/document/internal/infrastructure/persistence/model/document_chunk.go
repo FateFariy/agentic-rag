@@ -21,13 +21,9 @@ type DocumentChunk struct {
 	CharCount         int    `gorm:"column:char_count;type:int"`           // 字符数
 	TokenCount        int    `gorm:"column:token_count;type:int"`          // Token数
 	VectorStatus      int    `gorm:"column:vector_status;type:int"`        // 向量状态
-	VectorStoreType   int    `gorm:"column:vector_store_type;type:int"`    // 向量存储类型
 	VectorId          string `gorm:"column:vector_id;type:varchar(255)"`   // 向量ID
-	ContentWithWeight string `gorm:"column:content_with_weight;type:text"` // 加权内容
 	ChunkType         string `gorm:"column:chunk_type;type:varchar(50)"`   // 块类型
 	Title             string `gorm:"column:title;type:varchar(500)"`       // 标题
-	Keywords          string `gorm:"column:keywords;type:text"`            // 关键词
-	Questions         string `gorm:"column:questions;type:text"`           // 预设问题
 	PageNo            int    `gorm:"column:page_no;type:int"`              // 页码
 	PageRange         string `gorm:"column:page_range;type:varchar(50)"`   // 页码范围
 	BboxJson          string `gorm:"column:bbox_json;type:text"`           // 边界框JSON

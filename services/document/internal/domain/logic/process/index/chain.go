@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/swiftbit/know-agent/pkg/logx"
-	"github.com/swiftbit/know-agent/pkg/tokenize"
 	"github.com/swiftbit/know-agent/services/document/internal/domain/adapter"
 	"github.com/swiftbit/know-agent/services/document/internal/domain/logic/process/chunk"
 	"github.com/swiftbit/know-agent/services/document/internal/domain/model/enum"
@@ -27,17 +26,16 @@ func NewBuildIndexChain(
 	keyIndexer adapter.KeywordIndexer,
 	registry *chunk.Registry,
 	resolver IndexingConfigResolver,
-	tokenizer tokenize.Tokenizer,
 	builder GraphRagBuilder,
 ) *BuildIndexChain {
 	stages := []Stage{
-		NewPreparationStage(repo, storage),                    // 1. 准备阶段：加载任务、验证状态、下载原始文本内容、推进任务状态
-		NewChunkingStage(repo, registry, resolver, tokenizer), // 2. 切块阶段：执行切块流水线
-		NewChunkPostStage(repo),                               // 3. 切块后处理阶段：构建父子块实体并持久化
-		NewVectorizeStage(repo, vecIndexer),                   // 4. 向量化阶段：批量向量化并回写状态
-		NewKeywordIndexStage(repo, keyIndexer),                // 5. 关键词索引阶段：构建关键词索引
-		NewGraphRagStage(repo, builder),                       // 6. GraphRAG 构建阶段：构建实体关系图谱
-		NewCompletionStage(repo),                              // 7. 完成阶段：事务性更新任务/方案/文档状态
+		NewPreparationStage(repo, storage),         // 1. 准备阶段：加载任务、验证状态、下载原始文本内容、推进任务状态
+		NewChunkingStage(repo, registry, resolver), // 2. 切块阶段：执行切块流水线
+		NewChunkPostStage(repo),                    // 3. 切块后处理阶段：构建父子块实体并持久化
+		NewVectorizeStage(repo, vecIndexer),        // 4. 向量化阶段：批量向量化并回写状态
+		NewKeywordIndexStage(repo, keyIndexer),     // 5. 关键词索引阶段：构建关键词索引
+		NewGraphRagStage(repo, builder),            // 6. GraphRAG 构建阶段：构建实体关系图谱
+		NewCompletionStage(repo),                   // 7. 完成阶段：事务性更新任务/方案/文档状态
 	}
 	return &BuildIndexChain{repo: repo, stages: stages}
 }

@@ -10,7 +10,6 @@ import (
 	"github.com/swiftbit/know-agent/pkg/utils"
 	"github.com/swiftbit/know-agent/services/document/internal/domain/adapter"
 	"github.com/swiftbit/know-agent/services/document/internal/domain/logic/process/parse"
-	"github.com/swiftbit/know-agent/services/document/internal/domain/model/aggregate"
 	"github.com/swiftbit/know-agent/services/document/internal/domain/model/entity"
 	"github.com/swiftbit/know-agent/services/document/internal/domain/model/enum"
 	"github.com/swiftbit/know-agent/services/document/internal/infrastructure/port/parser"
@@ -73,7 +72,7 @@ func (p *ParseStage) Execute(ctx context.Context, parseCtx *Context) error {
 	return nil
 }
 
-func (p *ParseStage) process(ctx context.Context, parseCtx *Context) (*aggregate.AnalysisResult, error) {
+func (p *ParseStage) process(ctx context.Context, parseCtx *Context) (*Result, error) {
 	if parseCtx == nil || parseCtx.Document == nil {
 		return nil, fmt.Errorf("上下文或文档为空")
 	}
@@ -101,7 +100,7 @@ func (p *ParseStage) process(ctx context.Context, parseCtx *Context) (*aggregate
 	// 4. 结构节点投影
 	structureNodes := projectStructureNodes(parseCtx.Document.OriginalFileName, blocks)
 
-	return &aggregate.AnalysisResult{
+	return &Result{
 		ParsedText:          parsedText,
 		CharCount:           charCount,
 		TokenCount:          utils.EstimateTokens(parsedText),

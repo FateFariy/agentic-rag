@@ -17,7 +17,6 @@ type DocumentTask struct {
 	TaskType          int                `gorm:"column:task_type"`            // 任务类型
 	TaskStatus        int                `gorm:"column:task_status"`          // 任务状态
 	CurrentStage      int                `gorm:"column:current_stage"`        // 当前阶段
-	TriggerSource     int                `gorm:"column:trigger_source"`       // 触发来源
 	StrategySnapshot  string             `gorm:"column:strategy_snapshot"`    // 策略快照
 	RetryCount        int                `gorm:"column:retry_count"`          // 重试次数
 	StartTime         *time.Time         `gorm:"column:start_time"`           // 开始时间

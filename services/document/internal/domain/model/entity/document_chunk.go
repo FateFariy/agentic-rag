@@ -21,13 +21,9 @@ type DocumentChunk struct {
 	CharCount          int    `gorm:"column:char_count"`          // 字符数
 	TokenCount         int    `gorm:"column:token_count"`         // token数
 	VectorStatus       int    `gorm:"column:vector_status"`       // 向量状态
-	VectorStoreType    int    `gorm:"column:vector_store_type"`   // 向量存储类型
 	VectorId           string `gorm:"column:vector_id"`           // 向量ID
-	ContentWithWeight  string `gorm:"column:content_with_weight"` // 加权内容
 	ChunkType          string `gorm:"column:chunk_type"`          // 块类型
 	Title              string `gorm:"column:title"`               // 标题
-	Keywords           string `gorm:"column:keywords"`            // 关键词
-	Questions          string `gorm:"column:questions"`           // 预设问题
 	PageNo             int    `gorm:"column:page_no"`             // 页码
 	PageRange          string `gorm:"column:page_range"`          // 页码范围
 	BboxJson           string `gorm:"column:bbox_json"`           // 边界框JSON
@@ -50,7 +46,7 @@ func (d *DocumentChunk) FillEnumName() {
 }
 
 func (d *DocumentChunk) FillParentInfo(parentBlock *DocumentParentChunk) {
-	if d != nil && parentBlock == nil {
+	if d != nil && parentBlock != nil {
 		d.ParentBlockNo = parentBlock.ParentNo
 		d.ParentChildCount = parentBlock.ChildCount
 		d.ParentStartChunkNo = parentBlock.StartChunkNo

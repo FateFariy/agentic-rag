@@ -10,7 +10,6 @@ import (
 	"github.com/swiftbit/know-agent/pkg/utils"
 	"github.com/swiftbit/know-agent/services/document/internal/config"
 	"github.com/swiftbit/know-agent/services/document/internal/domain/adapter"
-	"github.com/swiftbit/know-agent/services/document/internal/domain/model/aggregate"
 	"github.com/swiftbit/know-agent/services/document/internal/domain/model/entity"
 	"github.com/swiftbit/know-agent/services/document/internal/domain/model/enum"
 	"github.com/swiftbit/know-agent/services/document/internal/domain/model/vo"
@@ -53,7 +52,7 @@ func (p *StrategyStage) Execute(ctx context.Context, parseCtx *Context) (err err
 	// 写入"开始分析解析结果并生成推荐策略"日志
 	strategyStartDetail, _ := json.Marshal(map[string]any{
 		"blockCount":         len(parseCtx.AnalysisResult.Blocks),
-		"structureNodeCount": len(parseCtx.SaveCtx.StructureNodes),
+		"structureNodeCount": len(parseCtx.StructureNodes),
 		"charCount":          parseCtx.AnalysisResult.CharCount,
 		"tokenCount":         parseCtx.AnalysisResult.TokenCount,
 	})
@@ -82,7 +81,7 @@ func (p *StrategyStage) Execute(ctx context.Context, parseCtx *Context) (err err
 // Recommend 根据文档分析结果推荐最优的父块-子块策略组合。
 // 整体思路：先通过若干判定函数分别评估结构/递归/语义/大模型切块的必要性，
 // 再按"父块优先保留天然大语义单元、子块围绕召回边界精细化"的原则拼接流水线。
-func (p *StrategyStage) recommend(ctx context.Context, document *entity.Document, analysisResult *aggregate.AnalysisResult) (*vo.DocumentStrategyPlanDraft, error) {
+func (p *StrategyStage) recommend(ctx context.Context, document *entity.Document, analysisResult *Result) (*vo.DocumentStrategyPlanDraft, error) {
 	if document == nil || analysisResult == nil {
 		return nil, fmt.Errorf("invaild value")
 	}

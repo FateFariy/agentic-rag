@@ -51,7 +51,6 @@ func (p *VectorizeStage) Execute(ctx context.Context, buildCtx *Context) error {
 		"chunkCount":          vectorSize,
 		"embeddingBatchSize":  embeddingBatch,
 		"embeddingBatchCount": vectorBatch,
-		"vectorStoreType":     enum.VectorStoreTypeMilvus,
 		"parentCount":         len(buildCtx.ParentChunks),
 	}
 	// 记录"开始执行向量化"日志

@@ -9,7 +9,6 @@ import (
 	"github.com/swiftbit/know-agent/pkg/infra"
 	"github.com/swiftbit/know-agent/pkg/utils"
 	"github.com/swiftbit/know-agent/services/document/internal/domain/adapter"
-	"github.com/swiftbit/know-agent/services/document/internal/domain/model/enum"
 	"github.com/swiftbit/know-agent/services/document/internal/domain/model/vo"
 )
 
@@ -21,10 +20,6 @@ var _ adapter.Storage = (*MinioStorage)(nil)
 
 func NewMinioStorage(minioConf infra.MinioConf) *MinioStorage {
 	return &MinioStorage{MinioClient: infra.NewMinioClient(minioConf)}
-}
-
-func (s *MinioStorage) Name() int {
-	return enum.StorageTypeMINIO
 }
 
 // UploadOriginalFile 上传原始文件

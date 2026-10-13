@@ -3,7 +3,7 @@ package process
 import (
 	"context"
 
-	"github.com/swiftbit/know-agent/services/document/internal/domain/model/aggregate"
+	"github.com/swiftbit/know-agent/services/document/internal/domain/logic/process/analysis"
 	"github.com/swiftbit/know-agent/services/document/internal/domain/model/entity"
 )
 
@@ -18,5 +18,5 @@ type AsyncProcessor interface {
 
 // ProfileGenerator 文档画像生成器
 type ProfileGenerator interface {
-	Generate(ctx context.Context, documentId int64, analysisResult *aggregate.AnalysisResult, structureNodes []*entity.StructureNode) (*entity.DocumentProfile, error)
+	Generate(ctx context.Context, documentId int64, analysisResult *analysis.Result, structureNodes []*entity.StructureNode) (*entity.DocumentProfile, error)
 }

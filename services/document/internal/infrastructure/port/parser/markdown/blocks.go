@@ -7,17 +7,6 @@ import (
 	"github.com/swiftbit/know-agent/services/document/internal/domain/model/shared"
 )
 
-// buildChildrenMap 构建子节点映射
-func buildChildrenMap(nodes []*shared.MarkdownNode) map[string][]*shared.MarkdownNode {
-	childrenByParent := make(map[string][]*shared.MarkdownNode)
-	for _, node := range nodes {
-		if node.ParentNodeId != "" {
-			childrenByParent[node.ParentNodeId] = append(childrenByParent[node.ParentNodeId], node)
-		}
-	}
-	return childrenByParent
-}
-
 // nodeSourceText 从 MarkdownSyntax 中提取节点的源文本
 func nodeSourceText(syntax *shared.MarkdownSyntax, node *shared.MarkdownNode) string {
 	if node.SourceSpan == nil {

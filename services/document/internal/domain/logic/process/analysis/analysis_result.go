@@ -1,4 +1,4 @@
-package aggregate
+package analysis
 
 import (
 	"slices"
@@ -8,8 +8,8 @@ import (
 	"github.com/swiftbit/know-agent/services/document/internal/domain/model/shared"
 )
 
-// AnalysisResult 文档分析结果
-type AnalysisResult struct {
+// Result 文档分析结果
+type Result struct {
 	ParsedText          string                  // 解析后的文本内容
 	CharCount           int                     // 字符数量
 	TokenCount          int                     // Token数量
@@ -24,7 +24,7 @@ type AnalysisResult struct {
 }
 
 // ShouldUseStructure 是否启用结构切块，启用条件：文件类型被识别 +（结构等级达到中等或标题数≥2）
-func (a *AnalysisResult) ShouldUseStructure(fileType enum.FileType) bool {
+func (a *Result) ShouldUseStructure(fileType enum.FileType) bool {
 	if fileType == enum.FileTypeXLSX {
 		return true
 	}
@@ -33,16 +33,16 @@ func (a *AnalysisResult) ShouldUseStructure(fileType enum.FileType) bool {
 }
 
 // ShouldUseRecursive 是否启用递归切块，启用条件：文本总长度或最长段落长度 ≥ 递归窗口上限（需要控制单次块大小）
-func (a *AnalysisResult) ShouldUseRecursive(maxChars int) bool {
+func (a *Result) ShouldUseRecursive(maxChars int) bool {
 	return a.CharCount >= maxChars || a.MaxParagraphLength > maxChars
 }
 
 // ShouldUseSemantic 是否启用语义切块，启用条件：文本总长度 ≥ 语义切块最小字符数 + 段落数量 ≥ 3 + 内容质量等级 ≥ 中等
-func (a *AnalysisResult) ShouldUseSemantic(minChars int) bool {
+func (a *Result) ShouldUseSemantic(minChars int) bool {
 	return a.CharCount >= minChars && a.ParagraphCount >= 3 && a.ContentQualityLevel >= enum.ContentQualityLevelMedium
 }
 
 // ShouldUseLlm 是否启用LLM切块，启用条件：文本总长度 ≥ LLM切块最小字符数 + 内容质量等级 = 低
-func (a *AnalysisResult) ShouldUseLlm(minChars int) bool {
+func (a *Result) ShouldUseLlm(minChars int) bool {
 	return a.CharCount >= minChars && a.ContentQualityLevel == enum.ContentQualityLevelLow
 }

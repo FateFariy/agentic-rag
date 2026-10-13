@@ -87,7 +87,6 @@ func (m *MilvusIndexer) markSuccess(chunks []*entity.DocumentChunk) {
 	for _, chunk := range chunks {
 		if chunk != nil && utils.IsNotBlank(chunk.ChunkText) {
 			chunk.VectorId = strconv.FormatInt(chunk.ID, 10)
-			chunk.VectorStoreType = enum.VectorStoreTypeMilvus
 			chunk.VectorStatus = enum.VectorStatusVectorSuccess
 		}
 	}

@@ -4,8 +4,6 @@ import (
 	"context"
 	"time"
 
-	"github.com/swiftbit/know-agent/services/document/internal/domain/logic/process/analysis/save"
-	"github.com/swiftbit/know-agent/services/document/internal/domain/model/aggregate"
 	"github.com/swiftbit/know-agent/services/document/internal/domain/model/entity"
 	"github.com/swiftbit/know-agent/services/document/internal/domain/model/vo"
 )
@@ -18,9 +16,10 @@ type Context struct {
 	Task              *entity.DocumentTask
 	StartTime         time.Time
 	RawFileBytes      []byte
-	AnalysisResult    *aggregate.AnalysisResult
+	AnalysisResult    *Result
 	StrategyPlanDraft *vo.DocumentStrategyPlanDraft
-	SaveCtx           *save.Context
+	StructureNodes    []*entity.StructureNode
+	ParsedTextPath    string
 }
 
 // Stage 解析路由阶段接口

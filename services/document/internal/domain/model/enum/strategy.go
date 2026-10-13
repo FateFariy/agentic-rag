@@ -67,7 +67,6 @@ const (
 	StrategyExecuteStatusExecuting
 	StrategyExecuteStatusExecuteSuccess
 	StrategyExecuteStatusExecuteFailed
-	StrategyExecuteStatusSkipped
 )
 
 // ============================================================

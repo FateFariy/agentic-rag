@@ -6,7 +6,7 @@ import (
 	"github.com/swiftbit/know-agent/pkg/utils"
 	"github.com/swiftbit/know-agent/services/document/internal/domain/adapter"
 	"github.com/swiftbit/know-agent/services/document/internal/domain/logic/process"
-	"github.com/swiftbit/know-agent/services/document/internal/domain/model/aggregate"
+	"github.com/swiftbit/know-agent/services/document/internal/domain/logic/process/analysis"
 	"github.com/swiftbit/know-agent/services/document/internal/domain/model/entity"
 )
 
@@ -50,7 +50,7 @@ func (p *ProfileLogicImpl) RegenerateProfile(ctx context.Context, documentId int
 	if err != nil {
 		return nil, err
 	}
-	analysisResult := &aggregate.AnalysisResult{ParsedText: parsedText}
+	analysisResult := &analysis.Result{ParsedText: parsedText}
 	return p.gen.Generate(ctx, documentId, analysisResult, structureNodes)
 }
 

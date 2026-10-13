@@ -11,7 +11,6 @@ type Document struct {
 	FileType            int    `gorm:"column:file_type;type:int"`                    // 文件类型
 	MimeType            string `gorm:"column:mime_type;type:varchar(100)"`           // MIME类型
 	FileSize            int64  `gorm:"column:file_size;type:bigint"`                 // 文件大小
-	StorageType         int    `gorm:"column:storage_type;type:int"`                 // 存储类型
 	BucketName          string `gorm:"column:bucket_name;type:varchar(100)"`         // 存储桶名称
 	ObjectName          string `gorm:"column:object_name;type:varchar(255)"`         // 对象名称
 	ObjectUrl           string `gorm:"column:object_url;type:varchar(500)"`          // 对象URL

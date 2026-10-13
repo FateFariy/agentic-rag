@@ -63,7 +63,7 @@ func Build(c *config.Config) (*infra.Server, error) {
 	milvusIndexer := storage.NewMilvusIndexer(milvusClient, c.Milvus, c.Embedding.Dimensions, c.Embedding.Model, embedder)
 	graphStore := storage.NewDocumentGraphStore(neo4jStore)
 	graphBuilder := graphbuild.NewBuilder(graphStore, llmExtractor, c.Rag.Graph, reporter, milvusIndexer, knowledgeClient)
-	indexChain := index.NewBuildIndexChain(documentRepo, minioStorage, milvusIndexer, milvusIndexer, strategyRegistry, knowledgeClient, gseTokenizer, graphBuilder)
+	indexChain := index.NewBuildIndexChain(documentRepo, minioStorage, milvusIndexer, milvusIndexer, strategyRegistry, knowledgeClient, graphBuilder)
 	asyncProcessImpl := process.NewAsyncProcessImpl(documentRepo, analysisChain, indexChain)
 	lifecycleLogicImpl := logic.NewLifecycleLogicImpl(rocketMQProducer, minioStorage, documentRepo, knowledgeClient, milvusIndexer, graphStore, c.MQ.ParseTopic, c.MQ.IndexTopic)
 	profileLogicImpl := logic.NewProfileLogicImpl(documentRepo, minioStorage, generateImpl)

@@ -11,7 +11,6 @@ import (
 
 	"github.com/swiftbit/know-agent/pkg/common"
 	"github.com/swiftbit/know-agent/pkg/logx"
-	"github.com/swiftbit/know-agent/pkg/tokenize"
 	"github.com/swiftbit/know-agent/pkg/utils"
 	"github.com/swiftbit/know-agent/services/document/internal/domain/adapter"
 	"github.com/swiftbit/know-agent/services/document/internal/domain/logic/process/chunk"
@@ -37,10 +36,10 @@ type ChunkingStage struct {
 }
 
 // NewChunkingStage 创建切块阶段
-func NewChunkingStage(repo adapter.DocumentRepository, registry *chunk.Registry, resolver IndexingConfigResolver, tokenizer tokenize.Tokenizer) *ChunkingStage {
+func NewChunkingStage(repo adapter.DocumentRepository, registry *chunk.Registry, resolver IndexingConfigResolver) *ChunkingStage {
 	return &ChunkingStage{
 		repo:     repo,
-		builder:  NewChunkBuilder(registry, tokenizer),
+		builder:  NewChunkBuilder(registry),
 		resolver: resolver,
 	}
 }
@@ -134,15 +133,13 @@ func (p *ChunkingStage) Execute(ctx context.Context, buildCtx *Context) error {
 
 // ChunkBuilder 承载具体的分块算法：父/子种子构建、策略流水线调度、短子块合并与候选对象构造
 type ChunkBuilder struct {
-	registry  *chunk.Registry
-	tokenizer tokenize.Tokenizer
+	registry *chunk.Registry
 }
 
 // NewChunkBuilder 创建分块逻辑执行器
-func NewChunkBuilder(registry *chunk.Registry, tokenizer tokenize.Tokenizer) *ChunkBuilder {
+func NewChunkBuilder(registry *chunk.Registry) *ChunkBuilder {
 	return &ChunkBuilder{
-		registry:  registry,
-		tokenizer: tokenizer,
+		registry: registry,
 	}
 }
 
@@ -491,12 +488,6 @@ func (b *ChunkBuilder) cloneChunkCandidate(original *vo.ChunkCandidate, text str
 	}
 	candidate := *original
 	candidate.Text = text
-	if text != strings.TrimSpace(original.Text) {
-		keywords := candidate.ExtractKeywords(b.tokenizer)
-		candidate.Keywords = marshal(keywords)
-		candidate.Questions = marshal(candidate.ExtractQuestions(keywords))
-		candidate.ContentWithWeight = candidate.ExtractContentWithWeight(keywords, "")
-	}
 
 	return &candidate
 }
@@ -580,20 +571,16 @@ func (b *ChunkBuilder) toParentSeed(blocks entity.DocumentBlocks, nodes entity.S
 	sectionPath := blocks.FirstBlankSectionPath()
 	canonicalPath := blocks.FirstBlankCanonicalPath()
 	node := nodes.FindNodeByPath(sectionPath, canonicalPath)
-	keywords := blocks.ExtractKeywords(b.tokenizer)
 	candidate := &vo.ChunkCandidate{
-		SectionPath:       sectionPath,
-		CanonicalPath:     canonicalPath,
-		Text:              blocks.JoinBlockTexts(),
-		SourceType:        enum.ChunkSourceTypeOriginal,
-		ContentWithWeight: blocks.ExtractContentWithWeight(keywords, blocks.JoinBlockWeightedContents(b.tokenizer)),
-		ChunkType:         blocks.ResolveChunkType(),
-		Title:             blocks.ResolveTitle(sectionPath),
-		Keywords:          marshal(keywords),
-		Questions:         marshal(blocks.ExtractQuestions(keywords)),
-		PageNo:            blocks.FirstPageNo(),
-		PageRange:         blocks.PageRange(),
-		SourceBlockIds:    blocks.Ids(),
+		SectionPath:    sectionPath,
+		CanonicalPath:  canonicalPath,
+		Text:           blocks.JoinBlockTexts(),
+		SourceType:     enum.ChunkSourceTypeOriginal,
+		ChunkType:      blocks.ResolveChunkType(),
+		Title:          blocks.ResolveTitle(sectionPath),
+		PageNo:         blocks.FirstPageNo(),
+		PageRange:      blocks.PageRange(),
+		SourceBlockIds: blocks.Ids(),
 	}
 	if node != nil {
 		candidate.StructureNodeId = node.ID
@@ -615,21 +602,17 @@ func (b *ChunkBuilder) toParentSeed(blocks entity.DocumentBlocks, nodes entity.S
 func (b *ChunkBuilder) toSplitBlockSeed(block *entity.DocumentBlock, nodes entity.StructureNodes, splitText string) *vo.ChunkCandidate {
 	clone := block.CloneWithText(splitText)
 	node := nodes.FindNodeByPath(clone.SectionPath, clone.CanonicalPath)
-	keywords := clone.ExtractKeywords(b.tokenizer)
 	candidate := &vo.ChunkCandidate{
-		SectionPath:       clone.SectionPath,
-		CanonicalPath:     clone.CanonicalPath,
-		Text:              clone.Text,
-		SourceType:        enum.ChunkSourceTypeOriginal,
-		ContentWithWeight: clone.ExtractContentWithWeight(keywords, ""),
-		ChunkType:         clone.ResolveChunkType(),
-		Title:             clone.ResolveTitle(),
-		Keywords:          marshal(keywords),
-		Questions:         marshal(clone.ExtractQuestions(keywords)),
-		PageNo:            clone.PageNo,
-		PageRange:         clone.PageRange,
-		BboxJson:          clone.BboxJson,
-		SourceBlockIds:    clone.Ids(),
+		SectionPath:    clone.SectionPath,
+		CanonicalPath:  clone.CanonicalPath,
+		Text:           clone.Text,
+		SourceType:     enum.ChunkSourceTypeOriginal,
+		ChunkType:      clone.ResolveChunkType(),
+		Title:          clone.ResolveTitle(),
+		PageNo:         clone.PageNo,
+		PageRange:      clone.PageRange,
+		BboxJson:       clone.BboxJson,
+		SourceBlockIds: clone.Ids(),
 	}
 
 	// 如果找到结构节点，覆盖相关字段
@@ -646,26 +629,16 @@ func (b *ChunkBuilder) toSplitBlockSeed(block *entity.DocumentBlock, nodes entit
 
 // toBlockChunkCandidate 将文档块转换为ChunkCandidate
 func (b *ChunkBuilder) toBlockChunkCandidate(block *entity.DocumentBlock) *vo.ChunkCandidate {
-	keywords := block.ExtractKeywords(b.tokenizer)
-	questions := block.ExtractQuestions(keywords)
 	return &vo.ChunkCandidate{
-		SectionPath:       block.SectionPath,
-		CanonicalPath:     block.CanonicalPath,
-		Text:              block.RenderBlockContent(),
-		SourceType:        enum.ChunkSourceTypeOriginal,
-		ContentWithWeight: block.ExtractContentWithWeight(keywords, block.RenderBlockWeightedContent(keywords)),
-		ChunkType:         block.ResolveChunkType(),
-		Title:             block.ResolveTitle(),
-		Keywords:          marshal(keywords),
-		Questions:         marshal(questions),
-		PageNo:            block.PageNo,
-		PageRange:         block.PageRange,
-		BboxJson:          block.BboxJson,
-		SourceBlockIds:    block.Ids(),
+		SectionPath:    block.SectionPath,
+		CanonicalPath:  block.CanonicalPath,
+		Text:           block.RenderBlockContent(),
+		SourceType:     enum.ChunkSourceTypeOriginal,
+		ChunkType:      block.ResolveChunkType(),
+		Title:          block.ResolveTitle(),
+		PageNo:         block.PageNo,
+		PageRange:      block.PageRange,
+		BboxJson:       block.BboxJson,
+		SourceBlockIds: block.Ids(),
 	}
-}
-
-func marshal(v any) string {
-	bytes, _ := json.Marshal(v)
-	return string(bytes)
 }

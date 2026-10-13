@@ -29,7 +29,6 @@ type DocumentBlock struct {
 	PageRange          string         `gorm:"column:page_range"`                              // 页码范围
 	BboxJson           string         `gorm:"column:bbox_json"`                               // 边界框 JSON
 	Text               string         `gorm:"column:text"`                                    // 文本内容
-	ContentWithWeight  string         `gorm:"column:content_with_weight"`                     // 带权重的内容
 	ImageObjectName    string         `gorm:"column:image_object_name"`                       // 图片对象名
 	ImageCaption       string         `gorm:"column:image_caption"`                           // 图片说明
 	Metadata           map[string]any `gorm:"column:metadata_json;type:json;serializer:json"` // 元数据
@@ -163,49 +162,6 @@ func (b *DocumentBlock) Ids() string {
 	return blocks.Ids()
 }
 
-// ExtractKeywords 从块中提取关键词
-func (b *DocumentBlock) ExtractKeywords(tokenizer shared.Tokenizer) []string {
-	if b == nil {
-		return nil
-	}
-	seed := shared.NewKeywordSeed(b.ResolveTitle(), b.SectionPath, b.RenderBlockContent())
-	return seed.Build(tokenizer)
-}
-
-// ExtractQuestions 从块中提取问题
-func (b *DocumentBlock) ExtractQuestions(keywords []string) []string {
-	if b == nil {
-		return nil
-	}
-	seed := shared.NewQuestionSeed(b.ResolveTitle(), b.ResolveChunkType(), keywords)
-	return seed.Build()
-}
-
-// ExtractContentWithWeight 从块中提取带权重的内容
-func (b *DocumentBlock) ExtractContentWithWeight(keywords []string, parserWeightedContent string) string {
-	if b == nil {
-		return ""
-	}
-	text := b.RenderBlockContent()
-	title := b.ResolveTitle()
-	chunkType := b.ResolveChunkType()
-	questions := b.ExtractQuestions(keywords)
-	seed := shared.NewRichContentSeed(text, b.SectionPath, title, chunkType, parserWeightedContent, keywords, questions)
-	return seed.Build()
-}
-
-// RenderBlockWeightedContent 渲染块的带权重内容
-func (b *DocumentBlock) RenderBlockWeightedContent(keywords []string) string {
-	if b == nil {
-		return ""
-	}
-	contentWithWeight := strings.TrimSpace(b.ContentWithWeight)
-	if contentWithWeight != "" {
-		return contentWithWeight
-	}
-	return b.ExtractContentWithWeight(keywords, "")
-}
-
 // CloneWithText 克隆块并设置文本内容
 func (b *DocumentBlock) CloneWithText(text string) *DocumentBlock {
 	if b == nil {
@@ -214,24 +170,6 @@ func (b *DocumentBlock) CloneWithText(text string) *DocumentBlock {
 	clone := *b
 	clone.Text = text
 	return &clone
-}
-
-// BuildContentWithWeight 构建带权重内容
-func (b *DocumentBlock) BuildContentWithWeight() string {
-	parts := make([]string, 0, 6)
-	if b.SectionPath != "" {
-		parts = append(parts, fmt.Sprintf("section: %s", b.SectionPath))
-	}
-	if b.BlockType != "" {
-		parts = append(parts, fmt.Sprintf("type: %s", b.BlockType))
-	}
-	if b.Text != "" {
-		parts = append(parts, b.Text)
-	}
-	if b.ImageCaption != "" && b.ImageCaption != b.Text {
-		parts = append(parts, fmt.Sprintf("caption: %s", b.ImageCaption))
-	}
-	return strings.Join(parts, "\n")
 }
 
 var nonAllowedCharsRegex = regexp.MustCompile(`[^0-9a-zA-Z\p{Han}]+`)
@@ -257,7 +195,6 @@ func (b *DocumentBlock) ResumeRawText(rawBytes []byte) {
 	marshal, _ := json.Marshal(b.Metadata["sourceSpan"])
 	_ = json.Unmarshal(marshal, &sourceSpan)
 	b.Text = string(rawBytes[sourceSpan.StartByte:sourceSpan.EndByte])
-	b.ContentWithWeight = b.BuildContentWithWeight()
 }
 
 type DocumentBlocks []*DocumentBlock
@@ -274,55 +211,6 @@ func (b DocumentBlocks) FirstPageNo() int {
 		}
 	}
 	return 0
-}
-
-// ExtractKeywords 从块列表提取关键词
-func (b DocumentBlocks) ExtractKeywords(tokenizer shared.Tokenizer) []string {
-	if len(b) == 0 {
-		return nil
-	}
-	sectionPath := b.FirstBlankSectionPath()
-	text := b.JoinBlockTexts()
-	title := b.ResolveTitle(sectionPath)
-	seed := shared.NewKeywordSeed(title, sectionPath, text)
-	return seed.Build(tokenizer)
-}
-
-// ExtractQuestions 从块列表提取问题
-func (b DocumentBlocks) ExtractQuestions(keywords []string) []string {
-	if len(b) == 0 {
-		return nil
-	}
-	title := b.ResolveTitle(b.FirstBlankSectionPath())
-	seed := shared.NewQuestionSeed(title, b.ResolveChunkType(), keywords)
-	return seed.Build()
-}
-
-// ExtractContentWithWeight 从块列表提取带权重的内容
-func (b DocumentBlocks) ExtractContentWithWeight(keywords []string, parserWeightedContent string) string {
-	if len(b) == 0 {
-		return ""
-	}
-	text := b.JoinBlockTexts()
-	title := b.ResolveTitle(b.FirstBlankSectionPath())
-	chunkType := b.ResolveChunkType()
-	questions := b.ExtractQuestions(keywords)
-	seed := shared.NewRichContentSeed(text, b.FirstBlankSectionPath(), title, chunkType, parserWeightedContent, keywords, questions)
-	return seed.Build()
-}
-
-// JoinBlockWeightedContents 将块列表的带权重内容用 "\n\n" 连接成一个字符串
-func (b DocumentBlocks) JoinBlockWeightedContents(tokenizer shared.Tokenizer) string {
-	var contents []string
-	for _, block := range b {
-		keywords := block.ExtractKeywords(tokenizer)
-		content := block.RenderBlockWeightedContent(keywords)
-		if content != "" {
-			contents = append(contents, content)
-		}
-	}
-
-	return strings.Join(contents, "\n\n")
 }
 
 // PageRange 获取块列表的页码范围
@@ -564,11 +452,6 @@ func (b DocumentBlocks) Normalize() DocumentBlocks {
 		// 补全 canonical_path（若为空则自动生成）
 		if block.CanonicalPath == "" {
 			block.CanonicalPath = block.BuildCanonicalPath()
-		}
-
-		// 补全 content_with_weight（若为空则自动生成）
-		if block.ContentWithWeight == "" {
-			block.ContentWithWeight = block.BuildContentWithWeight()
 		}
 
 		normalized = append(normalized, block)

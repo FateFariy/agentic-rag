@@ -2,7 +2,6 @@ package convert
 
 import (
 	"github.com/swiftbit/know-agent/services/document/api"
-	"github.com/swiftbit/know-agent/services/document/internal/domain/model/aggregate"
 	"github.com/swiftbit/know-agent/services/document/internal/domain/model/entity"
 	"github.com/swiftbit/know-agent/services/document/internal/domain/model/vo"
 	"github.com/swiftbit/know-agent/services/document/internal/infrastructure/persistence/model"
@@ -29,7 +28,7 @@ type DocumentConverter interface {
 	ToConfirmStrategyResp(plan *entity.DocumentStrategyPlan) *api.ConfirmStrategyResp
 	ToBuildIndexResp(src *vo.DocumentIndexBuild) *api.BuildIndexResp
 	ToDocumentChunkItemList(src []*entity.DocumentChunk) []*api.DocumentChunkItem
-	ToQueryDocumentChunkDetailResp(src *aggregate.DocumentChunkDetail) *api.QueryDocumentChunkDetailResp
+	ToQueryDocumentChunkDetailResp(src *entity.DocumentChunkDetail) *api.QueryDocumentChunkDetailResp
 	ToQueryTaskLogsResp(src *entity.DocumentTask) *api.QueryTaskLogsResp
 	ToDocumentProfileResp(src *entity.DocumentProfile) *api.DocumentProfileResp
 	ToDocumentProfileRespList(src []*entity.DocumentProfile) []*api.DocumentProfileResp

@@ -16,7 +16,6 @@ import (
 	"github.com/swiftbit/know-agent/pkg/logx"
 	"github.com/swiftbit/know-agent/pkg/utils"
 	"github.com/swiftbit/know-agent/services/document/internal/domain/adapter"
-	"github.com/swiftbit/know-agent/services/document/internal/domain/model/aggregate"
 	"github.com/swiftbit/know-agent/services/document/internal/domain/model/entity"
 	"github.com/swiftbit/know-agent/services/document/internal/domain/model/enum"
 	"github.com/swiftbit/know-agent/services/document/internal/domain/model/vo"
@@ -92,7 +91,6 @@ func (d *LifecycleLogicImpl) Upload(ctx context.Context, file multipart.File, he
 	document.FileType = fileType
 	document.MimeType = mimeType
 	document.FileSize = int64(len(fileBytes))
-	document.StorageType = d.store.Name()
 	document.BucketName = storedObjectInfo.BucketName
 	document.ObjectName = storedObjectInfo.ObjectName
 	document.ObjectUrl = storedObjectInfo.ObjectUrl
@@ -105,12 +103,11 @@ func (d *LifecycleLogicImpl) Upload(ctx context.Context, file multipart.File, he
 	// 创建解析任务
 	taskId := utils.GetSnowflakeNextID()
 	task := &entity.DocumentTask{
-		ID:            taskId,
-		DocumentId:    documentId,
-		TaskType:      enum.TaskTypeParseRoute,
-		TaskStatus:    enum.TaskStatusNew,
-		CurrentStage:  enum.TaskStageFileUpload,
-		TriggerSource: utils.Ternary(document.OperatorId == 0, enum.TriggerSourceSystem, enum.TriggerSourceUser),
+		ID:           taskId,
+		DocumentId:   documentId,
+		TaskType:     enum.TaskTypeParseRoute,
+		TaskStatus:   enum.TaskStatusNew,
+		CurrentStage: enum.TaskStageFileUpload,
 	}
 
 	// 记录文件上传完成的任务日志
@@ -520,11 +517,10 @@ func (d *LifecycleLogicImpl) BuildIndex(ctx context.Context, documentId, planId,
 		DocumentId:        documentId,
 		PlanId:            planId,
 		SourceParseTaskId: sourceParseTaskId,
-		TaskType:          enum.TaskTypeBuildIndex,                                                         // 任务类型：索引构建
-		TaskStatus:        enum.TaskStatusNew,                                                              // 初始状态：新建
-		CurrentStage:      enum.TaskStageChunkExecute,                                                      // 当前阶段：切分执行
-		TriggerSource:     utils.Ternary(operatorId > 0, enum.TriggerSourceUser, enum.TriggerSourceSystem), // 判断触发来源
-		StrategySnapshot:  plan.StrategySnapshot,                                                           // 策略快照，确保任务执行时策略不变
+		TaskType:          enum.TaskTypeBuildIndex,    // 任务类型：索引构建
+		TaskStatus:        enum.TaskStatusNew,         // 初始状态：新建
+		CurrentStage:      enum.TaskStageChunkExecute, // 当前阶段：切分执行
+		StrategySnapshot:  plan.StrategySnapshot,      // 策略快照，确保任务执行时策略不变
 	}
 
 	// 构建任务日志详情JSON
@@ -639,7 +635,7 @@ func (d *LifecycleLogicImpl) QueryDocumentChunks(ctx context.Context, documentId
 
 // QueryDocumentChunkDetail 查询文档块详情
 // 返回文档块及其父块信息、兄弟块列表，taskId为0时使用文档当前任务
-func (d *LifecycleLogicImpl) QueryDocumentChunkDetail(ctx context.Context, documentId, taskId, chunkId int64) (*aggregate.DocumentChunkDetail, error) {
+func (d *LifecycleLogicImpl) QueryDocumentChunkDetail(ctx context.Context, documentId, taskId, chunkId int64) (*entity.DocumentChunkDetail, error) {
 	// 查询文档信息
 	document, err := d.repo.SelectDocumentById(ctx, documentId)
 	if err != nil {
@@ -685,7 +681,7 @@ func (d *LifecycleLogicImpl) QueryDocumentChunkDetail(ctx context.Context, docum
 	}
 
 	// 组装详情对象并填充父块信息
-	detail := &aggregate.DocumentChunkDetail{
+	detail := &entity.DocumentChunkDetail{
 		DocumentId:    documentId,
 		TaskId:        taskId,
 		PlanId:        task.PlanId,

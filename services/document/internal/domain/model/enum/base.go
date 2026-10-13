@@ -32,29 +32,6 @@ func LogLevelName(ll LogLevel) string {
 type OperatorType = int
 
 const (
-	OperatorTypeUnknown OperatorType = iota
-	OperatorTypeSystem
+	OperatorTypeSystem OperatorType = iota + 1
 	OperatorTypeUser
-)
-
-// ============================================================
-// StorageType 存储类型
-// ============================================================
-
-type StorageType = int
-
-const (
-	StorageTypeUnknown StorageType = iota
-	StorageTypeMINIO
-)
-
-// ============================================================
-// TriggerSource 触发来源
-// ============================================================
-
-type TriggerSource = int
-
-const (
-	TriggerSourceSystem = iota + 1
-	TriggerSourceUser
 )

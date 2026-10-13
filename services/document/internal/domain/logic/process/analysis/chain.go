@@ -9,7 +9,6 @@ import (
 	"github.com/swiftbit/know-agent/pkg/logx"
 	"github.com/swiftbit/know-agent/services/document/internal/config"
 	"github.com/swiftbit/know-agent/services/document/internal/domain/adapter"
-	"github.com/swiftbit/know-agent/services/document/internal/domain/logic/process/analysis/save"
 )
 
 // Chain 解析路由阶段责任链
@@ -19,7 +18,7 @@ type Chain struct {
 
 // NewAnalysisChain 创建并注册所有阶段
 func NewAnalysisChain(chunkConf config.ChunkConf, chatModel ai.ChatModel, repo adapter.DocumentRepository,
-	storage adapter.Storage, gen save.ProfileGenerator, resolver IndexingConfigResolver) *Chain {
+	storage adapter.Storage, gen ProfileGenerator, resolver IndexingConfigResolver) *Chain {
 	phases := []Stage{
 		NewInitializationStage(repo),                           // 1. 初始化任务状态，标记解析开始
 		NewParseStage(repo, storage),                           // 2. 解析文件内容，生成分析结果

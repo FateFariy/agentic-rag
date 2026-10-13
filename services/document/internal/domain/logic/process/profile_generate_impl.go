@@ -10,7 +10,7 @@ import (
 	"github.com/swiftbit/know-agent/pkg/logx"
 	"github.com/swiftbit/know-agent/pkg/utils"
 	"github.com/swiftbit/know-agent/services/document/internal/domain/adapter"
-	"github.com/swiftbit/know-agent/services/document/internal/domain/model/aggregate"
+	"github.com/swiftbit/know-agent/services/document/internal/domain/logic/process/analysis"
 	"github.com/swiftbit/know-agent/services/document/internal/domain/model/entity"
 	"github.com/swiftbit/know-agent/services/document/internal/domain/model/enum"
 	errorx "github.com/swiftbit/know-agent/services/document/internal/error"
@@ -37,7 +37,7 @@ func NewProfileGenerateImpl(repo adapter.DocumentRepository) *ProfileGenerateImp
 	}
 }
 
-func (p *ProfileGenerateImpl) Generate(ctx context.Context, documentId int64, analysisResult *aggregate.AnalysisResult, structureNodes []*entity.StructureNode) (*entity.DocumentProfile, error) {
+func (p *ProfileGenerateImpl) Generate(ctx context.Context, documentId int64, analysisResult *analysis.Result, structureNodes []*entity.StructureNode) (*entity.DocumentProfile, error) {
 	if documentId == 0 {
 		return nil, errors.New("documentId 不能为空")
 	}
@@ -144,11 +144,11 @@ func (p *ProfileGenerateImpl) buildSummary(sectionTitles []string, parsedText st
 // resolveStructuralDocumentType 根据文档的结构特征判定其结构化类型
 func resolveStructuralDocumentType(sectionTitles []string, supportsItemLookup bool, supportsGraphOutline bool) string {
 	switch {
-	case supportsItemLookup: //支持条目级检索
+	case supportsItemLookup: // 支持条目级检索
 		return "structured_items"
-	case supportsGraphOutline: //支持图结构大纲
+	case supportsGraphOutline: // 支持图结构大纲
 		return "structured_outline"
-	case len(sectionTitles) > 0: //存在章节标题
+	case len(sectionTitles) > 0: // 存在章节标题
 		return "structured_section"
 	default:
 		return "plain_text"

@@ -49,13 +49,3 @@ func VectorStatusName(vs VectorStatus) string {
 		return ""
 	}
 }
-
-// ============================================================
-// VectorStoreType 向量存储类型
-// ============================================================
-
-type VectorStoreType = int
-
-const (
-	VectorStoreTypeMilvus VectorStoreType = iota + 1
-)

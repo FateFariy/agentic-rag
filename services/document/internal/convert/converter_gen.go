@@ -8,7 +8,6 @@ import (
 
 	"github.com/swiftbit/know-agent/pkg/common"
 	api "github.com/swiftbit/know-agent/services/document/api"
-	aggregate "github.com/swiftbit/know-agent/services/document/internal/domain/model/aggregate"
 	entity "github.com/swiftbit/know-agent/services/document/internal/domain/model/entity"
 	vo "github.com/swiftbit/know-agent/services/document/internal/domain/model/vo"
 	model "github.com/swiftbit/know-agent/services/document/internal/infrastructure/persistence/model"
@@ -95,7 +94,6 @@ func ToDocumentBlockModel(source *entity.DocumentBlock) *model.DocumentBlock {
 		modelDocumentBlock.PageRange = (*source).PageRange
 		modelDocumentBlock.BboxJson = (*source).BboxJson
 		modelDocumentBlock.Text = (*source).Text
-		modelDocumentBlock.ContentWithWeight = (*source).ContentWithWeight
 		modelDocumentBlock.ImageObjectName = (*source).ImageObjectName
 		modelDocumentBlock.ImageCaption = (*source).ImageCaption
 		modelDocumentBlock.Metadata = (*source).Metadata
@@ -143,13 +141,9 @@ func ToDocumentChunkModel(source *entity.DocumentChunk) *model.DocumentChunk {
 		modelDocumentChunk.CharCount = (*source).CharCount
 		modelDocumentChunk.TokenCount = (*source).TokenCount
 		modelDocumentChunk.VectorStatus = (*source).VectorStatus
-		modelDocumentChunk.VectorStoreType = (*source).VectorStoreType
 		modelDocumentChunk.VectorId = (*source).VectorId
-		modelDocumentChunk.ContentWithWeight = (*source).ContentWithWeight
 		modelDocumentChunk.ChunkType = (*source).ChunkType
 		modelDocumentChunk.Title = (*source).Title
-		modelDocumentChunk.Keywords = (*source).Keywords
-		modelDocumentChunk.Questions = (*source).Questions
 		modelDocumentChunk.PageNo = (*source).PageNo
 		modelDocumentChunk.PageRange = (*source).PageRange
 		modelDocumentChunk.BboxJson = (*source).BboxJson
@@ -222,7 +216,6 @@ func ToDocumentModel(source *entity.Document) *model.Document {
 		modelDocument.FileType = (*source).FileType
 		modelDocument.MimeType = (*source).MimeType
 		modelDocument.FileSize = (*source).FileSize
-		modelDocument.StorageType = (*source).StorageType
 		modelDocument.BucketName = (*source).BucketName
 		modelDocument.ObjectName = (*source).ObjectName
 		modelDocument.ObjectUrl = (*source).ObjectUrl
@@ -476,7 +469,6 @@ func ToDocumentTaskModel(source *entity.DocumentTask) *model.DocumentTask {
 		modelDocumentTask.TaskType = (*source).TaskType
 		modelDocumentTask.TaskStatus = (*source).TaskStatus
 		modelDocumentTask.CurrentStage = (*source).CurrentStage
-		modelDocumentTask.TriggerSource = (*source).TriggerSource
 		modelDocumentTask.StrategySnapshot = (*source).StrategySnapshot
 		modelDocumentTask.RetryCount = (*source).RetryCount
 		modelDocumentTask.StartTime = (*source).StartTime
@@ -499,7 +491,7 @@ func ToKnowledgeDocumentOptionRespList(source []*vo.DocumentMetadata) []*api.Kno
 	}
 	return pApiKnowledgeDocumentOptionRespList
 }
-func ToQueryDocumentChunkDetailResp(source *aggregate.DocumentChunkDetail) *api.QueryDocumentChunkDetailResp {
+func ToQueryDocumentChunkDetailResp(source *entity.DocumentChunkDetail) *api.QueryDocumentChunkDetailResp {
 	var pApiQueryDocumentChunkDetailResp *api.QueryDocumentChunkDetailResp
 	if source != nil {
 		var apiQueryDocumentChunkDetailResp api.QueryDocumentChunkDetailResp

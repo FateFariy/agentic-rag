@@ -46,15 +46,6 @@ func TestGoldmarkParser_ParseFromFile(t *testing.T) {
 		if b.Text != "" {
 			t.Logf("  文本: %s", singleLine(b.Text))
 		}
-		if len(b.TableRows) > 0 {
-			t.Logf("  表格行数: %d", len(b.TableRows))
-			for i, row := range b.TableRows {
-				t.Logf("    行%d: %v", i, row)
-			}
-		}
-		if b.TableHTML != "" {
-			t.Logf("  表格HTML: %s", singleLine(b.TableHTML))
-		}
 		if len(b.Metadata) > 0 {
 			mb, _ := json.MarshalIndent(b.Metadata, "    ", "  ")
 			t.Logf("  元数据: %s", mb)

@@ -8,9 +8,6 @@ import (
 )
 
 type Storage interface {
-	// Name 返回存储类型名称
-	Name() int
-
 	// UploadOriginalFile 上传原始文件
 	UploadOriginalFile(ctx context.Context, documentId int64, fileName string, bytes []byte, contentType string) (*vo.StoredObjectInfo, error)
 
