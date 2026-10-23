@@ -43,15 +43,6 @@ type HTTPServer interface {
 
 	// QueryTaskLogs 查询任务日志
 	QueryTaskLogs(ctx context.Context, req *QueryTaskLogsReq) (*QueryTaskLogsResp, error)
-
-	// GetDocumentProfile 查询文档画像详情
-	GetDocumentProfile(ctx context.Context, req *DocumentProfileDetailReq) (*DocumentProfileResp, error)
-
-	// RegenerateDocumentProfile 重新生成文档画像
-	RegenerateDocumentProfile(ctx context.Context, req *DocumentProfileRegenerateReq) (*DocumentProfileResp, error)
-
-	// BatchRegenerateDocumentProfile 批量重新生成文档画像
-	BatchRegenerateDocumentProfile(ctx context.Context, req *DocumentProfileBatchRegenerateReq) ([]*DocumentProfileResp, error)
 }
 
 // UploadDocumentHandler 上传文档
@@ -71,7 +62,7 @@ func UploadDocumentHandler(srv HTTPServer) http.HandlerFunc {
 		defer file.Close()
 
 		resp, err := srv.UploadDocument(r.Context(), file, header, &req)
-		common.Response(w, resp, "", err)
+		common.Response(w, resp, err)
 	}
 }
 
@@ -85,7 +76,7 @@ func QueryDocumentPageHandler(srv HTTPServer) http.HandlerFunc {
 		}
 
 		resp, err := srv.QueryDocumentPage(r.Context(), &req)
-		common.Response(w, resp, "", err)
+		common.Response(w, resp, err)
 	}
 }
 
@@ -99,7 +90,7 @@ func QueryDocumentDetailHandler(srv HTTPServer) http.HandlerFunc {
 		}
 
 		resp, err := srv.QueryDocumentDetail(r.Context(), &req)
-		common.Response(w, resp, "", err)
+		common.Response(w, resp, err)
 	}
 }
 
@@ -107,7 +98,7 @@ func QueryDocumentDetailHandler(srv HTTPServer) http.HandlerFunc {
 func GetDocumentOptionsHandler(srv HTTPServer) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		resp, err := srv.GetDocumentOptions(r.Context())
-		common.Response(w, resp, "", err)
+		common.Response(w, resp, err)
 	}
 }
 
@@ -121,7 +112,7 @@ func DeleteDocumentHandler(srv HTTPServer) http.HandlerFunc {
 		}
 
 		resp, err := srv.DeleteDocument(r.Context(), &req)
-		common.Response(w, resp, "", err)
+		common.Response(w, resp, err)
 	}
 }
 
@@ -135,7 +126,7 @@ func QueryStrategyPlanHandler(srv HTTPServer) http.HandlerFunc {
 		}
 
 		resp, err := srv.QueryStrategyPlan(r.Context(), &req)
-		common.Response(w, resp, "", err)
+		common.Response(w, resp, err)
 	}
 }
 
@@ -149,7 +140,7 @@ func ConfirmStrategyHandler(srv HTTPServer) http.HandlerFunc {
 		}
 
 		resp, err := srv.ConfirmStrategy(r.Context(), &req)
-		common.Response(w, resp, "", err)
+		common.Response(w, resp, err)
 	}
 }
 
@@ -163,7 +154,7 @@ func BuildIndexHandler(srv HTTPServer) http.HandlerFunc {
 		}
 
 		resp, err := srv.BuildIndex(r.Context(), &req)
-		common.Response(w, resp, "", err)
+		common.Response(w, resp, err)
 	}
 }
 
@@ -177,7 +168,7 @@ func QueryDocumentChunksHandler(srv HTTPServer) http.HandlerFunc {
 		}
 
 		resp, err := srv.QueryDocumentChunks(r.Context(), &req)
-		common.Response(w, resp, "", err)
+		common.Response(w, resp, err)
 	}
 }
 
@@ -191,7 +182,7 @@ func QueryDocumentChunkDetailHandler(srv HTTPServer) http.HandlerFunc {
 		}
 
 		resp, err := srv.QueryDocumentChunkDetail(r.Context(), &req)
-		common.Response(w, resp, "", err)
+		common.Response(w, resp, err)
 	}
 }
 
@@ -205,48 +196,6 @@ func QueryTaskLogsHandler(srv HTTPServer) http.HandlerFunc {
 		}
 
 		resp, err := srv.QueryTaskLogs(r.Context(), &req)
-		common.Response(w, resp, "", err)
-	}
-}
-
-// GetDocumentProfileHandler 查询文档画像详情
-func GetDocumentProfileHandler(srv HTTPServer) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		var req DocumentProfileDetailReq
-		if err := httpx.Parse(r, &req); err != nil {
-			common.Error(w, common.ErrInvalidParam.Format(err.Error()))
-			return
-		}
-
-		resp, err := srv.GetDocumentProfile(r.Context(), &req)
-		common.Response(w, resp, "", err)
-	}
-}
-
-// RegenerateDocumentProfileHandler 重新生成文档画像
-func RegenerateDocumentProfileHandler(srv HTTPServer) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		var req DocumentProfileRegenerateReq
-		if err := httpx.Parse(r, &req); err != nil {
-			common.Error(w, common.ErrInvalidParam.Format(err.Error()))
-			return
-		}
-
-		resp, err := srv.RegenerateDocumentProfile(r.Context(), &req)
-		common.Response(w, resp, "", err)
-	}
-}
-
-// BatchRegenerateDocumentProfileHandler 批量重新生成文档画像
-func BatchRegenerateDocumentProfileHandler(srv HTTPServer) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		var req DocumentProfileBatchRegenerateReq
-		if err := httpx.Parse(r, &req); err != nil {
-			common.Error(w, common.ErrInvalidParam.Format(err.Error()))
-			return
-		}
-
-		resp, err := srv.BatchRegenerateDocumentProfile(r.Context(), &req)
-		common.Response(w, resp, "", err)
+		common.Response(w, resp, err)
 	}
 }

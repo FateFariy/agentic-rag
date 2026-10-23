@@ -56,21 +56,18 @@ func Build(c *config.Config) (*infra.Server, error) {
 
 	documentRepo := persistence.NewDocumentRepository(db, rdb, minioStorage)
 	strategyRegistry := newChunkStrategyRegistry(c.Chunk, chatModel, renderer)
-	generateImpl := process.NewProfileGenerateImpl(documentRepo)
-	analysisChain := analysis.NewAnalysisChain(c.Chunk, chatModel, documentRepo, minioStorage, generateImpl, knowledgeClient)
+	analysisChain := analysis.NewAnalysisChain(c.Chunk, chatModel, documentRepo, minioStorage, knowledgeClient)
 	reporter := community.NewLLMCommunityReporter(ollamaModel, renderer)
 	llmExtractor := extract.NewLLMExtractor(ollamaModel, renderer, gseTokenizer, c.Rag.Graph.ChunkMaxChars)
 	milvusIndexer := storage.NewMilvusIndexer(milvusClient, c.Milvus, c.Embedding.Dimensions, c.Embedding.Model, embedder)
 	graphStore := storage.NewDocumentGraphStore(neo4jStore)
-	graphBuilder := graphbuild.NewBuilder(graphStore, llmExtractor, c.Rag.Graph, reporter, milvusIndexer, knowledgeClient)
+	graphBuilder := graphbuild.NewBuilder(graphStore, llmExtractor, c.Rag.Graph, reporter, knowledgeClient)
 	indexChain := index.NewBuildIndexChain(documentRepo, minioStorage, milvusIndexer, milvusIndexer, strategyRegistry, knowledgeClient, graphBuilder)
 	asyncProcessImpl := process.NewAsyncProcessImpl(documentRepo, analysisChain, indexChain)
 	lifecycleLogicImpl := logic.NewLifecycleLogicImpl(rocketMQProducer, minioStorage, documentRepo, knowledgeClient, milvusIndexer, graphStore, c.MQ.ParseTopic, c.MQ.IndexTopic)
-	profileLogicImpl := logic.NewProfileLogicImpl(documentRepo, minioStorage, generateImpl)
-
 	parseConsumer := consumer.NewParseDocumentConsumer(c.MQ.Addr, c.MQ.ParseTopic, asyncProcessImpl)
 	buildIndexConsumer := consumer.NewBuildIndexConsumer(c.MQ.Addr, c.MQ.IndexTopic, asyncProcessImpl)
-	documentService := handler.NewDocumentService(lifecycleLogicImpl, profileLogicImpl)
+	documentService := handler.NewDocumentService(lifecycleLogicImpl)
 
 	queryLogic := logic.NewDocumentQueryLogicImpl(documentRepo)
 	registerGRPC := func(g *grpc.Server) {

@@ -4,11 +4,11 @@ import (
 	"strings"
 
 	"github.com/swiftbit/know-agent/services/document/internal/domain/model/enum"
-	"github.com/swiftbit/know-agent/services/document/internal/domain/model/shared"
+	"github.com/swiftbit/know-agent/services/document/internal/domain/model/vo"
 )
 
 // nodeSourceText 从 MarkdownSyntax 中提取节点的源文本
-func nodeSourceText(syntax *shared.MarkdownSyntax, node *shared.MarkdownNode) string {
+func nodeSourceText(syntax *vo.MarkdownSyntax, node *vo.MarkdownNode) string {
 	if node.SourceSpan == nil {
 		return ""
 	}
@@ -20,7 +20,7 @@ func nodeSourceText(syntax *shared.MarkdownSyntax, node *shared.MarkdownNode) st
 }
 
 // legacyBlockContent 根据节点类型生成块类型和文本内容
-func legacyBlockContent(node *shared.MarkdownNode, rawText string) (string, string) {
+func legacyBlockContent(node *vo.MarkdownNode, rawText string) (string, string) {
 	rawText = strings.TrimSpace(rawText)
 	switch node.NodeType {
 	case NodeHeading:

@@ -1,4 +1,4 @@
-package shared
+package vo
 
 // MarkdownSyntax Markdown语法分析结果
 type MarkdownSyntax struct {

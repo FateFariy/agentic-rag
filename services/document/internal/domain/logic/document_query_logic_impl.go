@@ -79,13 +79,3 @@ func (l *DocumentQueryLogicImpl) CountDocumentsByKbIds(ctx context.Context, kbId
 func (l *DocumentQueryLogicImpl) CountRetrievableDocumentsByKbIds(ctx context.Context, kbIds []int64) (map[int64]int64, error) {
 	return l.repo.CountRetrievableDocumentsByKbIds(ctx, kbIds)
 }
-
-// FindDocumentProfileByDocIds 根据文档ID列表查询文档画像
-func (l *DocumentQueryLogicImpl) FindDocumentProfileByDocIds(ctx context.Context, docIds []int64) ([]*entity.DocumentProfile, error) {
-	return l.repo.SelectDocumentProfilesByDocIds(ctx, docIds)
-}
-
-// FindDocumentProfiles 查询所有文档画像
-func (l *DocumentQueryLogicImpl) FindDocumentProfiles(ctx context.Context) ([]*entity.DocumentProfile, error) {
-	return l.repo.SelectDocumentProfiles(ctx)
-}

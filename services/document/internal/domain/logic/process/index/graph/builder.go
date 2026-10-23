@@ -18,32 +18,30 @@ import (
 	"github.com/swiftbit/know-agent/services/document/internal/domain/model/vo"
 )
 
-// GraphTypeProvider 提供知识库自定义的图谱实体/关系类型白名单。
+// GraphTypeProvider 提供知识库自定义的图谱实体/关系类型白名单
 type GraphTypeProvider interface {
 	// GraphTypes 返回指定知识库允许的实体类型与关系类型；缺省返回 nil，调用方回退到全局默认白名单。
 	GraphTypes(ctx context.Context, knowledgeBaseId int64) (entityTypes, relationTypes []string, err error)
 }
 
-// Builder 实现 index.GraphRagBuilder：编排 抽取→消解合并→成本闸门→PageRank→社区发现→LLM 社区报告→事务化全删全插→图卡片投影（M1+M3）
+// Builder 实现 index.GraphRagBuilder：编排 抽取→消解合并→成本闸门→PageRank→社区发现→LLM 社区报告→事务化全删全插
 type Builder struct {
 	store         adapter.GraphStore
 	extractor     Extractor
 	resolver      Resolver
 	config        *config.GraphRagConf
-	reporter      CommunityReporter     // M3：可选 LLM 社区报告器（nil 时使用抽取式摘要）
-	vectorIndexer adapter.VectorIndexer // M3：可选图卡片向量化投影（nil 时关闭）
-	typesProvider GraphTypeProvider     // 按知识库动态提供图谱类型白名单（nil 时回退全局默认）
+	reporter      CommunityReporter // 可选 LLM 社区报告器（nil 时使用抽取式摘要）
+	typesProvider GraphTypeProvider // 按知识库动态提供图谱类型白名单（nil 时回退全局默认）
 }
 
 // NewBuilder 创建图谱构建器
-func NewBuilder(store adapter.GraphStore, extractor Extractor, cfg *config.GraphRagConf, reporter CommunityReporter, vectorIndexer adapter.VectorIndexer, typesProvider GraphTypeProvider) *Builder {
+func NewBuilder(store adapter.GraphStore, extractor Extractor, cfg *config.GraphRagConf, reporter CommunityReporter, typesProvider GraphTypeProvider) *Builder {
 	return &Builder{
 		store:         store,
 		extractor:     extractor,
 		resolver:      Resolver{},
 		config:        cfg,
 		reporter:      reporter,
-		vectorIndexer: vectorIndexer,
 		typesProvider: typesProvider,
 	}
 }
@@ -101,7 +99,7 @@ func (s *Builder) RebuildDocumentGraph(ctx context.Context, documentId, taskId, 
 		logx.Infof("图谱社区检测完成: documentId=%d, communities=%d, modularity=%.4f",
 			documentId, len(communities), mod)
 	}
-	// 5.1 M3：LLM 社区报告（预算闸门：仅前 CommunityReportTopN 个重要社区；失败回退抽取式摘要）
+	// 5.1 LLM 社区报告（预算闸门：仅前 CommunityReportTopN 个重要社区；失败回退抽取式摘要）
 	s.enhanceCommunitySummaries(ctx, nodes, communities)
 	// 6. 无有效关系：仅实体入库（降级）
 	if len(edges) == 0 {
@@ -120,8 +118,6 @@ func (s *Builder) RebuildDocumentGraph(ctx context.Context, documentId, taskId, 
 	if err := s.store.ReplaceDocumentGraph(ctx, snapshot); err != nil {
 		return nil, fmt.Errorf("落库图谱失败: %w", err)
 	}
-	// 7.1 M3：Typed chunk 投影（图卡片写入向量库，增强依赖：失败仅降级告警，不阻断索引任务）
-	s.projectTypedChunks(ctx, snapshot)
 	// 8. 结果统计
 	result.EntityCount = len(nodes)
 	result.RelationCount = len(edges)
@@ -173,24 +169,7 @@ func (s *Builder) extractAll(ctx context.Context, chunks []*entity.DocumentChunk
 	return utils.Filter(raws, func(rg *extract.RawGraph) bool { return rg != nil })
 }
 
-// projectTypedChunks M3 图卡片投影：图提交成功后把实体/关系/社区卡向量化写入向量库。
-// 未装配向量索引器 / 投影关闭 / 图非空时跳过；写入失败仅告警（增强依赖）。
-func (s *Builder) projectTypedChunks(ctx context.Context, snapshot *entity.GraphSnapshot) {
-	if s.vectorIndexer == nil || !s.config.TypedChunkProjectionEnabled || snapshot == nil || len(snapshot.Nodes) == 0 {
-		return
-	}
-	cards := GenerateTypedCards(snapshot, s.config.TypedCardTopK)
-	if len(cards) == 0 {
-		return
-	}
-	if err := s.vectorIndexer.BuildVectors(ctx, cards); err != nil {
-		logx.Warnf("图卡片投影失败（增强依赖，不阻断）: documentId=%d, err=%v", snapshot.DocumentId, err)
-		return
-	}
-	logx.Infof("图卡片投影完成: documentId=%d, cards=%d", snapshot.DocumentId, len(cards))
-}
-
-// enhanceCommunitySummaries M3 LLM 社区报告：仅对前 CommunityReportTopN 个重要社区生成 LLM 摘要
+// enhanceCommunitySummaries LLM 社区报告：仅对前 CommunityReportTopN 个重要社区生成 LLM 摘要
 // （预算闸门，0 关闭）。任何单社区失败均告警并保留抽取式摘要，不阻断后续环节。
 func (s *Builder) enhanceCommunitySummaries(ctx context.Context, nodes []*entity.GraphNode, communities []*entity.GraphCommunity) {
 	if s.reporter == nil || len(communities) == 0 {

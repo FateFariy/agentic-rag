@@ -36,7 +36,7 @@ type GraphEdge struct {
 // GraphCommunity 社区节点（对应 Neo4j (:Community) 节点，抽取式报告零 LLM 成本）
 type GraphCommunity struct {
 	CommunityNo int      `json:"communityNo"` // 社区编号（(document_id,task_id) 内唯一，落库 node key 之一）
-	Level       int      `json:"level"`       // 层级（M1 固定 0）
+	Level       int      `json:"level"`       // 层级（固定 0）
 	Title       string   `json:"title"`       // 社区标题（top 实体名拼接）
 	Summary     string   `json:"summary"`     // 社区摘要
 	RankBoost   float64  `json:"rankBoost"`   // 社区排序加权分

@@ -12,7 +12,7 @@ import (
 
 	"github.com/swiftbit/know-agent/pkg/utils"
 	"github.com/swiftbit/know-agent/services/document/internal/domain/model/enum"
-	"github.com/swiftbit/know-agent/services/document/internal/domain/model/shared"
+	"github.com/swiftbit/know-agent/services/document/internal/domain/model/vo"
 )
 
 // DocumentBlock 文档块实体
@@ -191,7 +191,7 @@ func (b *DocumentBlock) ResumeRawText(rawBytes []byte) {
 	if b == nil || len(rawBytes) == 0 {
 		return
 	}
-	var sourceSpan shared.SourceSpan
+	var sourceSpan vo.SourceSpan
 	marshal, _ := json.Marshal(b.Metadata["sourceSpan"])
 	_ = json.Unmarshal(marshal, &sourceSpan)
 	b.Text = string(rawBytes[sourceSpan.StartByte:sourceSpan.EndByte])

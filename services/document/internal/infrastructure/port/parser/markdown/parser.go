@@ -13,7 +13,7 @@ import (
 
 	"github.com/swiftbit/know-agent/pkg/utils"
 	"github.com/swiftbit/know-agent/services/document/internal/domain/model/entity"
-	"github.com/swiftbit/know-agent/services/document/internal/domain/model/shared"
+	"github.com/swiftbit/know-agent/services/document/internal/domain/model/vo"
 )
 
 type GoldmarkParser struct {
@@ -140,9 +140,9 @@ func (p *GoldmarkParser) Parse(_ context.Context, sourceText []byte) (entity.Doc
 	fillMissingSpans(drafts, draftMap)
 	fillContainerText(drafts)
 
-	nodes := make([]*shared.MarkdownNode, 0, len(drafts))
+	nodes := make([]*vo.MarkdownNode, 0, len(drafts))
 	for _, d := range drafts {
-		nodes = append(nodes, &shared.MarkdownNode{
+		nodes = append(nodes, &vo.MarkdownNode{
 			Order:        d.order,
 			NodeId:       d.nodeId,
 			ParentNodeId: d.parentNodeId,
@@ -158,7 +158,7 @@ func (p *GoldmarkParser) Parse(_ context.Context, sourceText []byte) (entity.Doc
 	}
 	hash := sha256.Sum256(sourceText)
 
-	syntax := &shared.MarkdownSyntax{
+	syntax := &vo.MarkdownSyntax{
 		SchemaVersion:     "1.0.0",
 		SourceOrigin:      "markdown-parse",
 		SourceText:        string(sourceText),
@@ -170,13 +170,13 @@ func (p *GoldmarkParser) Parse(_ context.Context, sourceText []byte) (entity.Doc
 }
 
 // syntaxToBlocks 将 MarkdownSyntax 文档转换为 DocumentBlock 列表
-func (p *GoldmarkParser) syntaxToBlocks(syntax *shared.MarkdownSyntax) entity.DocumentBlocks {
+func (p *GoldmarkParser) syntaxToBlocks(syntax *vo.MarkdownSyntax) entity.DocumentBlocks {
 	if syntax == nil || len(syntax.Nodes) == 0 {
 		return nil
 	}
 
 	root := syntax.Nodes[0]
-	topLevel := make([]*shared.MarkdownNode, 0)
+	topLevel := make([]*vo.MarkdownNode, 0)
 	for _, node := range syntax.Nodes {
 		if node.ParentNodeId == root.NodeId {
 			topLevel = append(topLevel, node)

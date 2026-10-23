@@ -154,28 +154,6 @@ type DocumentRepository interface {
 	// SelectStructureNodeListByTask 根据文档ID和任务ID查询结构节点列表
 	SelectStructureNodeListByTask(ctx context.Context, documentId, taskId int64) ([]*entity.StructureNode, error)
 
-	// ========== 属性相关 ==========
-
-	// SelectProfileByDocumentId 根据文档ID查询文档属性
-	SelectProfileByDocumentId(ctx context.Context, documentId int64) (*entity.DocumentProfile, error)
-
-	// SaveProfile 创建或更新文档属性
-	SaveProfile(ctx context.Context, profile *entity.DocumentProfile) error
-
-	// DeleteProfileByDocumentId 根据文档ID删除属性
-	DeleteProfileByDocumentId(ctx context.Context, documentId int64) error
-
-	// SelectDocumentProfilesByDocIds 根据文档ID列表查询文档属性
-	SelectDocumentProfilesByDocIds(ctx context.Context, documentIds []int64) ([]*entity.DocumentProfile, error)
-
-	// SelectDocumentProfiles 查询所有文档属性
-	SelectDocumentProfiles(ctx context.Context) ([]*entity.DocumentProfile, error)
-
-	// ========== 话题关联相关 ==========
-
-	// DeleteTopicDocumentRelationByDocumentId 根据文档ID删除话题关联
-	DeleteTopicDocumentRelationByDocumentId(ctx context.Context, documentId int64) error
-
 	// ========== 文档块相关 ==========
 
 	// InsertDocumentBlockBatch 批量插入文档块

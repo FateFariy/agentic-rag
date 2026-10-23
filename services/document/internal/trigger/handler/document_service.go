@@ -4,9 +4,6 @@ import (
 	"context"
 	"mime/multipart"
 
-	"github.com/duke-git/lancet/v2/slice"
-	"github.com/duke-git/lancet/v2/strutil"
-
 	"github.com/swiftbit/know-agent/pkg/utils"
 	"github.com/swiftbit/know-agent/services/document/api"
 	"github.com/swiftbit/know-agent/services/document/internal/convert"
@@ -15,15 +12,13 @@ import (
 
 type DocumentService struct {
 	lifeCycleLogic logic.LifecycleLogic
-	profileLogic   logic.ProfileLogic
 }
 
 var _ api.HTTPServer = (*DocumentService)(nil)
 
-func NewDocumentService(lifeCycleLogic logic.LifecycleLogic, profileLogic logic.ProfileLogic) *DocumentService {
+func NewDocumentService(lifeCycleLogic logic.LifecycleLogic) *DocumentService {
 	return &DocumentService{
 		lifeCycleLogic: lifeCycleLogic,
-		profileLogic:   profileLogic,
 	}
 }
 
@@ -35,18 +30,18 @@ func (d *DocumentService) UploadDocument(ctx context.Context, file multipart.Fil
 		return nil, err
 	}
 	return &api.UploadDocumentResp{
-		DocumentId:     utils.Int64ToString(doc.ID),
+		DocumentId:     utils.ToString(doc.ID),
 		DocumentName:   doc.DocumentName,
 		IndexStatus:    doc.IndexStatus,
 		ParseStatus:    doc.ParseStatus,
 		StrategyStatus: doc.StrategyStatus,
-		TaskId:         utils.Int64ToString(taskId),
+		TaskId:         utils.ToString(taskId),
 	}, nil
 }
 
 // QueryDocumentPage 查询文档分页列表
 func (d *DocumentService) QueryDocumentPage(ctx context.Context, req *api.QueryDocumentPageReq) (*api.QueryDocumentPageResp, error) {
-	documents, total, err := d.lifeCycleLogic.QueryDocumentPage(ctx, req.PageNo, req.PageSize, strutil.Trim(req.Keyword))
+	documents, total, err := d.lifeCycleLogic.QueryDocumentPage(ctx, req.PageNo, req.PageSize, utils.Trim(req.Keyword))
 	return &api.QueryDocumentPageResp{
 		PageNo:   req.PageNo,
 		PageSize: req.PageSize,
@@ -116,9 +111,9 @@ func (d *DocumentService) QueryDocumentChunks(ctx context.Context, req *api.Quer
 		DocumentId: req.DocumentId,
 		PageNo:     req.PageNo,
 		PageSize:   req.PageSize,
-		PlanId:     utils.Int64ToString(planId),
+		PlanId:     utils.ToString(planId),
 		Records:    convert.ToDocumentChunkItemList(chunks),
-		TaskId:     utils.Int64ToString(taskId),
+		TaskId:     utils.ToString(taskId),
 		Total:      total,
 	}, err
 }
@@ -138,32 +133,4 @@ func (d *DocumentService) QueryTaskLogs(ctx context.Context, req *api.QueryTaskL
 	queryTaskLogsResp := convert.ToQueryTaskLogsResp(task)
 	queryTaskLogsResp.Total = total
 	return queryTaskLogsResp, nil
-}
-
-// GetDocumentProfile 查询文档画像详情
-func (d *DocumentService) GetDocumentProfile(ctx context.Context, req *api.DocumentProfileDetailReq) (*api.DocumentProfileResp, error) {
-	profile, err := d.profileLogic.GetProfileByDocumentId(ctx, utils.StringToInt64(req.DocumentId))
-	if err != nil {
-		return nil, err
-	}
-	return convert.ToDocumentProfileResp(profile), nil
-}
-
-// RegenerateDocumentProfile 重新生成文档画像
-func (d *DocumentService) RegenerateDocumentProfile(ctx context.Context, req *api.DocumentProfileRegenerateReq) (*api.DocumentProfileResp, error) {
-	profile, err := d.profileLogic.RegenerateProfile(ctx, utils.StringToInt64(req.DocumentId))
-	if err != nil {
-		return nil, err
-	}
-	return convert.ToDocumentProfileResp(profile), nil
-}
-
-// BatchRegenerateDocumentProfile 批量重新生成文档画像
-func (d *DocumentService) BatchRegenerateDocumentProfile(ctx context.Context, req *api.DocumentProfileBatchRegenerateReq) ([]*api.DocumentProfileResp, error) {
-	ids := slice.Map(req.DocumentIds, func(_ int, item string) int64 { return utils.StringToInt64(item) })
-	profiles, err := d.profileLogic.BatchRegenerateProfiles(ctx, ids)
-	if err != nil {
-		return nil, err
-	}
-	return convert.ToDocumentProfileRespList(profiles), nil
 }

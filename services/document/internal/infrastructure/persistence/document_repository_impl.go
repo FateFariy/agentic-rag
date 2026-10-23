@@ -10,7 +10,6 @@ import (
 	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
-	"gorm.io/plugin/soft_delete"
 
 	"github.com/swiftbit/know-agent/pkg/common"
 	"github.com/swiftbit/know-agent/pkg/infra"
@@ -43,12 +42,6 @@ func NewDocumentRepository(db *gorm.DB, rdb *redis.Client, storage adapter.Stora
 // DeleteDocumentRelatedDataById 删除文档关联数据
 func (d *DocumentRepositoryImpl) DeleteDocumentRelatedDataById(ctx context.Context, documentId int64) error {
 	return d.WithinTx(ctx, func(ctx context.Context, tx *gorm.DB) error {
-		if err := d.DeleteProfileByDocumentId(ctx, documentId); err != nil {
-			return err
-		}
-		if err := d.DeleteTopicDocumentRelationByDocumentId(ctx, documentId); err != nil {
-			return err
-		}
 		if err := d.DeleteParentChunkByDocumentId(ctx, documentId); err != nil {
 			return err
 		}
@@ -460,82 +453,7 @@ func (d *DocumentRepositoryImpl) SelectStructureNodeListByTask(ctx context.Conte
 	return nodes, nil
 }
 
-// ========== 属性相关 ==========
-
-// SelectProfileByDocumentId 根据文档ID查询文档属性
-func (d *DocumentRepositoryImpl) SelectProfileByDocumentId(ctx context.Context, documentId int64) (*entity.DocumentProfile, error) {
-	profile := &entity.DocumentProfile{DocumentId: documentId}
-	err := d.DBWithContext(ctx).Model(&model.DocumentProfile{}).
-		Where(profile).
-		Order("id DESC").
-		First(profile).Error
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, errorx.ErrDocumentProfileNotFound
-		}
-		return nil, err
-	}
-	return profile, nil
-}
-
-// SaveProfile 创建或更新文档属性
-func (d *DocumentRepositoryImpl) SaveProfile(ctx context.Context, profile *entity.DocumentProfile) error {
-	profileModel := convert.ToDocumentProfileModel(profile)
-	if profile.ID != 0 {
-		return d.DBWithContext(ctx).Where("id = ?", profile.ID).Updates(profileModel).Error
-	}
-	return d.DBWithContext(ctx).Create(profileModel).Error
-}
-
-// DeleteProfileByDocumentId 根据文档ID删除文档属性
-func (d *DocumentRepositoryImpl) DeleteProfileByDocumentId(ctx context.Context, documentId int64) error {
-	return d.DBWithContext(ctx).Where("document_id = ?", documentId).Delete(&model.DocumentProfile{}).Error
-}
-
-// SelectDocumentProfiles 查询所有文档属性
-func (d *DocumentRepositoryImpl) SelectDocumentProfiles(ctx context.Context) ([]*entity.DocumentProfile, error) {
-	var profiles []*entity.DocumentProfile
-	if err := d.DBWithContext(ctx).Model(&model.DocumentProfile{}).
-		Where("profile_status = ?", 2).
-		Find(&profiles).Error; err != nil {
-		return nil, err
-	}
-	return profiles, nil
-}
-
-// SelectDocumentProfilesByDocIds 根据文档ID列表查询文档属性
-func (d *DocumentRepositoryImpl) SelectDocumentProfilesByDocIds(ctx context.Context, documentIds []int64) ([]*entity.DocumentProfile, error) {
-	var profiles []*entity.DocumentProfile
-	if err := d.DBWithContext(ctx).Model(&model.DocumentProfile{}).
-		Where("document_id IN ?", documentIds).
-		Where("profile_status = ?", 2).
-		Find(&profiles).Error; err != nil {
-		return nil, err
-	}
-	return profiles, nil
-}
-
-// ========== 话题关联相关 ==========
-
-// knowledgeTopicRelationShadow 是 knowledge 归属表 knowledge_topic_document_relation
-// 的最小本地影子模型：仅用于在同库前提下维持原有软删语义（deleted 标志位），
-// 避免 document 仓储编译期依赖 knowledge 的 ORM 模型包。
-// TODO(阶段4/5): document/knowledge 物理拆分后，改走 knowledge gRPC 接口或领域事件清理。
-type knowledgeTopicRelationShadow struct {
-	ID         int64                 `gorm:"column:id;primaryKey"`
-	DocumentId int64                 `gorm:"column:document_id;type:bigint"`
-	Deleted    soft_delete.DeletedAt `gorm:"column:deleted;softDelete:flag"`
-}
-
-func (knowledgeTopicRelationShadow) TableName() string {
-	return "knowledge_topic_document_relation"
-}
-
-// DeleteTopicDocumentRelationByDocumentId 根据文档ID删除话题关联
-func (d *DocumentRepositoryImpl) DeleteTopicDocumentRelationByDocumentId(ctx context.Context, documentId int64) error {
-	return d.DBWithContext(ctx).Where("document_id = ?", documentId).
-		Delete(&knowledgeTopicRelationShadow{}).Error
-}
+// ========== 文档块相关 ==========
 
 // InsertDocumentBlockBatch 批量插入文档块
 func (d *DocumentRepositoryImpl) InsertDocumentBlockBatch(ctx context.Context, blocks []*entity.DocumentBlock) error {

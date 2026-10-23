@@ -4,7 +4,7 @@ import (
 	"errors"
 	"sort"
 
-	"github.com/swiftbit/know-agent/services/document/internal/domain/model/shared"
+	"github.com/swiftbit/know-agent/services/document/internal/domain/model/vo"
 )
 
 type sourceIndex struct {
@@ -70,11 +70,11 @@ func (s *sourceIndex) CharacterSpan(lineMap []int) (int, int, error) {
 	return start, end, nil
 }
 
-func (s *sourceIndex) SourceSpan(charSpan [2]int) *shared.SourceSpan {
+func (s *sourceIndex) SourceSpan(charSpan [2]int) *vo.SourceSpan {
 	start, end := charSpan[0], charSpan[1]
 	startLine, startCol := s.LineColumn(start)
 	endLine, endCol := s.LineColumn(end)
-	return &shared.SourceSpan{
+	return &vo.SourceSpan{
 		StartByte:   s.byteOffsets[start],
 		EndByte:     s.byteOffsets[end],
 		StartLine:   startLine,

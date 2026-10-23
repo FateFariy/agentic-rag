@@ -30,13 +30,9 @@ type DocumentConverter interface {
 	ToDocumentChunkItemList(src []*entity.DocumentChunk) []*api.DocumentChunkItem
 	ToQueryDocumentChunkDetailResp(src *entity.DocumentChunkDetail) *api.QueryDocumentChunkDetailResp
 	ToQueryTaskLogsResp(src *entity.DocumentTask) *api.QueryTaskLogsResp
-	ToDocumentProfileResp(src *entity.DocumentProfile) *api.DocumentProfileResp
-	ToDocumentProfileRespList(src []*entity.DocumentProfile) []*api.DocumentProfileResp
 
 	// goverter:map . Model
 	ToDocumentModel(src *entity.Document) *model.Document
-	// goverter:map . Model
-	ToDocumentProfileModel(src *entity.DocumentProfile) *model.DocumentProfile
 	// goverter:map . Model
 	ToDocumentTaskModel(src *entity.DocumentTask) *model.DocumentTask
 	// goverter:map . Model

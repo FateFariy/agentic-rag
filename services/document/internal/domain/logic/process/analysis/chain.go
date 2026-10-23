@@ -18,11 +18,11 @@ type Chain struct {
 
 // NewAnalysisChain 创建并注册所有阶段
 func NewAnalysisChain(chunkConf config.ChunkConf, chatModel ai.ChatModel, repo adapter.DocumentRepository,
-	storage adapter.Storage, gen ProfileGenerator, resolver IndexingConfigResolver) *Chain {
+	storage adapter.Storage, resolver IndexingConfigResolver) *Chain {
 	phases := []Stage{
 		NewInitializationStage(repo),                           // 1. 初始化任务状态，标记解析开始
 		NewParseStage(repo, storage),                           // 2. 解析文件内容，生成分析结果
-		NewSaveStage(repo, storage, gen),                       // 3. 保存解析产物（文本、结构节点等）
+		NewSaveStage(repo, storage),                            // 3. 保存解析产物（文本、结构节点等）
 		NewStrategyStage(chunkConf, chatModel, repo, resolver), // 4. 生成推荐切分策略
 		NewFinalizationStage(repo),                             // 5. 持久化策略，更新文档/任务最终状态
 	}

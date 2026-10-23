@@ -277,60 +277,7 @@ func ToDocumentParentBlockModelList(source []*entity.DocumentParentChunk) []*mod
 	}
 	return pModelDocumentParentChunkList
 }
-func ToDocumentProfileModel(source *entity.DocumentProfile) *model.DocumentProfile {
-	var pModelDocumentProfile *model.DocumentProfile
-	if source != nil {
-		var modelDocumentProfile model.DocumentProfile
-		modelDocumentProfile.Model = entityDocumentProfileToCommonModel((*source))
-		modelDocumentProfile.DocumentId = (*source).DocumentId
-		modelDocumentProfile.ProfileVersion = (*source).ProfileVersion
-		modelDocumentProfile.DocumentSummary = (*source).DocumentSummary
-		modelDocumentProfile.DocumentType = (*source).DocumentType
-		modelDocumentProfile.CoreTopics = (*source).CoreTopics
-		modelDocumentProfile.ExampleQuestions = (*source).ExampleQuestions
-		modelDocumentProfile.GraphFriendly = (*source).GraphFriendly
-		modelDocumentProfile.SupportsGraphOutline = (*source).SupportsGraphOutline
-		modelDocumentProfile.SupportsItemLookup = (*source).SupportsItemLookup
-		modelDocumentProfile.SupportsGraphAssist = (*source).SupportsGraphAssist
-		modelDocumentProfile.ProfileSource = (*source).ProfileSource
-		modelDocumentProfile.ProfileStatus = (*source).ProfileStatus
-		modelDocumentProfile.ErrorMsg = (*source).ErrorMsg
-		pModelDocumentProfile = &modelDocumentProfile
-	}
-	return pModelDocumentProfile
-}
-func ToDocumentProfileResp(source *entity.DocumentProfile) *api.DocumentProfileResp {
-	var pApiDocumentProfileResp *api.DocumentProfileResp
-	if source != nil {
-		var apiDocumentProfileResp api.DocumentProfileResp
-		apiDocumentProfileResp.DocumentId = Int64ToString((*source).DocumentId)
-		apiDocumentProfileResp.DocumentSummary = (*source).DocumentSummary
-		apiDocumentProfileResp.DocumentType = (*source).DocumentType
-		apiDocumentProfileResp.CoreTopics = (*source).CoreTopics
-		apiDocumentProfileResp.ExampleQuestions = (*source).ExampleQuestions
-		apiDocumentProfileResp.GraphFriendly = (*source).GraphFriendly
-		apiDocumentProfileResp.SupportsGraphOutline = (*source).SupportsGraphOutline
-		apiDocumentProfileResp.SupportsItemLookup = (*source).SupportsItemLookup
-		apiDocumentProfileResp.SupportsGraphAssist = (*source).SupportsGraphAssist
-		apiDocumentProfileResp.ProfileSource = (*source).ProfileSource
-		apiDocumentProfileResp.ProfileStatus = (*source).ProfileStatus
-		if (*source).ErrorMsg != nil {
-			apiDocumentProfileResp.ErrorMsg = *(*source).ErrorMsg
-		}
-		pApiDocumentProfileResp = &apiDocumentProfileResp
-	}
-	return pApiDocumentProfileResp
-}
-func ToDocumentProfileRespList(source []*entity.DocumentProfile) []*api.DocumentProfileResp {
-	var pApiDocumentProfileRespList []*api.DocumentProfileResp
-	if source != nil {
-		pApiDocumentProfileRespList = make([]*api.DocumentProfileResp, len(source))
-		for i := 0; i < len(source); i++ {
-			pApiDocumentProfileRespList[i] = ToDocumentProfileResp(source[i])
-		}
-	}
-	return pApiDocumentProfileRespList
-}
+
 func ToDocumentStrategyPlan(source *entity.DocumentStrategyPlan) *api.DocumentStrategyPlan {
 	var pApiDocumentStrategyPlan *api.DocumentStrategyPlan
 	if source != nil {
@@ -566,11 +513,6 @@ func entityDocumentChunkToCommonModel(source entity.DocumentChunk) common.Model 
 	return commonModel
 }
 func entityDocumentParentChunkToCommonModel(source entity.DocumentParentChunk) common.Model {
-	var commonModel common.Model
-	commonModel.ID = source.ID
-	return commonModel
-}
-func entityDocumentProfileToCommonModel(source entity.DocumentProfile) common.Model {
 	var commonModel common.Model
 	commonModel.ID = source.ID
 	return commonModel

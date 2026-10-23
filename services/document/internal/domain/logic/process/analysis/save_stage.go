@@ -13,24 +13,17 @@ import (
 	"github.com/swiftbit/know-agent/services/document/internal/domain/model/enum"
 )
 
-// ProfileGenerator 文档画像生成器
-type ProfileGenerator interface {
-	Generate(ctx context.Context, documentId int64, analysisResult *Result, structureNodes []*entity.StructureNode) (*entity.DocumentProfile, error)
-}
-
-// SaveStage 保存阶段：按顺序执行文本上传、产物持久化、结构节点持久化、文档画像生成
+// SaveStage 保存阶段：按顺序执行文本上传、产物持久化、结构节点持久化
 type SaveStage struct {
 	repo    adapter.DocumentRepository
 	storage adapter.Storage
-	gen     ProfileGenerator
 }
 
 // NewSaveStage 创建保存阶段
-func NewSaveStage(repo adapter.DocumentRepository, storage adapter.Storage, gen ProfileGenerator) *SaveStage {
+func NewSaveStage(repo adapter.DocumentRepository, storage adapter.Storage) *SaveStage {
 	return &SaveStage{
 		repo:    repo,
 		storage: storage,
-		gen:     gen,
 	}
 }
 
@@ -60,11 +53,6 @@ func (p *SaveStage) Execute(ctx context.Context, parseCtx *Context) error {
 	structureNodes, err := p.executeStructurePersist(ctx, documentId, taskId, analysisResult)
 	if err != nil {
 		return fmt.Errorf("结构节点持久化失败: %w", err)
-	}
-
-	// 文档画像生成
-	if err = p.executeProfileGenerate(ctx, documentId, analysisResult, structureNodes); err != nil {
-		return fmt.Errorf("文档画像生成失败: %w", err)
 	}
 
 	parseCtx.StructureNodes = structureNodes
@@ -210,13 +198,4 @@ func (p *SaveStage) executeStructurePersist(ctx context.Context, documentId, tas
 	}
 
 	return nodes, nil
-}
-
-// executeProfileGenerate 生成文档画像
-func (p *SaveStage) executeProfileGenerate(ctx context.Context, documentId int64, analysisResult *Result, structureNodes []*entity.StructureNode) error {
-	if documentId == 0 {
-		return nil
-	}
-	_, err := p.gen.Generate(ctx, documentId, analysisResult, structureNodes)
-	return err
 }

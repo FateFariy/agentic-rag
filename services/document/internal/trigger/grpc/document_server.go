@@ -96,28 +96,6 @@ func (s *DocumentGrpcServer) CountRetrievableDocumentsByKbIds(ctx context.Contex
 	return &documentv1.Int64CountMap{Counts: counts}, nil
 }
 
-func (s *DocumentGrpcServer) FindDocumentProfileByDocIds(ctx context.Context, req *documentv1.FindRetrieveDocumentByIdsRequest) (*documentv1.DocumentProfileList, error) {
-	profiles, err := s.query.FindDocumentProfileByDocIds(ctx, req.GetIds())
-	if err != nil {
-		return nil, err
-	}
-	items := utils.Map(profiles, func(profile *entity.DocumentProfile) *documentv1.DocumentProfile {
-		return profileToProto(profile)
-	})
-	return &documentv1.DocumentProfileList{Items: items}, nil
-}
-
-func (s *DocumentGrpcServer) FindDocumentProfiles(ctx context.Context, _ *documentv1.FindDocumentProfilesRequest) (*documentv1.DocumentProfileList, error) {
-	profiles, err := s.query.FindDocumentProfiles(ctx)
-	if err != nil {
-		return nil, err
-	}
-	items := utils.Map(profiles, func(profile *entity.DocumentProfile) *documentv1.DocumentProfile {
-		return profileToProto(profile)
-	})
-	return &documentv1.DocumentProfileList{Items: items}, nil
-}
-
 // ==================== 私有转换（与 grpc/client 端映射反向对称） ====================
 
 func metadataListToProto(items []*vo.DocumentMetadata) []*documentv1.DocumentMetadata {
@@ -178,18 +156,5 @@ func sectionToProto(node *entity.StructureNode) *documentv1.GraphSection {
 		SectionPath:       node.SectionPath,
 		CanonicalPath:     node.CanonicalPath,
 		ContentText:       node.ContentText,
-	}
-}
-
-func profileToProto(profile *entity.DocumentProfile) *documentv1.DocumentProfile {
-	if profile == nil {
-		return nil
-	}
-	return &documentv1.DocumentProfile{
-		DocumentId:       profile.DocumentId,
-		DocumentSummary:  profile.DocumentSummary,
-		CoreTopics:       profile.CoreTopics,
-		ExampleQuestions: profile.ExampleQuestions,
-		DocumentType:     profile.DocumentType,
 	}
 }

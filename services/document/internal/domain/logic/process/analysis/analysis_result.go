@@ -5,7 +5,7 @@ import (
 
 	"github.com/swiftbit/know-agent/services/document/internal/domain/model/entity"
 	"github.com/swiftbit/know-agent/services/document/internal/domain/model/enum"
-	"github.com/swiftbit/know-agent/services/document/internal/domain/model/shared"
+	"github.com/swiftbit/know-agent/services/document/internal/domain/model/vo"
 )
 
 // Result 文档分析结果
@@ -18,7 +18,7 @@ type Result struct {
 	HeadingCount        int                     // 标题数量
 	ParagraphCount      int                     // 段落数量
 	MaxParagraphLength  int                     // 最长段落长度
-	MarkdownSyntax      *shared.MarkdownSyntax  // Markdown语法分析结果
+	MarkdownSyntax      *vo.MarkdownSyntax      // Markdown语法分析结果
 	StructureNodes      []*entity.StructureNode // 文档结构节点列表
 	Blocks              []*entity.DocumentBlock // 内容块列表
 }

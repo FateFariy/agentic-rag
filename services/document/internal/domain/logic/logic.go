@@ -44,19 +44,7 @@ type LifecycleLogic interface {
 	ListRetrievableDocuments(ctx context.Context, documentIds ...int64) ([]*vo.DocumentMetadata, error)
 }
 
-// ProfileLogic 文档画像逻辑接口
-type ProfileLogic interface {
-	// GetProfileByDocumentId 根据文档ID获取画像
-	GetProfileByDocumentId(ctx context.Context, documentId int64) (*entity.DocumentProfile, error)
-
-	// RegenerateProfile 重新生成文档画像（读取已解析文本与结构节点）
-	RegenerateProfile(ctx context.Context, documentId int64) (*entity.DocumentProfile, error)
-
-	// BatchRegenerateProfiles 批量重新生成文档画像
-	BatchRegenerateProfiles(ctx context.Context, documentIds []int64) ([]*entity.DocumentProfile, error)
-}
-
-// DocumentQueryLogic document 服务对外检索只读用例（消费方：chat/knowledge 等跨服务调用）
+// DocumentQueryLogic document 服务对外检索只读用例
 type DocumentQueryLogic interface {
 	// FindRetrievableByKbIds 根据知识库ID列表查询可检索的文档元数据
 	FindRetrievableByKbIds(ctx context.Context, kbIds []int64) ([]*vo.DocumentMetadata, error)
@@ -81,10 +69,4 @@ type DocumentQueryLogic interface {
 
 	// CountRetrievableDocumentsByKbIds 按知识库ID列表统计可检索文档数量
 	CountRetrievableDocumentsByKbIds(ctx context.Context, kbIds []int64) (map[int64]int64, error)
-
-	// FindDocumentProfileByDocIds 根据文档ID列表查询文档画像
-	FindDocumentProfileByDocIds(ctx context.Context, docIds []int64) ([]*entity.DocumentProfile, error)
-
-	// FindDocumentProfiles 查询所有文档画像
-	FindDocumentProfiles(ctx context.Context) ([]*entity.DocumentProfile, error)
 }

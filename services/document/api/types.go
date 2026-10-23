@@ -112,35 +112,6 @@ type DocumentParentBlockItem struct {
 	ParentText     string `json:"parentText"`     // 父块文本内容
 }
 
-type DocumentProfileBatchRegenerateReq struct {
-	DocumentIds []string `json:"documentIds"`         // 文档ID列表
-	OperatorId  string   `json:"operatorId,optional"` // 操作人ID
-}
-
-type DocumentProfileDetailReq struct {
-	DocumentId string `json:"documentId"` // 文档ID
-}
-
-type DocumentProfileRegenerateReq struct {
-	DocumentId string `json:"documentId"`          // 文档ID
-	OperatorId string `json:"operatorId,optional"` // 操作人ID
-}
-
-type DocumentProfileResp struct {
-	DocumentId           string `json:"documentId"`           // 文档ID
-	DocumentSummary      string `json:"documentSummary"`      // 文档摘要
-	DocumentType         string `json:"documentType"`         // 文档类型
-	CoreTopics           string `json:"coreTopics"`           // 核心主题
-	ExampleQuestions     string `json:"exampleQuestions"`     // 示例问题
-	GraphFriendly        int    `json:"graphFriendly"`        // 是否支持结构图
-	SupportsGraphOutline int    `json:"supportsGraphOutline"` // 是否支持图纲
-	SupportsItemLookup   int    `json:"supportsItemLookup"`   // 是否支持条目检索
-	SupportsGraphAssist  int    `json:"supportsGraphAssist"`  // 是否支持图辅助
-	ProfileSource        string `json:"profileSource"`        // 画像来源
-	ProfileStatus        int    `json:"profileStatus"`        // 画像状态
-	ErrorMsg             string `json:"errorMsg"`             // 错误信息
-}
-
 type DocumentStrategyPipeline struct {
 	PipelineType     string                  `json:"pipelineType"`     // 流水线类型
 	PipelineTypeName string                  `json:"pipelineTypeName"` // 流水线类型名称

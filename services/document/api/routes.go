@@ -1,6 +1,3 @@
-// Code scaffolded by goctl. Safe to edit.
-// goctl 1.9.2
-
 package api
 
 import (
@@ -66,21 +63,6 @@ func RegisterHandlers(server *rest.Server, srv HTTPServer) {
 				Method:  http.MethodPost,
 				Path:    "/task/log/query",
 				Handler: QueryTaskLogsHandler(srv),
-			},
-			{
-				Method:  http.MethodPost,
-				Path:    "/profile/detail",
-				Handler: GetDocumentProfileHandler(srv),
-			},
-			{
-				Method:  http.MethodPost,
-				Path:    "/profile/regenerate",
-				Handler: RegenerateDocumentProfileHandler(srv),
-			},
-			{
-				Method:  http.MethodPost,
-				Path:    "/profile/batch/regenerate",
-				Handler: BatchRegenerateDocumentProfileHandler(srv),
 			},
 		},
 		rest.WithPrefix("/manage/document"),

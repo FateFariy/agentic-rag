@@ -72,20 +72,6 @@ type (
 		PageNo   int    `json:"pageNo,optional,default=1"` // 页码
 		PageSize int    `json:"pageSize,optional,default=10"` // 每页大小
 	}
-	// 查询文档画像详情请求
-	DocumentProfileDetailReq {
-		DocumentId string `json:"documentId"` // 文档ID
-	}
-	// 重新生成文档画像请求
-	DocumentProfileRegenerateReq {
-		DocumentId string `json:"documentId"` // 文档ID
-		OperatorId string `json:"operatorId,optional"` // 操作人ID
-	}
-	// 批量重新生成文档画像请求
-	DocumentProfileBatchRegenerateReq {
-		DocumentIds []string `json:"documentIds"` // 文档ID列表
-		OperatorId  string   `json:"operatorId,optional"` // 操作人ID
-	}
 )
 
 // ==================== 响应类型定义 ====================
@@ -223,21 +209,6 @@ type (
 		Total            int64      `json:"total"` // 数据总量
 		Logs             []*TaskLog `json:"logs"` // 任务日志明细列表
 	}
-	// 文档画像详情响应
-	DocumentProfileResp {
-		DocumentId           string `json:"documentId"` // 文档ID
-		DocumentSummary      string `json:"documentSummary"` // 文档摘要
-		DocumentType         string `json:"documentType"` // 文档类型
-		CoreTopics           string `json:"coreTopics"` // 核心主题
-		ExampleQuestions     string `json:"exampleQuestions"` // 示例问题
-		GraphFriendly        int    `json:"graphFriendly"` // 是否支持结构图
-		SupportsGraphOutline int    `json:"supportsGraphOutline"` // 是否支持图纲
-		SupportsItemLookup   int    `json:"supportsItemLookup"` // 是否支持条目检索
-		SupportsGraphAssist  int    `json:"supportsGraphAssist"` // 是否支持图辅助
-		ProfileSource        string `json:"profileSource"` // 画像来源
-		ProfileStatus        int    `json:"profileStatus"` // 画像状态
-		ErrorMsg             string `json:"errorMsg"` // 错误信息
-	}
 	// 策略方案
 	DocumentStrategyPlan {
 		ID               string                    `json:"planId"` // 方案ID
@@ -369,16 +340,5 @@ service document {
 	@handler QueryTaskLogs
 	post /task/log/query (QueryTaskLogsReq) returns (QueryTaskLogsResp)
 
-	@doc "查询文档画像详情"
-	@handler GetDocumentProfile
-	post /profile/detail (DocumentProfileDetailReq) returns (DocumentProfileResp)
-
-	@doc "重新生成文档画像"
-	@handler RegenerateDocumentProfile
-	post /profile/regenerate (DocumentProfileRegenerateReq) returns (DocumentProfileResp)
-
-	@doc "批量重新生成文档画像"
-	@handler BatchRegenerateDocumentProfile
-	post /profile/batch/regenerate (DocumentProfileBatchRegenerateReq) returns ([]*DocumentProfileResp)
 }
 
