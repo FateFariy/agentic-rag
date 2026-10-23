@@ -6,18 +6,15 @@ import (
 	"github.com/swiftbit/know-agent/services/knowledge/internal/domain/model/entity"
 )
 
-// KnowledgeRepository 领域模型视角下的知识库仓储：提供可检索文档、父级块、知识范围/主题节点、文档画像、路由跟踪等能力
+// KnowledgeRepository 领域模型视角下的知识库仓储：提供可检索文档、父级块、知识范围/主题节点等能力
 type KnowledgeRepository interface {
 	// Do 运行一个事务
 	Do(ctx context.Context, fn func(ctx context.Context) error) error
 
 	// ========== 知识范围节点相关 ==========
 
-	// SelectKnowledgeScopeNodesByKbIds 根据知识库ID获取有效的知识范围节点
-	SelectKnowledgeScopeNodesByKbIds(ctx context.Context, kbIds []int64) ([]*entity.KnowledgeScopeNode, error)
-
-	// SelectScopesByKbId 按知识库ID查询知识范围列表
-	SelectScopesByKbId(ctx context.Context, kbId int64) ([]*entity.KnowledgeScopeNode, error)
+	// SelectScopes 查询知识范围节点列表，kbIds 为可选参数：不传（或全为非正数）时查询全部，否则按知识库ID过滤
+	SelectScopes(ctx context.Context, kbIds ...int64) ([]*entity.KnowledgeScopeNode, error)
 
 	// SelectScopeById 根据ID查询知识范围节点
 	SelectScopeById(ctx context.Context, id int64, kbId int64) (*entity.KnowledgeScopeNode, error)
@@ -34,9 +31,6 @@ type KnowledgeRepository interface {
 	// UpsertKnowledgeScopeNode 保存/更新知识范围节点
 	UpsertKnowledgeScopeNode(ctx context.Context, node *entity.KnowledgeScopeNode) error
 
-	// DeleteKnowledgeScopeNode 按ID删除知识范围节点
-	DeleteKnowledgeScopeNode(ctx context.Context, id int64) error
-
 	// DeleteScope 删除知识范围
 	DeleteScope(ctx context.Context, id int64, kbId int64) error
 
@@ -44,9 +38,6 @@ type KnowledgeRepository interface {
 
 	// SelectKnowledgeTopicNodesByKbIds 根据知识库ID获取有效的主题节点
 	SelectKnowledgeTopicNodesByKbIds(ctx context.Context, kbIds []int64) ([]*entity.KnowledgeTopicNode, error)
-
-	// SelectKnowledgeTopicNodesByScopeId 按范围ID过滤主题节点
-	SelectKnowledgeTopicNodesByScopeId(ctx context.Context, scopeId int64) ([]*entity.KnowledgeTopicNode, error)
 
 	// ListTopics 按知识库ID和范围ID查询主题列表
 	ListTopics(ctx context.Context, kbId int64, scopeId int64) ([]*entity.KnowledgeTopicNode, error)
@@ -63,19 +54,13 @@ type KnowledgeRepository interface {
 	// UpsertKnowledgeTopicNode 保存/更新主题节点
 	UpsertKnowledgeTopicNode(ctx context.Context, node *entity.KnowledgeTopicNode) error
 
-	// DeleteKnowledgeTopicNode 按ID删除主题节点
-	DeleteKnowledgeTopicNode(ctx context.Context, id int64) error
-
 	// DeleteTopic 软删除主题（设置状态为无效）
 	DeleteTopic(ctx context.Context, id int64, kbId int64) error
 
 	// ========== 主题-文档关系相关 ==========
 
-	// SelectTopicDocumentRelations 获取主题-文档映射关系
-	SelectTopicDocumentRelations(ctx context.Context, where any) ([]*entity.KnowledgeTopicDocumentRelation, error)
-
-	// SelectTopicDocumentRelationsByTopicCode 按主题查询关联关系
-	SelectTopicDocumentRelationsByTopicCode(ctx context.Context, topicCode string) ([]*entity.KnowledgeTopicDocumentRelation, error)
+	// SelectTopicDocumentRelationsByKbIds 按知识库ID列表批量查询全部有效的主题-文档关联（供检索范围收窄加载 topic 绑定）
+	SelectTopicDocumentRelationsByKbIds(ctx context.Context, kbIds []int64) ([]*entity.KnowledgeTopicDocumentRelation, error)
 
 	// ListTopicDocumentRelations 按知识库ID和主题ID查询主题-文档关系列表
 	ListTopicDocumentRelations(ctx context.Context, kbId int64, topicId int64) ([]*entity.KnowledgeTopicDocumentRelation, error)
@@ -87,15 +72,7 @@ type KnowledgeRepository interface {
 	UpsertTopicDocumentRelation(ctx context.Context, relation *entity.KnowledgeTopicDocumentRelation) error
 
 	// DeleteTopicDocumentRelation 软删除主题-文档关联
-	DeleteTopicDocumentRelation(ctx context.Context, kbId int64, topicId int64, documentId int64) error
-
-	// ========== 路由跟踪相关 ==========
-
-	// InsertKnowledgeRouteTrace 写入一条路由跟踪记录
-	InsertKnowledgeRouteTrace(ctx context.Context, trace *entity.KnowledgeRouteTrace) error
-
-	// SelectKnowledgeRouteTracePage 分页查询路由跟踪记录
-	SelectKnowledgeRouteTracePage(ctx context.Context, conversationId, mode string, routeStatus, pageNo, pageSize int) ([]*entity.KnowledgeRouteTrace, int64, error)
+	DeleteTopicDocumentRelation(ctx context.Context, kbId int64, topicId int64, documentId int64) (int64, error)
 
 	// ========== 知识库配置相关 ==========
 

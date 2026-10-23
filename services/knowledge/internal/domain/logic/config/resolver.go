@@ -19,33 +19,19 @@ func NewResolver(provider GlobalConfigProvider) *Resolver {
 	return &Resolver{provider: provider}
 }
 
-// ResolveRagRuntimeOptions 根据知识库列表解析出最终的 RagRuntimeOptions
+// ResolveRagRuntimeOptions 根据知识库列表解析出最终的 RagRuntimeOptions。
+// 单一配置语义：仅当恰好选中一个知识库时，其库级覆盖才叠加到全局默认之上；
+// 选中 0 个或多个知识库时统一使用全局默认，不进行跨库合并与冲突检测。
 func (r *Resolver) ResolveRagRuntimeOptions(knowledgeBases []*entity.KnowledgeBase) *vo.RagRuntimeOptions {
 	options := r.provider.CurrentOptions()
-	if len(knowledgeBases) == 0 {
+	if len(knowledgeBases) != 1 {
 		return options
 	}
-
-	// 解析所有知识库配置
-	configs := make([]*RuntimeConfig, 0, len(knowledgeBases))
-	for _, kb := range knowledgeBases {
-		if kb == nil {
-			continue
-		}
-		cfg := r.parseConfig(kb)
-		configs = append(configs, cfg)
-	}
-
-	if len(configs) == 0 {
+	kb := knowledgeBases[0]
+	if kb == nil {
 		return options
 	}
-
-	if len(configs) == 1 {
-		r.applySingle(options, configs[0])
-		return options
-	}
-
-	r.applyMerged(options, configs)
+	r.applySingle(options, r.parseConfig(kb))
 	return options
 }
 
@@ -58,23 +44,53 @@ func (r *Resolver) ResolveIndexingOptions(knowledgeBases []*entity.KnowledgeBase
 	return options
 }
 
+// ResolveScopeConfig 解析检索范围收窄阈值：以全局默认配置为底，单一配置语义。
+// 仅当恰好选中一个知识库时，才叠加该库 RetrievalConfigJson 中 scope 段的可选覆盖；
+// 选中多个知识库时统一使用全局阈值，不按库顺序叠加，避免选取顺序影响行为。
+func (r *Resolver) ResolveScopeConfig(knowledgeBases []*entity.KnowledgeBase) *vo.ScopeConfig {
+	scope := r.provider.CurrentScopeConfig()
+	if scope == nil {
+		scope = vo.NewDefaultScopeConfig()
+	} else {
+		// Clone 避免覆盖污染 provider 持有的全局默认值
+		scope = scope.Clone()
+	}
+
+	// 多库（含 0 库）统一走全局阈值，不叠加任何库级 scope 覆盖
+	if len(knowledgeBases) != 1 {
+		return scope
+	}
+	kb := knowledgeBases[0]
+	if kb == nil || len(kb.RetrievalConfigJson) == 0 {
+		return scope
+	}
+	var patch struct {
+		Scope *ScopeOverrideConfig `json:"scope,omitempty"`
+	}
+	if err := json.Unmarshal(kb.RetrievalConfigJson, &patch); err != nil {
+		logx.Warnf("知识库检索范围配置 JSON 解析失败，将忽略该段 scope 覆盖: knowledgeBaseId=%d, knowledgeBaseName=%s, err=%v",
+			kb.ID, kb.BaseName, err)
+		return scope
+	}
+	if patch.Scope != nil {
+		applyScopeOverride(scope, patch.Scope)
+	}
+	return scope
+}
+
+// applyScopeOverride 将 source 中非 nil 的 scope 覆盖项应用到 target（指针覆盖风格）
+func applyScopeOverride(target *vo.ScopeConfig, source *ScopeOverrideConfig) {
+	if target == nil || source == nil {
+		return
+	}
+	setIfNotNil(source.MinIntentScore, &target.MinIntentScore)
+	setIfNotNil(source.ConfidenceThreshold, &target.ConfidenceThreshold)
+	setIfNotNil(source.SupplementRatio, &target.SupplementRatio)
+}
+
 // parseConfig 解析单个知识库的多个 JSON 片段并合并
 func (r *Resolver) parseConfig(kb *entity.KnowledgeBase) *RuntimeConfig {
 	merged := &RuntimeConfig{
-		VectorTopK:                new(int),
-		KeywordTopK:               new(int),
-		GraphRagTopK:              new(int),
-		GraphRagMaxHops:           new(int),
-		CandidateTopK:             new(int),
-		RerankCandidateTopK:       new(int),
-		FinalTopK:                 new(int),
-		RerankEnabled:             new(bool),
-		ChannelTimeout:            new(time.Duration),
-		SubQuestionTimeout:        new(time.Duration),
-		MinVectorSimilarity:       new(float64),
-		KeywordRelativeScoreFloor: new(float64),
-		KeywordChannelEnabled:     new(bool),
-		GraphRagChannelEnabled:    new(bool),
 		Hybrid: &HybridConfig{
 			VectorWeight:        new(float64),
 			KeywordWeight:       new(float64),
@@ -115,20 +131,20 @@ func (r *Resolver) mergeInto(target, source *RuntimeConfig) {
 	if source == nil {
 		return
 	}
-	setIfNotNil(source.VectorTopK, target.VectorTopK)
-	setIfNotNil(source.KeywordTopK, target.KeywordTopK)
-	setIfNotNil(source.GraphRagTopK, target.GraphRagTopK)
-	setIfNotNil(source.GraphRagMaxHops, target.GraphRagMaxHops)
-	setIfNotNil(source.CandidateTopK, target.CandidateTopK)
-	setIfNotNil(source.RerankCandidateTopK, target.RerankCandidateTopK)
-	setIfNotNil(source.FinalTopK, target.FinalTopK)
-	setIfNotNil(source.RerankEnabled, target.RerankEnabled)
-	setIfNotNil(source.ChannelTimeout, target.ChannelTimeout)
-	setIfNotNil(source.SubQuestionTimeout, target.SubQuestionTimeout)
-	setIfNotNil(source.MinVectorSimilarity, target.MinVectorSimilarity)
-	setIfNotNil(source.KeywordRelativeScoreFloor, target.KeywordRelativeScoreFloor)
-	setIfNotNil(source.KeywordChannelEnabled, target.KeywordChannelEnabled)
-	setIfNotNil(source.GraphRagChannelEnabled, target.GraphRagChannelEnabled)
+	copyIfNotNil(source.VectorTopK, &target.VectorTopK)
+	copyIfNotNil(source.KeywordTopK, &target.KeywordTopK)
+	copyIfNotNil(source.GraphRagTopK, &target.GraphRagTopK)
+	copyIfNotNil(source.GraphRagMaxHops, &target.GraphRagMaxHops)
+	copyIfNotNil(source.CandidateTopK, &target.CandidateTopK)
+	copyIfNotNil(source.RerankCandidateTopK, &target.RerankCandidateTopK)
+	copyIfNotNil(source.FinalTopK, &target.FinalTopK)
+	copyIfNotNil(source.RerankEnabled, &target.RerankEnabled)
+	copyIfNotNil(source.ChannelTimeout, &target.ChannelTimeout)
+	copyIfNotNil(source.SubQuestionTimeout, &target.SubQuestionTimeout)
+	copyIfNotNil(source.MinVectorSimilarity, &target.MinVectorSimilarity)
+	copyIfNotNil(source.KeywordRelativeScoreFloor, &target.KeywordRelativeScoreFloor)
+	copyIfNotNil(source.KeywordChannelEnabled, &target.KeywordChannelEnabled)
+	copyIfNotNil(source.GraphRagChannelEnabled, &target.GraphRagChannelEnabled)
 
 	if source.Hybrid != nil {
 		if target.Hybrid == nil {
@@ -140,13 +156,13 @@ func (r *Resolver) mergeInto(target, source *RuntimeConfig) {
 
 // mergeHybridInto 同 mergeInto 但处理 HybridConfig
 func (r *Resolver) mergeHybridInto(target, source *HybridConfig) {
-	setIfNotNil(source.VectorWeight, target.VectorWeight)
-	setIfNotNil(source.KeywordWeight, target.KeywordWeight)
-	setIfNotNil(source.GraphRagWeight, target.GraphRagWeight)
-	setIfNotNil(source.RankWeight, target.RankWeight)
-	setIfNotNil(source.OriginalScoreWeight, target.OriginalScoreWeight)
-	setIfNotNil(source.MetadataBoostWeight, target.MetadataBoostWeight)
-	setIfNotNil(source.MaxMetadataBoost, target.MaxMetadataBoost)
+	copyIfNotNil(source.VectorWeight, &target.VectorWeight)
+	copyIfNotNil(source.KeywordWeight, &target.KeywordWeight)
+	copyIfNotNil(source.GraphRagWeight, &target.GraphRagWeight)
+	copyIfNotNil(source.RankWeight, &target.RankWeight)
+	copyIfNotNil(source.OriginalScoreWeight, &target.OriginalScoreWeight)
+	copyIfNotNil(source.MetadataBoostWeight, &target.MetadataBoostWeight)
+	copyIfNotNil(source.MaxMetadataBoost, &target.MaxMetadataBoost)
 }
 
 // applySingle 单知识库配置覆盖全局选项
@@ -185,165 +201,30 @@ func (r *Resolver) applySingleHybrid(target *vo.HybridOptions, source *HybridCon
 	setIfNotNil(source.MaxMetadataBoost, &target.MaxMetadataBoost)
 }
 
-// applyMerged 多个配置合并，检测冲突
-func (r *Resolver) applyMerged(options *vo.RagRuntimeOptions, configs []*RuntimeConfig) {
-	conflicts := make([]string, 0)
-
-	// 普通字段冲突检测
-	mergeField(configs, func(c *RuntimeConfig) *int { return c.VectorTopK },
-		func(v int) { options.VectorTopK = v }, "vectorTopK", &conflicts)
-	mergeField(configs, func(c *RuntimeConfig) *int { return c.KeywordTopK }, func(v int) { options.KeywordTopK = v }, "keywordTopK", &conflicts)
-	mergeField(configs, func(c *RuntimeConfig) *int { return c.GraphRagTopK }, func(v int) { options.GraphRagTopK = v }, "graphRagTopK", &conflicts)
-	mergeField(configs, func(c *RuntimeConfig) *int { return c.GraphRagMaxHops }, func(v int) { options.GraphRagMaxHops = v }, "graphRagMaxHops", &conflicts)
-	mergeField(configs, func(c *RuntimeConfig) *int { return c.CandidateTopK }, func(v int) { options.CandidateTopK = v }, "candidateTopK", &conflicts)
-	mergeField(configs, func(c *RuntimeConfig) *int { return c.RerankCandidateTopK }, func(v int) { options.RerankCandidateTopK = v }, "rerankCandidateTopK", &conflicts)
-	mergeField(configs, func(c *RuntimeConfig) *int { return c.FinalTopK }, func(v int) { options.FinalTopK = v }, "finalTopK", &conflicts)
-	mergeField(configs, func(c *RuntimeConfig) *bool { return c.RerankEnabled }, func(v bool) { options.RerankEnabled = v }, "rerankEnabled", &conflicts)
-	mergeField(configs, func(c *RuntimeConfig) *time.Duration { return c.ChannelTimeout }, func(v time.Duration) { options.ChannelTimeout = v }, "channelTimeoutMs", &conflicts)
-	mergeField(configs, func(c *RuntimeConfig) *time.Duration { return c.SubQuestionTimeout }, func(v time.Duration) { options.SubQuestionTimeout = v }, "subQuestionTimeoutMs", &conflicts)
-	mergeField(configs, func(c *RuntimeConfig) *float64 { return c.MinVectorSimilarity }, func(v float64) { options.MinVectorSimilarity = v }, "minVectorSimilarity", &conflicts)
-	mergeField(configs, func(c *RuntimeConfig) *float64 { return c.KeywordRelativeScoreFloor }, func(v float64) { options.KeywordRelativeScoreFloor = v }, "keywordRelativeScoreFloor", &conflicts)
-	mergeField(configs, func(c *RuntimeConfig) *bool { return c.KeywordChannelEnabled }, func(v bool) { options.KeywordChannelEnabled = v }, "keywordChannelEnabled", &conflicts)
-	mergeField(configs, func(c *RuntimeConfig) *bool { return c.GraphRagChannelEnabled }, func(v bool) { options.GraphRagChannelEnabled = v }, "graphRagChannelEnabled", &conflicts)
-	// Hybrid 字段冲突检测
-	if options.Hybrid == nil {
-		options.Hybrid = vo.NewDefaultHybridOptions()
-	}
-	mergeHybridField(configs, func(h *HybridConfig) *float64 { return h.VectorWeight },
-		func(v float64) { options.Hybrid.VectorWeight = v }, "hybrid.vectorWeight", &conflicts)
-	mergeHybridField(configs, func(h *HybridConfig) *float64 { return h.KeywordWeight },
-		func(v float64) { options.Hybrid.KeywordWeight = v }, "hybrid.keywordWeight", &conflicts)
-	mergeHybridField(configs, func(h *HybridConfig) *float64 { return h.GraphRagWeight },
-		func(v float64) { options.Hybrid.GraphRagWeight = v }, "hybrid.graphRagWeight", &conflicts)
-	mergeHybridField(configs, func(h *HybridConfig) *float64 { return h.RankWeight },
-		func(v float64) { options.Hybrid.RankWeight = v }, "hybrid.rankWeight", &conflicts)
-	mergeHybridField(configs, func(h *HybridConfig) *float64 { return h.OriginalScoreWeight },
-		func(v float64) { options.Hybrid.OriginalScoreWeight = v }, "hybrid.originalScoreWeight", &conflicts)
-	mergeHybridField(configs, func(h *HybridConfig) *float64 { return h.MetadataBoostWeight },
-		func(v float64) { options.Hybrid.MetadataBoostWeight = v }, "hybrid.metadataBoostWeight", &conflicts)
-	mergeHybridField(configs, func(h *HybridConfig) *float64 { return h.MaxMetadataBoost },
-		func(v float64) { options.Hybrid.MaxMetadataBoost = v }, "hybrid.maxMetadataBoost", &conflicts)
-
-	// 去重冲突字段
-	uniq := map[string]struct{}{}
-	for _, f := range conflicts {
-		uniq[f] = struct{}{}
-	}
-	if len(uniq) == 0 {
-		return
-	}
-	options.KbConfigConflictFields = make([]string, 0, len(uniq))
-	for f := range uniq {
-		options.KbConfigConflictFields = append(options.KbConfigConflictFields, f)
-	}
-}
-
-// mergeField 泛型辅助函数，检测多个配置中某字段是否一致，若一致则设置，否则记录冲突
-func mergeField[T comparable](configs []*RuntimeConfig,
-	getter func(*RuntimeConfig) *T,
-	setter func(T),
-	fieldName string,
-	conflicts *[]string) {
-
-	var values []*T
-	for _, cfg := range configs {
-		values = append(values, getter(cfg))
-	}
-	// 检查是否全部为 nil
-	allNil := true
-	for _, v := range values {
-		if v != nil {
-			allNil = false
-			break
-		}
-	}
-	if allNil {
-		return
-	}
-	// 检查是否部分 nil
-	hasNil := false
-	for _, v := range values {
-		if v == nil {
-			hasNil = true
-			break
-		}
-	}
-	if hasNil {
-		*conflicts = append(*conflicts, fieldName)
-		return
-	}
-	// 全部非 nil，检查是否相等
-	first := *values[0]
-	allSame := true
-	for _, v := range values {
-		if *v != first {
-			allSame = false
-			break
-		}
-	}
-	if allSame {
-		setter(first)
-	} else {
-		*conflicts = append(*conflicts, fieldName)
-	}
-}
-
-func mergeHybridField[T comparable](configs []*RuntimeConfig,
-	getter func(*HybridConfig) *T,
-	setter func(T),
-	fieldName string,
-	conflicts *[]string) {
-
-	values := make([]*T, 0, len(configs))
-	for _, cfg := range configs {
-		if cfg.Hybrid != nil {
-			values = append(values, getter(cfg.Hybrid))
-		} else {
-			values = append(values, nil)
-		}
-	}
-	// 与 mergeField 相同逻辑
-	allNil := true
-	for _, v := range values {
-		if v != nil {
-			allNil = false
-			break
-		}
-	}
-	if allNil {
-		return
-	}
-	hasNil := false
-	for _, v := range values {
-		if v == nil {
-			hasNil = true
-			break
-		}
-	}
-	if hasNil {
-		*conflicts = append(*conflicts, fieldName)
-		return
-	}
-	first := *values[0]
-	allSame := true
-	for _, v := range values {
-		if *v != first {
-			allSame = false
-			break
-		}
-	}
-	if allSame {
-		setter(first)
-	} else {
-		*conflicts = append(*conflicts, fieldName)
-	}
-}
-
-// 辅助设置函数：如果 src 非 nil，将值赋给 dst
+// setIfNotNil 如果 src 非 nil，将 src 指向的值写入 dst 指向的槽位。
+// 要求 dst 指向的槽位已分配（例如全局默认值、ScopeConfig 的值字段）。
 func setIfNotNil[T any](src *T, dst *T) {
 	if src != nil {
 		*dst = *src
 	}
+}
+
+// copyIfNotNil 如果 src 非 nil，为 dst 槽位（指向 *T 的指针）分配新值并写入 src 指向的值；
+// 用于 parseConfig 的基础结构体标量字段为 nil 的场景，避免 nil 解引用，
+// 并保留“未声明字段为 nil、不覆盖目标全局默认值”的语义。
+func copyIfNotNil[T any](src *T, dst **T) {
+	if src == nil {
+		return
+	}
+	v := *src
+	*dst = &v
+}
+
+// ScopeOverrideConfig 检索范围收窄阈值的知识库级覆盖（指针 nil 表示不覆盖）
+type ScopeOverrideConfig struct {
+	MinIntentScore      *float64 `json:"minIntentScore,omitempty"`
+	ConfidenceThreshold *float64 `json:"confidenceThreshold,omitempty"`
+	SupplementRatio     *float64 `json:"supplementRatio,omitempty"`
 }
 
 type HybridConfig struct {

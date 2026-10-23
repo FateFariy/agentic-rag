@@ -91,28 +91,10 @@ func (k *KnowledgeService) SaveTopicDocumentRelation(ctx context.Context, req *a
 
 // RemoveTopicDocumentRelation 移除主题文档关联
 func (k *KnowledgeService) RemoveTopicDocumentRelation(ctx context.Context, req *api.TopicDocumentRelationRemoveReq) (bool, error) {
-	return k.l.RemoveTopicDocumentRelation(ctx,
+	return k.l.DeleteTopicDocumentRelation(ctx,
 		utils.StringToInt64(req.KnowledgeBaseId),
 		utils.StringToInt64(req.TopicId),
 		utils.StringToInt64(req.DocumentId))
-}
-
-// ==================== 路由追踪 ====================
-
-func (k *KnowledgeService) QueryKnowledgeRouteTracePage(ctx context.Context, req *api.KnowledgeRouteTracePageReq) (*api.KnowledgeRouteTracePageResp, error) {
-	traces, total, err := k.l.QueryRouteTracePage(ctx, req.ConversationId, req.Mode, req.RouteStatus, req.PageNo, req.PageSize)
-	if err != nil {
-		return nil, err
-	}
-	result := convert.ToKnowledgeRouteTraceItemList(traces)
-	totalPages := (total + int64(req.PageSize) - 1) / int64(req.PageSize)
-	return &api.KnowledgeRouteTracePageResp{
-		PageNo:     req.PageNo,
-		PageSize:   req.PageSize,
-		Total:      total,
-		TotalPages: int(totalPages),
-		Records:    result,
-	}, nil
 }
 
 // ListKnowledgeBase 查询知识库列表

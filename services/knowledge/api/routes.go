@@ -1,6 +1,3 @@
-// Code scaffolded by goctl. Safe to edit.
-// goctl 1.9.2
-
 package api
 
 import (
@@ -56,11 +53,6 @@ func RegisterHandlers(server *rest.Server, srv HTTPServer) {
 				Method:  http.MethodPost,
 				Path:    "/topic/document/remove",
 				Handler: RemoveTopicDocumentRelationHandler(srv),
-			},
-			{
-				Method:  http.MethodPost,
-				Path:    "/route/trace/page/query",
-				Handler: QueryKnowledgeRouteTracePageHandler(srv),
 			},
 			{
 				Method:  http.MethodPost,

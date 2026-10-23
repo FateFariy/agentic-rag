@@ -44,7 +44,6 @@ type RagRuntimeOptions struct {
 	KeywordChannelEnabled     bool
 	GraphRagChannelEnabled    bool
 	Hybrid                    *HybridOptions
-	KbConfigConflictFields    []string
 }
 
 // NewDefaultRagRuntimeOptions 返回 RagRuntimeOptions 的默认值
@@ -65,7 +64,6 @@ func NewDefaultRagRuntimeOptions() *RagRuntimeOptions {
 		KeywordChannelEnabled:     true,
 		GraphRagChannelEnabled:    true,
 		Hybrid:                    NewDefaultHybridOptions(),
-		KbConfigConflictFields:    []string{},
 	}
 }
 
@@ -83,7 +81,6 @@ func (o *RagRuntimeOptions) DeepCopy() *RagRuntimeOptions {
 	rag = *o
 
 	rag.Hybrid = &hybrid
-	rag.KbConfigConflictFields = append([]string{}, o.KbConfigConflictFields...)
 
 	return &rag
 }

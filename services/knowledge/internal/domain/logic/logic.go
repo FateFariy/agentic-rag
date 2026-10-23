@@ -34,11 +34,8 @@ type KnowledgeLogic interface {
 	// SaveTopicDocumentRelation 保存/更新主题文档关联
 	SaveTopicDocumentRelation(ctx context.Context, relation *entity.KnowledgeTopicDocumentRelation) (*entity.KnowledgeTopicDocumentRelation, error)
 
-	// RemoveTopicDocumentRelation 移除主题文档关联（通过ID）
-	RemoveTopicDocumentRelation(ctx context.Context, kbId int64, topicId int64, documentId int64) (bool, error)
-
-	// QueryRouteTracePage 分页查询知识路由追踪记录
-	QueryRouteTracePage(ctx context.Context, conversationId, mode string, routeStatus, pageNo, pageSize int) ([]*entity.KnowledgeRouteTrace, int64, error)
+	// DeleteTopicDocumentRelation 删除主题文档关联（通过ID）
+	DeleteTopicDocumentRelation(ctx context.Context, kbId int64, topicId int64, documentId int64) (bool, error)
 }
 
 // KnowledgeBaseLogic 知识库服务
@@ -79,6 +76,7 @@ type KnowledgeBaseLogic interface {
 
 // KnowledgeBaseRetrievalLogic 知识库检索范围
 type KnowledgeBaseRetrievalLogic interface {
-	// DetermineKnowledgeScope 根据知识库选择模式解析检索范围
-	DetermineKnowledgeScope(ctx context.Context, selectMode string, kbIds []string) (*aggregate.KnowledgeBaseSelectionSnapshot, error)
+	// DetermineKnowledgeScope 根据知识库选择模式解析检索范围；
+	// question 为用于意图收窄的原始问题，为空时跳过收窄
+	DetermineKnowledgeScope(ctx context.Context, selectMode string, kbIds []string, question string) (*aggregate.KnowledgeBaseSelectionSnapshot, error)
 }

@@ -8,7 +8,6 @@ type KnowledgeBase struct {
 	ID                       int64           `gorm:"column:id;"`                                             // 知识库ID
 	BaseName                 string          `gorm:"column:base_name;"`                                      // 知识库名称
 	Description              string          `gorm:"column:description;"`                                    // 描述
-	EmbeddingModel           string          `gorm:"column:embedding_model;"`                                // 嵌入模型
 	RetrievalConfigJson      json.RawMessage `gorm:"column:retrieval_config_json;type:json;serializer:json"` // 检索配置JSON
 	GraphRagConfigJson       json.RawMessage `gorm:"column:graph_rag_config_json;type:json;serializer:json"` // 图谱RAG配置JSON
 	MetadataFilterJson       json.RawMessage `gorm:"column:metadata_filter_json;type:json;serializer:json"`  // 元数据过滤JSON

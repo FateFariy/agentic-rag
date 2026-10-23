@@ -24,10 +24,4 @@ type DocumentGateway interface {
 
 	// FindRetrieveDocumentByIds 根据ID列表获取可检索的文档元数据
 	FindRetrieveDocumentByIds(ctx context.Context, ids ...int64) ([]*vo.DocumentMetadata, error)
-
-	// FindDocumentProfileByDocIds 根据文档ID列表获取文档属性
-	FindDocumentProfileByDocIds(ctx context.Context, docIds []int64) ([]*vo.DocumentProfile, error)
-
-	// FindDocumentProfiles 获取所有文档属性
-	FindDocumentProfiles(ctx context.Context) ([]*vo.DocumentProfile, error)
 }

@@ -3,13 +3,10 @@ package grpc
 import (
 	"context"
 
-	"google.golang.org/protobuf/types/known/emptypb"
-
-	"github.com/swiftbit/know-agent/pkg/grpc/gen/document/v1"
+	documentv1 "github.com/swiftbit/know-agent/pkg/grpc/gen/document/v1"
 	knowledgev1 "github.com/swiftbit/know-agent/pkg/grpc/gen/knowledge/v1"
 	"github.com/swiftbit/know-agent/pkg/utils"
 	"github.com/swiftbit/know-agent/services/knowledge/internal/domain/logic"
-	"github.com/swiftbit/know-agent/services/knowledge/internal/domain/logic/route"
 	"github.com/swiftbit/know-agent/services/knowledge/internal/domain/model/aggregate"
 	"github.com/swiftbit/know-agent/services/knowledge/internal/domain/model/entity"
 	"github.com/swiftbit/know-agent/services/knowledge/internal/domain/model/vo"
@@ -22,36 +19,20 @@ var _ knowledgev1.KnowledgeServiceServer = (*KnowledgeGrpcServer)(nil)
 type KnowledgeGrpcServer struct {
 	knowledgev1.UnimplementedKnowledgeServiceServer
 	retrieval logic.KnowledgeBaseRetrievalLogic
-	router    route.KnowledgeRouter
 	kbl       logic.KnowledgeBaseLogic
 }
 
 // NewKnowledgeGrpcServer 创建 knowledge gRPC 服务端
-func NewKnowledgeGrpcServer(retrieval logic.KnowledgeBaseRetrievalLogic, router route.KnowledgeRouter, kbl logic.KnowledgeBaseLogic) *KnowledgeGrpcServer {
-	return &KnowledgeGrpcServer{retrieval: retrieval, router: router, kbl: kbl}
+func NewKnowledgeGrpcServer(retrieval logic.KnowledgeBaseRetrievalLogic, kbl logic.KnowledgeBaseLogic) *KnowledgeGrpcServer {
+	return &KnowledgeGrpcServer{retrieval: retrieval, kbl: kbl}
 }
 
 func (s *KnowledgeGrpcServer) DetermineKnowledgeScope(ctx context.Context, req *knowledgev1.DetermineKnowledgeScopeRequest) (*knowledgev1.KnowledgeBaseSelectionSnapshot, error) {
-	snapshot, err := s.retrieval.DetermineKnowledgeScope(ctx, req.GetSelectMode(), req.GetKbIds())
+	snapshot, err := s.retrieval.DetermineKnowledgeScope(ctx, req.GetSelectMode(), req.GetKbIds(), req.GetQuestion())
 	if err != nil {
 		return nil, err
 	}
 	return snapshotToProto(snapshot), nil
-}
-
-func (s *KnowledgeGrpcServer) Route(ctx context.Context, req *knowledgev1.RouteRequest) (*knowledgev1.KnowledgeRouteDecision, error) {
-	decision, err := s.router.Route(ctx, routeContextFromProto(req.GetInput()))
-	if err != nil {
-		return nil, err
-	}
-	return decisionToProto(decision), nil
-}
-
-func (s *KnowledgeGrpcServer) RecordShadowRoute(ctx context.Context, req *knowledgev1.RecordShadowRouteRequest) (*emptypb.Empty, error) {
-	if err := s.router.RecordShadowRoute(ctx, routeContextFromProto(req.GetInput())); err != nil {
-		return nil, err
-	}
-	return &emptypb.Empty{}, nil
 }
 
 func (s *KnowledgeGrpcServer) Resolve(ctx context.Context, req *knowledgev1.ResolveRequest) (*knowledgev1.IndexingOptions, error) {
@@ -81,31 +62,18 @@ func (s *KnowledgeGrpcServer) GraphTypes(ctx context.Context, req *knowledgev1.G
 
 // ==================== 私有转换（与 grpc/client 端映射反向对称） ====================
 
-// routeContextFromProto 将 proto 路由输入转换为 knowledge 自有路由上下文
-func routeContextFromProto(p *knowledgev1.KnowledgeRouteInput) *route.Context {
-	if p == nil {
-		return nil
-	}
-	routeCtx := route.NewRouteContext(p.GetQuestion(), p.GetRewriteQuestion(), p.GetSelectedKnowledgeBaseIds(), p.GetAllowedDocumentIds())
-	routeCtx.ConversationId = p.GetConversationId()
-	routeCtx.ExchangeId = p.GetExchangeId()
-	routeCtx.SelectedDocumentId = p.GetSelectedDocumentId()
-	routeCtx.KnowledgeBaseSelectionMode = p.GetKnowledgeBaseSelectionMode()
-	routeCtx.SelectedKnowledgeBaseNames = p.GetSelectedKnowledgeBaseNames()
-	return routeCtx
-}
-
 func snapshotToProto(s *aggregate.KnowledgeBaseSelectionSnapshot) *knowledgev1.KnowledgeBaseSelectionSnapshot {
 	if s == nil {
 		return nil
 	}
 	return &knowledgev1.KnowledgeBaseSelectionSnapshot{
-		SelectionMode:              string(s.SelectionMode),
-		SelectedKnowledgeBaseIds:   s.SelectedKnowledgeBaseIds,
-		SelectedKnowledgeBaseNames: s.SelectedKnowledgeBaseNames,
+		SelectionMode:              s.SelectionMode,
+		SelectedKnowledgeBaseIds:   s.SelectedKnowledgeBaseIDs(),
+		SelectedKnowledgeBaseNames: s.SelectedKnowledgeBaseNames(),
 		SelectedKnowledgeBases:     knowledgeBaseListToProto(s.SelectedKnowledgeBases),
 		AllowedDocuments:           documentMetadataListToProto(s.AllowedDocuments),
 		RagRuntimeOptions:          ragRuntimeOptionsToProto(s.RagRuntimeOptions),
+		NarrowedDocumentIds:        s.NarrowedDocumentIds,
 	}
 }
 
@@ -128,7 +96,6 @@ func knowledgeBaseToProto(item *entity.KnowledgeBase) *knowledgev1.KnowledgeBase
 		Id:                  item.ID,
 		BaseName:            item.BaseName,
 		Description:         item.Description,
-		EmbeddingModel:      item.EmbeddingModel,
 		RetrievalConfigJson: string(item.RetrievalConfigJson),
 		GraphRagConfigJson:  string(item.GraphRagConfigJson),
 		MetadataFilterJson:  string(item.MetadataFilterJson),
@@ -147,76 +114,6 @@ func documentMetadataListToProto(items []*vo.DocumentMetadata) []*documentv1.Doc
 				KnowledgeBaseId:   item.KnowledgeBaseId,
 				KnowledgeBaseName: item.KnowledgeBaseName,
 				LastIndexTaskId:   item.LastIndexTaskId,
-			})
-		}
-	}
-	return out
-}
-
-func decisionToProto(d *vo.KnowledgeRouteDecision) *knowledgev1.KnowledgeRouteDecision {
-	if d == nil {
-		return nil
-	}
-	return &knowledgev1.KnowledgeRouteDecision{
-		Scopes:          scopeCandidatesToProto(d.Scopes),
-		Topics:          topicCandidatesToProto(d.Topics),
-		Documents:       documentCandidatesToProto(d.Documents),
-		Confidence:      d.Confidence,
-		RouteStatus:     d.RouteStatus,
-		Reason:          d.Reason,
-		Source:          d.Source,
-		Degraded:        d.IsDegraded,
-		DegradedReasons: d.DegradedReasons,
-	}
-}
-
-func scopeCandidatesToProto(items []*vo.ScopeRouteCandidate) []*knowledgev1.ScopeRouteCandidate {
-	out := make([]*knowledgev1.ScopeRouteCandidate, 0, len(items))
-	for _, item := range items {
-		if item != nil {
-			out = append(out, &knowledgev1.ScopeRouteCandidate{
-				ScopeId:   item.ScopeId,
-				ScopeName: item.ScopeName,
-				Score:     item.Score,
-				Reason:    item.Reason,
-				Source:    item.Source,
-				Features:  item.Features,
-			})
-		}
-	}
-	return out
-}
-
-func topicCandidatesToProto(items []*vo.TopicRouteCandidate) []*knowledgev1.TopicRouteCandidate {
-	out := make([]*knowledgev1.TopicRouteCandidate, 0, len(items))
-	for _, item := range items {
-		if item != nil {
-			out = append(out, &knowledgev1.TopicRouteCandidate{
-				TopicId:   item.TopicId,
-				TopicName: item.TopicName,
-				ScopeId:   item.ScopeId,
-				Score:     item.Score,
-				Reason:    item.Reason,
-				Source:    item.Source,
-				Features:  item.Features,
-			})
-		}
-	}
-	return out
-}
-
-func documentCandidatesToProto(items []*vo.DocumentRouteCandidate) []*knowledgev1.DocumentRouteCandidate {
-	out := make([]*knowledgev1.DocumentRouteCandidate, 0, len(items))
-	for _, item := range items {
-		if item != nil {
-			out = append(out, &knowledgev1.DocumentRouteCandidate{
-				DocumentId:      item.DocumentId,
-				DocumentName:    item.DocumentName,
-				LastIndexTaskId: item.LastIndexTaskId,
-				Score:           item.Score,
-				Reason:          item.Reason,
-				Source:          item.Source,
-				Features:        item.Features,
 			})
 		}
 	}
@@ -243,7 +140,6 @@ func ragRuntimeOptionsToProto(o *vo.RagRuntimeOptions) *knowledgev1.RagRuntimeOp
 		KeywordChannelEnabled:     o.KeywordChannelEnabled,
 		GraphRagChannelEnabled:    o.GraphRagChannelEnabled,
 		Hybrid:                    hybridOptionsToProto(o.Hybrid),
-		KbConfigConflictFields:    o.KbConfigConflictFields,
 	}
 }
 

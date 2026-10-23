@@ -48,22 +48,6 @@ func (c *KnowledgeDocumentClient) FindRetrieveDocumentByIds(ctx context.Context,
 	return protoDocumentMetadataToKnowledgeVO(resp.GetItems()), nil
 }
 
-func (c *KnowledgeDocumentClient) FindDocumentProfileByDocIds(ctx context.Context, docIds []int64) ([]*vo.DocumentProfile, error) {
-	resp, err := c.client.FindDocumentProfileByDocIds(ctx, &documentv1.FindRetrieveDocumentByIdsRequest{Ids: docIds})
-	if err != nil {
-		return nil, err
-	}
-	return protoDocumentProfileToKnowledgeVO(resp.GetItems()), nil
-}
-
-func (c *KnowledgeDocumentClient) FindDocumentProfiles(ctx context.Context) ([]*vo.DocumentProfile, error) {
-	resp, err := c.client.FindDocumentProfiles(ctx, &documentv1.FindDocumentProfilesRequest{})
-	if err != nil {
-		return nil, err
-	}
-	return protoDocumentProfileToKnowledgeVO(resp.GetItems()), nil
-}
-
 func protoDocumentMetadataToKnowledgeVO(items []*documentv1.DocumentMetadata) []*vo.DocumentMetadata {
 	return utils.Map(items, func(m *documentv1.DocumentMetadata) *vo.DocumentMetadata {
 		return &vo.DocumentMetadata{
@@ -72,18 +56,6 @@ func protoDocumentMetadataToKnowledgeVO(items []*documentv1.DocumentMetadata) []
 			KnowledgeBaseId:   m.GetKnowledgeBaseId(),
 			KnowledgeBaseName: m.GetKnowledgeBaseName(),
 			LastIndexTaskId:   m.GetLastIndexTaskId(),
-		}
-	})
-}
-
-func protoDocumentProfileToKnowledgeVO(items []*documentv1.DocumentProfile) []*vo.DocumentProfile {
-	return utils.Map(items, func(m *documentv1.DocumentProfile) *vo.DocumentProfile {
-		return &vo.DocumentProfile{
-			DocumentId:       m.GetDocumentId(),
-			DocumentSummary:  m.GetDocumentSummary(),
-			CoreTopics:       m.GetCoreTopics(),
-			ExampleQuestions: m.GetExampleQuestions(),
-			DocumentType:     m.GetDocumentType(),
 		}
 	})
 }

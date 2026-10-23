@@ -10,7 +10,6 @@ type KnowledgeBase struct {
 	common.Model
 	BaseName            string         `gorm:"column:base_name;type:varchar(255)"`              // 基础名称
 	Description         string         `gorm:"column:description;type:text"`                    // 描述
-	EmbeddingModel      string         `gorm:"column:embedding_model;type:varchar(100)"`        // 嵌入模型
 	RetrievalConfigJson datatypes.JSON `gorm:"column:retrieval_config_json;type:json"`          // 检索配置JSON
 	GraphRagConfigJson  datatypes.JSON `gorm:"column:graph_rag_config_json;type:json"`          // 图谱RAG配置JSON
 	MetadataFilterJson  datatypes.JSON `gorm:"column:metadata_filter_json;type:json"`           // 元数据过滤JSON

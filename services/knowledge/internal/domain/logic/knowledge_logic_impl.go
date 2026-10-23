@@ -2,8 +2,7 @@ package logic
 
 import (
 	"context"
-
-	"github.com/duke-git/lancet/v2/strutil"
+	"slices"
 
 	"github.com/swiftbit/know-agent/pkg/common"
 	"github.com/swiftbit/know-agent/pkg/utils"
@@ -71,10 +70,7 @@ func (k *KnowledgeLogicImpl) SaveScope(ctx context.Context, scopeNode *entity.Kn
 	}
 
 	// 新记录生成ID
-	if scopeNode.ID == 0 {
-		scopeNode.ID = utils.GetSnowflakeNextID()
-	}
-
+	scopeNode.ID = utils.DefaultIfZero(scopeNode.ID, utils.GetSnowflakeNextID())
 	if err = k.repo.UpsertKnowledgeScopeNode(ctx, scopeNode); err != nil {
 		return nil, err
 	}
@@ -119,7 +115,7 @@ func (k *KnowledgeLogicImpl) DeleteScope(ctx context.Context, id int64, kbId int
 
 // ListScopes 查询知识范围列表
 func (k *KnowledgeLogicImpl) ListScopes(ctx context.Context, kbId int64) ([]*entity.KnowledgeScopeNode, error) {
-	return k.repo.SelectScopesByKbId(ctx, kbId)
+	return k.repo.SelectScopes(ctx, kbId)
 }
 
 // ============ Topic ============
@@ -165,10 +161,7 @@ func (k *KnowledgeLogicImpl) SaveTopic(ctx context.Context, topicNode *entity.Kn
 	}
 
 	// 新记录生成ID
-	if topicNode.ID == 0 {
-		topicNode.ID = utils.GetSnowflakeNextID()
-	}
-
+	topicNode.ID = utils.DefaultIfZero(topicNode.ID, utils.GetSnowflakeNextID())
 	if err = k.repo.UpsertKnowledgeTopicNode(ctx, topicNode); err != nil {
 		return nil, err
 	}
@@ -254,14 +247,10 @@ func (k *KnowledgeLogicImpl) SaveTopicDocumentRelation(ctx context.Context, rela
 	if err != nil {
 		return nil, err
 	}
-	docFound := false
-	for _, doc := range documents {
-		if doc.DocumentId == relation.DocumentId && doc.KnowledgeBaseId == relation.KnowledgeBaseId {
-			docFound = true
-			break
-		}
-	}
-	if !docFound {
+	docFound := slices.IndexFunc(documents, func(doc *vo.DocumentMetadata) bool {
+		return doc.DocumentId == relation.DocumentId && doc.KnowledgeBaseId == relation.KnowledgeBaseId
+	})
+	if docFound < 0 {
 		return nil, common.NewBizError(common.ErrInvalidParam.Code, "文档不属于当前知识库")
 	}
 
@@ -289,30 +278,13 @@ func (k *KnowledgeLogicImpl) SaveTopicDocumentRelation(ctx context.Context, rela
 }
 
 // RemoveTopicDocumentRelation 删除主题-文档关系
-func (k *KnowledgeLogicImpl) RemoveTopicDocumentRelation(ctx context.Context, kbId int64, topicId int64, documentId int64) (bool, error) {
-	// 验证关系存在
-	existing, err := k.repo.SelectTopicDocumentRelation(ctx, kbId, topicId, documentId)
+func (k *KnowledgeLogicImpl) DeleteTopicDocumentRelation(ctx context.Context, kbId int64, topicId int64, documentId int64) (bool, error) {
+	rowsAffected, err := k.repo.DeleteTopicDocumentRelation(ctx, kbId, topicId, documentId)
 	if err != nil {
 		return false, err
 	}
-	if existing == nil {
+	if rowsAffected == 0 {
 		return false, common.NewBizError(common.ErrInvalidParam.Code, "主题-文档关系不存在")
 	}
-
-	// 软删除
-	if err = k.repo.DeleteTopicDocumentRelation(ctx, kbId, topicId, documentId); err != nil {
-		return false, err
-	}
 	return true, nil
-}
-
-// ============ Route Trace ============
-
-// QueryRouteTracePage 分页查询路由跟踪记录
-func (k *KnowledgeLogicImpl) QueryRouteTracePage(ctx context.Context, conversationId, mode string, routeStatus, pageNo, pageSize int) ([]*entity.KnowledgeRouteTrace, int64, error) {
-	pageNo = max(1, pageNo)
-	if pageSize <= 0 || pageSize > 200 {
-		pageSize = 20
-	}
-	return k.repo.SelectKnowledgeRouteTracePage(ctx, strutil.Trim(conversationId), strutil.Trim(mode), routeStatus, pageNo, pageSize)
 }

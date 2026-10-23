@@ -6,4 +6,7 @@ import "github.com/swiftbit/know-agent/services/knowledge/internal/domain/model/
 type GlobalConfigProvider interface {
 	CurrentOptions() *vo.RagRuntimeOptions
 	CurrentIndexingOptions() *vo.IndexingOptions
+
+	// CurrentScopeConfig 返回检索范围收窄阈值的全局默认配置
+	CurrentScopeConfig() *vo.ScopeConfig
 }

@@ -34,11 +34,8 @@ type HTTPServer interface {
 	// SaveTopicDocumentRelation 保存主题文档关联
 	SaveTopicDocumentRelation(ctx context.Context, req *TopicDocumentRelationSaveReq) (*TopicDocumentRelationResp, error)
 
-	// RemoveTopicDocumentRelation 移除主题文档关联
+	// RemoveTopicDocumentRelation 删除主题文档关联
 	RemoveTopicDocumentRelation(ctx context.Context, req *TopicDocumentRelationRemoveReq) (bool, error)
-
-	// QueryKnowledgeRouteTracePage 分页查询知识路由追踪
-	QueryKnowledgeRouteTracePage(ctx context.Context, req *KnowledgeRouteTracePageReq) (*KnowledgeRouteTracePageResp, error)
 
 	// ListKnowledgeBase 查询知识库列表
 	ListKnowledgeBase(ctx context.Context) ([]*KnowledgeBaseItemResp, error)
@@ -54,7 +51,7 @@ func SaveKnowledgeScopeHandler(srv HTTPServer) http.HandlerFunc {
 		}
 
 		resp, err := srv.SaveKnowledgeScope(r.Context(), &req)
-		common.Response(w, resp, "", err)
+		common.Response(w, resp, err)
 	}
 }
 
@@ -68,7 +65,7 @@ func DeleteKnowledgeScopeHandler(srv HTTPServer) http.HandlerFunc {
 		}
 
 		resp, err := srv.DeleteKnowledgeScope(r.Context(), &req)
-		common.Response(w, resp, "", err)
+		common.Response(w, resp, err)
 	}
 }
 
@@ -76,7 +73,7 @@ func DeleteKnowledgeScopeHandler(srv HTTPServer) http.HandlerFunc {
 func ListKnowledgeScopeHandler(srv HTTPServer) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		resp, err := srv.ListKnowledgeScope(r.Context())
-		common.Response(w, resp, "", err)
+		common.Response(w, resp, err)
 	}
 }
 
@@ -90,7 +87,7 @@ func SaveKnowledgeTopicHandler(srv HTTPServer) http.HandlerFunc {
 		}
 
 		resp, err := srv.SaveKnowledgeTopic(r.Context(), &req)
-		common.Response(w, resp, "", err)
+		common.Response(w, resp, err)
 	}
 }
 
@@ -104,7 +101,7 @@ func DeleteKnowledgeTopicHandler(srv HTTPServer) http.HandlerFunc {
 		}
 
 		resp, err := srv.DeleteKnowledgeTopic(r.Context(), &req)
-		common.Response(w, resp, "", err)
+		common.Response(w, resp, err)
 	}
 }
 
@@ -118,7 +115,7 @@ func ListKnowledgeTopicHandler(srv HTTPServer) http.HandlerFunc {
 		}
 
 		resp, err := srv.ListKnowledgeTopic(r.Context(), &req)
-		common.Response(w, resp, "", err)
+		common.Response(w, resp, err)
 	}
 }
 
@@ -132,7 +129,7 @@ func ListTopicDocumentRelationHandler(srv HTTPServer) http.HandlerFunc {
 		}
 
 		resp, err := srv.ListTopicDocumentRelation(r.Context(), &req)
-		common.Response(w, resp, "", err)
+		common.Response(w, resp, err)
 	}
 }
 
@@ -146,7 +143,7 @@ func SaveTopicDocumentRelationHandler(srv HTTPServer) http.HandlerFunc {
 		}
 
 		resp, err := srv.SaveTopicDocumentRelation(r.Context(), &req)
-		common.Response(w, resp, "", err)
+		common.Response(w, resp, err)
 	}
 }
 
@@ -160,21 +157,7 @@ func RemoveTopicDocumentRelationHandler(srv HTTPServer) http.HandlerFunc {
 		}
 
 		resp, err := srv.RemoveTopicDocumentRelation(r.Context(), &req)
-		common.Response(w, resp, "", err)
-	}
-}
-
-// QueryKnowledgeRouteTracePageHandler 分页查询知识路由追踪
-func QueryKnowledgeRouteTracePageHandler(srv HTTPServer) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		var req KnowledgeRouteTracePageReq
-		if err := httpx.Parse(r, &req); err != nil {
-			common.Error(w, common.ErrInvalidParam.Format(err.Error()))
-			return
-		}
-
-		resp, err := srv.QueryKnowledgeRouteTracePage(r.Context(), &req)
-		common.Response(w, resp, "", err)
+		common.Response(w, resp, err)
 	}
 }
 
@@ -182,6 +165,6 @@ func QueryKnowledgeRouteTracePageHandler(srv HTTPServer) http.HandlerFunc {
 func ListKnowledgeBaseHandler(srv HTTPServer) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		resp, err := srv.ListKnowledgeBase(r.Context())
-		common.Response(w, resp, "", err)
+		common.Response(w, resp, err)
 	}
 }

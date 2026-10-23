@@ -11,9 +11,9 @@ type Config struct {
 	Chunk ChunkConf
 }
 
-// MustLoad 从 -f 指定的 YAML 加载 knowledge 配置（默认 etc/knowledge-dev.yaml）
+// MustLoad 从 -f 指定的 YAML 加载 knowledge 配置（默认 etc/knowledge.yaml）
 func MustLoad() *Config {
 	var c Config
-	sharedcfg.LoadConfig(&c, "etc/knowledge-dev.yaml")
+	sharedcfg.LoadConfig(&c, "etc/knowledge.yaml")
 	return &c
 }

@@ -19,17 +19,15 @@ type (
 		Aliases         string `json:"aliases,optional"` // 别名
 		Examples        string `json:"examples,optional"` // 示例
 		SortOrder       int    `json:"sortOrder,optional"` // 排序
-		OperatorId      string `json:"operatorId,optional"` // 操作人ID
 	}
 	// 删除知识范围请求
 	KnowledgeScopeDeleteReq {
-		ID              string `json:"id,optional"` // 主键ID
-		KnowledgeBaseId string `json:"knowledgeBaseId,optional"` // 知识库ID
-		OperatorId      string `json:"operatorId,optional"` // 操作人ID
+		ID              string `json:"id"` // 主键ID
+		KnowledgeBaseId string `json:"knowledgeBaseId"` // 知识库ID
 	}
 	// 查询知识范围列表请求
 	KnowledgeScopeListReq {
-		KnowledgeBaseId string `json:"knowledgeBaseId,optional"` // 知识库ID
+		KnowledgeBaseId string `json:"knowledgeBaseId"` // 知识库ID
 	}
 	// 保存知识主题请求
 	KnowledgeTopicSaveReq {
@@ -43,18 +41,16 @@ type (
 		AnswerShape         string `json:"answerShape,optional"` // 答复形态
 		ExecutionPreference string `json:"executionPreference,optional"` // 执行偏好
 		SortOrder           int    `json:"sortOrder,optional"` // 排序
-		OperatorId          string `json:"operatorId,optional"` // 操作人ID
 	}
 	// 删除知识主题请求
 	KnowledgeTopicDeleteReq {
 		ID              string `json:"id"` // 主键ID
 		KnowledgeBaseId string `json:"knowledgeBaseId"` // 知识库ID
-		OperatorId      string `json:"operatorId,optional"` // 操作人ID
 	}
 	// 查询知识主题列表请求
 	KnowledgeTopicListReq {
 		KnowledgeBaseId string `json:"knowledgeBaseId"` // 知识库ID
-		ScopeId         string `json:"scopeId"` // 范围ID
+		ScopeId         string `json:"scopeId,optional"` // 范围ID
 	}
 	// 查询主题文档关联列表请求
 	TopicDocumentRelationListReq {
@@ -69,22 +65,12 @@ type (
 		RelationScore   float64 `json:"relationScore,optional"` // 关联分数
 		RelationSource  string  `json:"relationSource,optional"` // 关联来源
 		Reason          string  `json:"reason,optional"` // 理由
-		OperatorId      string  `json:"operatorId,optional"` // 操作人ID
 	}
 	// 移除主题文档关联请求
 	TopicDocumentRelationRemoveReq {
 		TopicId         string `json:"topicId"` // 主题ID
 		KnowledgeBaseId string `json:"knowledgeBaseId"` // 知识库ID
 		DocumentId      string `json:"documentId"` // 文档ID
-		OperatorId      string `json:"operatorId,optional"` // 操作人ID
-	}
-	// 分页查询知识路由追踪请求
-	KnowledgeRouteTracePageReq {
-		ConversationId string `json:"conversationId"` // 会话ID
-		Mode           string `json:"mode,optional"` // 模式
-		RouteStatus    int    `json:"routeStatus,optional"` // 路由状态
-		PageNo         int    `json:"pageNo,optional,default=1"` // 页码
-		PageSize       int    `json:"pageSize,optional,default=10"` // 每页大小
 	}
 )
 
@@ -127,38 +113,12 @@ type (
 		RelationSource  string  `json:"relationSource"` // 关联来源
 		Reason          string  `json:"reason"` // 理由
 	}
-	// 分页查询知识路由追踪响应
-	KnowledgeRouteTracePageResp {
-		PageNo     int                        `json:"pageNo"` // 页码
-		PageSize   int                        `json:"pageSize"` // 每页大小
-		Total      int64                      `json:"total"` // 总条数
-		TotalPages int                        `json:"totalPages"` // 总页数
-		Records    []*KnowledgeRouteTraceItem `json:"records"` // 列表数据
-	}
-	// 知识路由追踪明细
-	KnowledgeRouteTraceItem {
-		ID                  string  `json:"id"` // 主键ID
-		ConversationId      string  `json:"conversationId"` // 会话ID
-		ExchangeId          string  `json:"exchangeId"` // 轮次ID
-		Question            string  `json:"question"` // 用户提问
-		RewriteQuestion     string  `json:"rewriteQuestion"` // 改写后的问题
-		Mode                string  `json:"mode"` // 模式
-		TopScopesJson       string  `json:"topScopesJson"` // 候选范围JSON
-		TopTopicsJson       string  `json:"topTopicsJson"` // 候选主题JSON
-		TopDocumentsJson    string  `json:"topDocumentsJson"` // 候选文档JSON
-		SelectedDocumentId  string  `json:"selectedDocumentId"` // 选中的文档ID
-		HitSelectedDocument int     `json:"hitSelectedDocument"` // 是否命中选中文档
-		Confidence          float64 `json:"confidence"` // 置信度
-		RouteStatus         string  `json:"routeStatus"` // 路由状态
-		Reason              string  `json:"reason"`      // 选择理由
-		CreateTime          string  `json:"createTime"` // 创建时间
-	}
+
 	// 知识库明细响应
 	KnowledgeBaseItemResp {
 		ID                       string `json:"id"` // 主键ID
 		BaseName                 string `json:"baseName"` // 知识库名称
 		Description              string `json:"description"` // 描述
-		EmbeddingModel           string `json:"embeddingModel"` // 嵌入模型
 		RetrievalConfigJson      string `json:"retrievalConfigJson"` // 检索配置JSON
 		GraphRagConfigJson       string `json:"graphRagConfigJson"` // 图谱RAG配置JSON
 		MetadataFilterJson       string `json:"metadataFilterJson"` // 元数据过滤JSON
@@ -219,10 +179,6 @@ service knowledge {
 	@doc "删除主题文档关联"
 	@handler DeleteTopicDocumentRelation
 	post /topic/document/remove (TopicDocumentRelationRemoveReq) returns (bool)
-
-	@doc "分页查询知识路由追踪"
-	@handler QueryKnowledgeRouteTracePage
-	post /route/trace/page/query (KnowledgeRouteTracePageReq) returns (KnowledgeRouteTracePageResp)
 
 	@doc "查询知识库列表"
 	@handler ListKnowledgeBase

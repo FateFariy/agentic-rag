@@ -5,14 +5,7 @@ import (
 	"strconv"
 
 	"github.com/duke-git/lancet/v2/strutil"
-
-	"github.com/swiftbit/know-agent/services/knowledge/internal/domain/model/enum"
 )
-
-// ToRouteStatus 将路由状态码转换为状态名
-func ToRouteStatus(code int) string {
-	return enum.RouteStatusName(code)
-}
 
 // NormalizeString 去除字符串首尾空白
 func NormalizeString(s string) string {

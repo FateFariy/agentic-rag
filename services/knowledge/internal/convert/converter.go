@@ -27,9 +27,6 @@ type KnowledgeConverter interface {
 
 	ToTopicDocumentRelationResp(src *entity.KnowledgeTopicDocumentRelation) *api.TopicDocumentRelationResp
 	ToTopicDocumentRelationRespList(src []*entity.KnowledgeTopicDocumentRelation) []*api.TopicDocumentRelationResp
-	// goverter:map RouteStatus | ToRouteStatus
-	ToKnowledgeRouteTraceItem(src *entity.KnowledgeRouteTrace) *api.KnowledgeRouteTraceItem
-	ToKnowledgeRouteTraceItemList(src []*entity.KnowledgeRouteTrace) []*api.KnowledgeRouteTraceItem
 	ToKnowledgeBaseItemRespList(src []*entity.KnowledgeBase) []*api.KnowledgeBaseItemResp
 
 	// goverter:map . Model
@@ -38,8 +35,6 @@ type KnowledgeConverter interface {
 	ToKnowledgeTopicNodeModel(src *entity.KnowledgeTopicNode) *model.KnowledgeTopicNode
 	// goverter:map . Model
 	ToTopicDocumentRelationModel(src *entity.KnowledgeTopicDocumentRelation) *model.KnowledgeTopicDocumentRelation
-	// goverter:map . Model
-	ToKnowledgeRouteTraceModel(src *entity.KnowledgeRouteTrace) *model.KnowledgeRouteTrace
 	// goverter:map Model.ID ID
 	ToKnowledgeBaseEntity(src *model.KnowledgeBase) *entity.KnowledgeBase
 	ToKnowledgeBaseEntities(src []*model.KnowledgeBase) []*entity.KnowledgeBase

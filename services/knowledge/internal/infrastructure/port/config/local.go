@@ -1,6 +1,9 @@
 package config
 
 import (
+	"fmt"
+
+	"github.com/swiftbit/know-agent/pkg/utils"
 	"github.com/swiftbit/know-agent/services/knowledge/internal/config"
 	"github.com/swiftbit/know-agent/services/knowledge/internal/domain/model/vo"
 )
@@ -11,9 +14,12 @@ type LocalConfig struct {
 
 // NewLocalConfig 以全局配置构造知识库本地配置读取器
 func NewLocalConfig(conf *config.Config) *LocalConfig {
-	return &LocalConfig{
+	l := &LocalConfig{
 		conf: conf,
 	}
+	// 启动期预热校验检索范围收窄阈值，非法配置直接启动失败（panic 带清晰错误）
+	l.CurrentScopeConfig()
+	return l
 }
 
 func (c *LocalConfig) CurrentOptions() *vo.RagRuntimeOptions {
@@ -28,7 +34,7 @@ func (c *LocalConfig) CurrentOptions() *vo.RagRuntimeOptions {
 	opts.KeywordTopK = rag.Keyword.TopK
 	opts.GraphRagTopK = rag.Graph.SearchTopK
 	opts.GraphRagMaxHops = rag.Graph.SearchMaxHops
-	opts.CandidateTopK = rag.FinalTopK
+	opts.CandidateTopK = rag.CandidateTopK
 	opts.RerankCandidateTopK = rag.Rerank.TopN
 	opts.FinalTopK = rag.FinalTopK
 	opts.RerankEnabled = rag.Rerank.Enabled
@@ -50,6 +56,25 @@ func (c *LocalConfig) CurrentOptions() *vo.RagRuntimeOptions {
 	}
 
 	return opts
+}
+
+// CurrentScopeConfig 返回检索范围收窄阈值的全局默认值
+func (c *LocalConfig) CurrentScopeConfig() *vo.ScopeConfig {
+	scope := vo.NewDefaultScopeConfig()
+	if c == nil || c.conf == nil {
+		return scope
+	}
+
+	if sc := c.conf.Rag.Scope; sc != nil {
+		scope.MinIntentScore = utils.DefaultIfZero(sc.MinIntentScore, scope.MinIntentScore)
+		scope.ConfidenceThreshold = utils.DefaultIfZero(sc.ConfidenceThreshold, scope.ConfidenceThreshold)
+		scope.SupplementRatio = utils.DefaultIfZero(sc.SupplementRatio, scope.SupplementRatio)
+	}
+
+	if err := scope.Validate(); err != nil {
+		panic(fmt.Errorf("knowledge 全局配置 Rag.Scope 非法，服务启动失败: %w", err))
+	}
+	return scope
 }
 
 func (c *LocalConfig) CurrentIndexingOptions() *vo.IndexingOptions {

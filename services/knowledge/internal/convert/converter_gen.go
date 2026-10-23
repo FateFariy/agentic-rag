@@ -26,7 +26,6 @@ func FromKnowledgeScopeSaveReq(source *api.KnowledgeScopeSaveReq) *entity.Knowle
 		entityKnowledgeScopeNode.Aliases = NormalizeString((*source).Aliases)
 		entityKnowledgeScopeNode.Examples = NormalizeString((*source).Examples)
 		entityKnowledgeScopeNode.SortOrder = (*source).SortOrder
-		entityKnowledgeScopeNode.OperatorId = NormalizeString((*source).OperatorId)
 		pEntityKnowledgeScopeNode = &entityKnowledgeScopeNode
 	}
 	return pEntityKnowledgeScopeNode
@@ -80,7 +79,6 @@ func ToKnowledgeBaseEntity(source *model.KnowledgeBase) *entity.KnowledgeBase {
 		entityKnowledgeBase.ID = (*source).Model.ID
 		entityKnowledgeBase.BaseName = NormalizeString((*source).BaseName)
 		entityKnowledgeBase.Description = NormalizeString((*source).Description)
-		entityKnowledgeBase.EmbeddingModel = NormalizeString((*source).EmbeddingModel)
 		entityKnowledgeBase.RetrievalConfigJson = datatypesJSONToJsonRawMessage((*source).RetrievalConfigJson)
 		entityKnowledgeBase.GraphRagConfigJson = datatypesJSONToJsonRawMessage((*source).GraphRagConfigJson)
 		entityKnowledgeBase.MetadataFilterJson = datatypesJSONToJsonRawMessage((*source).MetadataFilterJson)
@@ -109,7 +107,6 @@ func ToKnowledgeBaseModel(source *entity.KnowledgeBase) *model.KnowledgeBase {
 		modelKnowledgeBase.Model = entityKnowledgeBaseToCommonModel((*source))
 		modelKnowledgeBase.BaseName = NormalizeString((*source).BaseName)
 		modelKnowledgeBase.Description = NormalizeString((*source).Description)
-		modelKnowledgeBase.EmbeddingModel = NormalizeString((*source).EmbeddingModel)
 		modelKnowledgeBase.RetrievalConfigJson = jsonRawMessageToDatatypesJSON((*source).RetrievalConfigJson)
 		modelKnowledgeBase.GraphRagConfigJson = jsonRawMessageToDatatypesJSON((*source).GraphRagConfigJson)
 		modelKnowledgeBase.MetadataFilterJson = jsonRawMessageToDatatypesJSON((*source).MetadataFilterJson)
@@ -130,66 +127,6 @@ func ToKnowledgeBaseModelList(source []*entity.KnowledgeBase) []*model.Knowledge
 		}
 	}
 	return pModelKnowledgeBaseList
-}
-func ToKnowledgeRouteTraceItem(source *entity.KnowledgeRouteTrace) *api.KnowledgeRouteTraceItem {
-	var pApiKnowledgeRouteTraceItem *api.KnowledgeRouteTraceItem
-	if source != nil {
-		var apiKnowledgeRouteTraceItem api.KnowledgeRouteTraceItem
-		apiKnowledgeRouteTraceItem.ID = Int64ToString((*source).ID)
-		apiKnowledgeRouteTraceItem.ConversationId = NormalizeString((*source).ConversationId)
-		apiKnowledgeRouteTraceItem.ExchangeId = Int64ToString((*source).ExchangeId)
-		apiKnowledgeRouteTraceItem.Question = NormalizeString((*source).Question)
-		apiKnowledgeRouteTraceItem.RewriteQuestion = NormalizeString((*source).RewriteQuestion)
-		apiKnowledgeRouteTraceItem.Mode = NormalizeString((*source).Mode)
-		apiKnowledgeRouteTraceItem.TopScopesJson = NormalizeString((*source).TopScopesJson)
-		apiKnowledgeRouteTraceItem.TopTopicsJson = NormalizeString((*source).TopTopicsJson)
-		apiKnowledgeRouteTraceItem.TopDocumentsJson = NormalizeString((*source).TopDocumentsJson)
-		apiKnowledgeRouteTraceItem.SelectedDocumentId = Int64ToString((*source).SelectedDocumentId)
-		if (*source).HitSelectedDocument != nil {
-			apiKnowledgeRouteTraceItem.HitSelectedDocument = *(*source).HitSelectedDocument
-		}
-		apiKnowledgeRouteTraceItem.Confidence = (*source).Confidence
-		apiKnowledgeRouteTraceItem.RouteStatus = ToRouteStatus((*source).RouteStatus)
-		apiKnowledgeRouteTraceItem.Reason = NormalizeString((*source).Reason)
-		pApiKnowledgeRouteTraceItem = &apiKnowledgeRouteTraceItem
-	}
-	return pApiKnowledgeRouteTraceItem
-}
-func ToKnowledgeRouteTraceItemList(source []*entity.KnowledgeRouteTrace) []*api.KnowledgeRouteTraceItem {
-	var pApiKnowledgeRouteTraceItemList []*api.KnowledgeRouteTraceItem
-	if source != nil {
-		pApiKnowledgeRouteTraceItemList = make([]*api.KnowledgeRouteTraceItem, len(source))
-		for i := 0; i < len(source); i++ {
-			pApiKnowledgeRouteTraceItemList[i] = ToKnowledgeRouteTraceItem(source[i])
-		}
-	}
-	return pApiKnowledgeRouteTraceItemList
-}
-func ToKnowledgeRouteTraceModel(source *entity.KnowledgeRouteTrace) *model.KnowledgeRouteTrace {
-	var pModelKnowledgeRouteTrace *model.KnowledgeRouteTrace
-	if source != nil {
-		var modelKnowledgeRouteTrace model.KnowledgeRouteTrace
-		modelKnowledgeRouteTrace.Model = entityKnowledgeRouteTraceToCommonModel((*source))
-		modelKnowledgeRouteTrace.ConversationId = NormalizeString((*source).ConversationId)
-		modelKnowledgeRouteTrace.ExchangeId = (*source).ExchangeId
-		modelKnowledgeRouteTrace.Question = NormalizeString((*source).Question)
-		modelKnowledgeRouteTrace.RewriteQuestion = NormalizeString((*source).RewriteQuestion)
-		modelKnowledgeRouteTrace.Mode = NormalizeString((*source).Mode)
-		modelKnowledgeRouteTrace.KnowledgeBaseSelectionMode = NormalizeString((*source).KnowledgeBaseSelectionMode)
-		modelKnowledgeRouteTrace.SelectedKnowledgeBaseIdsJson = NormalizeString((*source).SelectedKnowledgeBaseIdsJson)
-		modelKnowledgeRouteTrace.SelectedKnowledgeBaseNamesJson = NormalizeString((*source).SelectedKnowledgeBaseNamesJson)
-		modelKnowledgeRouteTrace.AllowedDocumentIdsJson = NormalizeString((*source).AllowedDocumentIdsJson)
-		modelKnowledgeRouteTrace.TopScopesJson = NormalizeString((*source).TopScopesJson)
-		modelKnowledgeRouteTrace.TopTopicsJson = NormalizeString((*source).TopTopicsJson)
-		modelKnowledgeRouteTrace.TopDocumentsJson = NormalizeString((*source).TopDocumentsJson)
-		modelKnowledgeRouteTrace.SelectedDocumentId = (*source).SelectedDocumentId
-		modelKnowledgeRouteTrace.HitSelectedDocument = (*source).HitSelectedDocument
-		modelKnowledgeRouteTrace.Confidence = (*source).Confidence
-		modelKnowledgeRouteTrace.RouteStatus = (*source).RouteStatus
-		modelKnowledgeRouteTrace.Reason = NormalizeString((*source).Reason)
-		pModelKnowledgeRouteTrace = &modelKnowledgeRouteTrace
-	}
-	return pModelKnowledgeRouteTrace
 }
 func ToKnowledgeScopeNodeModel(source *entity.KnowledgeScopeNode) *model.KnowledgeScopeNode {
 	var pModelKnowledgeScopeNode *model.KnowledgeScopeNode
@@ -334,11 +271,6 @@ func entityKnowledgeBaseToCommonModel(source entity.KnowledgeBase) common.Model 
 	commonModel.ID = source.ID
 	return commonModel
 }
-func entityKnowledgeRouteTraceToCommonModel(source entity.KnowledgeRouteTrace) common.Model {
-	var commonModel common.Model
-	commonModel.ID = source.ID
-	return commonModel
-}
 func entityKnowledgeScopeNodeToCommonModel(source entity.KnowledgeScopeNode) common.Model {
 	var commonModel common.Model
 	commonModel.ID = source.ID
@@ -371,7 +303,6 @@ func pEntityKnowledgeBaseToPApiKnowledgeBaseItemResp(source *entity.KnowledgeBas
 		apiKnowledgeBaseItemResp.ID = Int64ToString((*source).ID)
 		apiKnowledgeBaseItemResp.BaseName = NormalizeString((*source).BaseName)
 		apiKnowledgeBaseItemResp.Description = NormalizeString((*source).Description)
-		apiKnowledgeBaseItemResp.EmbeddingModel = NormalizeString((*source).EmbeddingModel)
 		apiKnowledgeBaseItemResp.RetrievalConfigJson = RawMessageToString((*source).RetrievalConfigJson)
 		apiKnowledgeBaseItemResp.GraphRagConfigJson = RawMessageToString((*source).GraphRagConfigJson)
 		apiKnowledgeBaseItemResp.MetadataFilterJson = RawMessageToString((*source).MetadataFilterJson)

@@ -4,11 +4,9 @@ import (
 	"context"
 	"errors"
 
-	"github.com/duke-git/lancet/v2/strutil"
 	"gorm.io/gorm"
 
 	"github.com/swiftbit/know-agent/pkg/infra"
-	"github.com/swiftbit/know-agent/pkg/utils"
 	"github.com/swiftbit/know-agent/services/knowledge/internal/convert"
 	"github.com/swiftbit/know-agent/services/knowledge/internal/domain/adapter"
 	"github.com/swiftbit/know-agent/services/knowledge/internal/domain/model/entity"
@@ -23,7 +21,7 @@ type KnowledgeRepositoryImpl struct {
 
 var _ adapter.KnowledgeRepository = (*KnowledgeRepositoryImpl)(nil)
 
-// NewKnowledgeRepository 构造函数，仅依赖 knowledge 服务自有的 MySQL 连接。
+// NewKnowledgeRepository 构造函数，仅依赖 knowledge 服务自有的 MySQL 连接
 func NewKnowledgeRepository(db *gorm.DB) *KnowledgeRepositoryImpl {
 	return &KnowledgeRepositoryImpl{
 		TxManager: infra.NewTxManager(db),
@@ -32,25 +30,13 @@ func NewKnowledgeRepository(db *gorm.DB) *KnowledgeRepositoryImpl {
 
 // ============ 知识范围节点 ============
 
-// SelectKnowledgeScopeNodesByKbIds 根据知识库ID获取有效的知识范围节点
-func (k *KnowledgeRepositoryImpl) SelectKnowledgeScopeNodesByKbIds(ctx context.Context, kbIds []int64) ([]*entity.KnowledgeScopeNode, error) {
-	var nodes []*entity.KnowledgeScopeNode
-	if err := k.DBWithContext(ctx).Model(&model.KnowledgeScopeNode{}).
-		Where("knowledge_base_id IN ?", kbIds).
-		Order("sort_order ASC").
-		Find(&nodes).Error; err != nil {
-		return nil, err
-	}
-	return nodes, nil
-}
-
-// SelectScopesByKbId 按知识库ID查询知识范围列表
-func (k *KnowledgeRepositoryImpl) SelectScopesByKbId(ctx context.Context, kbId int64) ([]*entity.KnowledgeScopeNode, error) {
+// SelectScopes 查询知识范围节点列表，kbIds 为可选参数：不传时查询全部，否则按知识库ID过滤
+func (k *KnowledgeRepositoryImpl) SelectScopes(ctx context.Context, kbIds ...int64) ([]*entity.KnowledgeScopeNode, error) {
 	var nodes []*entity.KnowledgeScopeNode
 	builder := k.DBWithContext(ctx).Model(&model.KnowledgeScopeNode{}).
 		Order("sort_order ASC, id ASC")
-	if kbId > 0 {
-		builder = builder.Where("knowledge_base_id = ?", kbId)
+	if len(kbIds) > 0 {
+		builder = builder.Where("knowledge_base_id IN ?", kbIds)
 	}
 	if err := builder.Find(&nodes).Error; err != nil {
 		return nil, err
@@ -122,14 +108,6 @@ func (k *KnowledgeRepositoryImpl) UpsertKnowledgeScopeNode(ctx context.Context, 
 	return k.DBWithContext(ctx).Updates(nodeModel).Error
 }
 
-// DeleteKnowledgeScopeNode 按ID删除知识范围节点
-func (k *KnowledgeRepositoryImpl) DeleteKnowledgeScopeNode(ctx context.Context, id int64) error {
-	if id <= 0 {
-		return nil
-	}
-	return k.DBWithContext(ctx).Delete(&model.KnowledgeScopeNode{}, id).Error
-}
-
 // DeleteScope 删除知识范围
 func (k *KnowledgeRepositoryImpl) DeleteScope(ctx context.Context, id int64, kbId int64) error {
 	return k.DBWithContext(ctx).Where("id = ? AND knowledge_base_id = ?", id, kbId).
@@ -145,19 +123,6 @@ func (k *KnowledgeRepositoryImpl) SelectKnowledgeTopicNodesByKbIds(ctx context.C
 		Where("knowledge_base_id IN ?", kbIds).
 		Order("sort_order ASC").
 		Find(&nodes).Error; err != nil {
-		return nil, err
-	}
-	return nodes, nil
-}
-
-// SelectKnowledgeTopicNodesByScopeId 根据知识范围节点ID查询所有主题节点
-func (k *KnowledgeRepositoryImpl) SelectKnowledgeTopicNodesByScopeId(ctx context.Context, scopeId int64) ([]*entity.KnowledgeTopicNode, error) {
-	var nodes []*entity.KnowledgeTopicNode
-	builder := k.DBWithContext(ctx).Model(&model.KnowledgeTopicNode{}).Order("sort_order ASC")
-	if scopeId != 0 {
-		builder = builder.Where("scope_id = ?", scopeId)
-	}
-	if err := builder.Find(&nodes).Error; err != nil {
 		return nil, err
 	}
 	return nodes, nil
@@ -237,14 +202,6 @@ func (k *KnowledgeRepositoryImpl) UpsertKnowledgeTopicNode(ctx context.Context, 
 	return k.DBWithContext(ctx).Updates(nodeModel).Error
 }
 
-// DeleteKnowledgeTopicNode 按ID删除主题节点
-func (k *KnowledgeRepositoryImpl) DeleteKnowledgeTopicNode(ctx context.Context, id int64) error {
-	if id <= 0 {
-		return nil
-	}
-	return k.DBWithContext(ctx).Delete(&model.KnowledgeTopicNode{}, id).Error
-}
-
 // DeleteTopic 软删除主题（GORM 软删除）
 func (k *KnowledgeRepositoryImpl) DeleteTopic(ctx context.Context, id int64, kbId int64) error {
 	return k.DBWithContext(ctx).Where("id = ? AND knowledge_base_id = ?", id, kbId).
@@ -253,23 +210,16 @@ func (k *KnowledgeRepositoryImpl) DeleteTopic(ctx context.Context, id int64, kbI
 
 // ============ 主题-文档关系 ============
 
-// SelectTopicDocumentRelations 查询所有主题-文档关系
-func (k *KnowledgeRepositoryImpl) SelectTopicDocumentRelations(ctx context.Context, where any) ([]*entity.KnowledgeTopicDocumentRelation, error) {
-	var relations []*entity.KnowledgeTopicDocumentRelation
-	if err := k.DBWithContext(ctx).Model(&model.KnowledgeTopicDocumentRelation{}).Where(where).Find(&relations).Error; err != nil {
-		return nil, err
+// SelectTopicDocumentRelationsByKbIds 按知识库ID列表批量查询全部有效的主题-文档关联（供检索范围收窄加载 topic 绑定）
+func (k *KnowledgeRepositoryImpl) SelectTopicDocumentRelationsByKbIds(ctx context.Context, kbIds []int64) ([]*entity.KnowledgeTopicDocumentRelation, error) {
+	if len(kbIds) == 0 {
+		return []*entity.KnowledgeTopicDocumentRelation{}, nil
 	}
-	return relations, nil
-}
-
-// SelectTopicDocumentRelationsByTopicCode 根据主题编码查询主题-文档关系
-func (k *KnowledgeRepositoryImpl) SelectTopicDocumentRelationsByTopicCode(ctx context.Context, topicCode string) ([]*entity.KnowledgeTopicDocumentRelation, error) {
 	var relations []*entity.KnowledgeTopicDocumentRelation
-	query := k.DBWithContext(ctx).Model(&model.KnowledgeTopicDocumentRelation{})
-	if strutil.IsNotBlank(topicCode) {
-		query = query.Where("topic_code = ?", topicCode)
-	}
-	if err := query.Find(&relations).Error; err != nil {
+	if err := k.DBWithContext(ctx).Model(&model.KnowledgeTopicDocumentRelation{}).
+		Where("knowledge_base_id IN ?", kbIds).
+		Order("topic_id ASC, relation_score DESC, id ASC").
+		Find(&relations).Error; err != nil {
 		return nil, err
 	}
 	return relations, nil
@@ -323,41 +273,11 @@ func (k *KnowledgeRepositoryImpl) UpsertTopicDocumentRelation(ctx context.Contex
 }
 
 // DeleteTopicDocumentRelation 软删除主题-文档关联
-func (k *KnowledgeRepositoryImpl) DeleteTopicDocumentRelation(ctx context.Context, kbId int64, topicId int64, documentId int64) error {
-	return k.DBWithContext(ctx).Model(&model.KnowledgeTopicDocumentRelation{}).
+func (k *KnowledgeRepositoryImpl) DeleteTopicDocumentRelation(ctx context.Context, kbId int64, topicId int64, documentId int64) (int64, error) {
+	res := k.DBWithContext(ctx).Model(&model.KnowledgeTopicDocumentRelation{}).
 		Where("knowledge_base_id = ? AND topic_id = ? AND document_id = ?", kbId, topicId, documentId).
-		Delete(nil).Error
-}
-
-// ============ 路由跟踪 ============
-
-// InsertKnowledgeRouteTrace 插入路由跟踪
-func (k *KnowledgeRepositoryImpl) InsertKnowledgeRouteTrace(ctx context.Context, trace *entity.KnowledgeRouteTrace) error {
-	return k.DBWithContext(ctx).Model(&model.KnowledgeRouteTrace{}).Create(convert.ToKnowledgeRouteTraceModel(trace)).Error
-}
-
-// SelectKnowledgeRouteTracePage 分页查询路由跟踪
-func (k *KnowledgeRepositoryImpl) SelectKnowledgeRouteTracePage(ctx context.Context, conversationId, mode string, routeStatus, pageNo, pageSize int) ([]*entity.KnowledgeRouteTrace, int64, error) {
-	builder := k.DBWithContext(ctx).Model(&model.KnowledgeRouteTrace{})
-	if strutil.IsNotBlank(conversationId) {
-		builder = builder.Where("conversation_id = ?", conversationId)
-	}
-	if strutil.IsNotBlank(mode) {
-		builder = builder.Where("mode = ?", mode)
-	}
-	if routeStatus > 0 {
-		builder = builder.Where("route_status = ?", routeStatus)
-	}
-
-	var total int64
-	if err := builder.Count(&total).Error; err != nil {
-		return nil, 0, err
-	}
-	var list []*entity.KnowledgeRouteTrace
-	if err := builder.Scopes(utils.Paginate(pageNo, pageSize)).Order("id DESC").Find(&list).Error; err != nil {
-		return nil, 0, err
-	}
-	return list, total, nil
+		Delete(nil)
+	return res.RowsAffected, res.Error
 }
 
 // ========== 知识库相关 ==========

@@ -7,7 +7,6 @@ type KnowledgeBaseItemResp struct {
 	ID                       string `json:"id"`                       // 主键ID
 	BaseName                 string `json:"baseName"`                 // 知识库名称
 	Description              string `json:"description"`              // 描述
-	EmbeddingModel           string `json:"embeddingModel"`           // 嵌入模型
 	RetrievalConfigJson      string `json:"retrievalConfigJson"`      // 检索配置JSON
 	GraphRagConfigJson       string `json:"graphRagConfigJson"`       // 图谱RAG配置JSON
 	MetadataFilterJson       string `json:"metadataFilterJson"`       // 元数据过滤JSON
@@ -25,44 +24,9 @@ type KnowledgeBaseOptionResp struct {
 	RetrievableDocumentCount int    `json:"retrievableDocumentCount"` // 可检索文档数量
 }
 
-type KnowledgeRouteTraceItem struct {
-	ID                  string  `json:"id"`                  // 主键ID
-	ConversationId      string  `json:"conversationId"`      // 会话ID
-	ExchangeId          string  `json:"exchangeId"`          // 轮次ID
-	Question            string  `json:"question"`            // 用户提问
-	RewriteQuestion     string  `json:"rewriteQuestion"`     // 改写后的问题
-	Mode                string  `json:"mode"`                // 模式
-	TopScopesJson       string  `json:"topScopesJson"`       // 候选范围JSON
-	TopTopicsJson       string  `json:"topTopicsJson"`       // 候选主题JSON
-	TopDocumentsJson    string  `json:"topDocumentsJson"`    // 候选文档JSON
-	SelectedDocumentId  string  `json:"selectedDocumentId"`  // 选中的文档ID
-	HitSelectedDocument int     `json:"hitSelectedDocument"` // 是否命中选中文档
-	Confidence          float64 `json:"confidence"`          // 置信度
-	RouteStatus         string  `json:"routeStatus"`         // 路由状态
-	Reason              string  `json:"reason"`              // 选择理由
-	CreateTime          string  `json:"createTime"`          // 创建时间
-}
-
-type KnowledgeRouteTracePageReq struct {
-	ConversationId string `json:"conversationId,optional"`      // 会话ID
-	Mode           string `json:"mode,optional"`                // 模式
-	RouteStatus    int    `json:"routeStatus,optional"`         // 路由状态
-	PageNo         int    `json:"pageNo,optional,default=1"`    // 页码
-	PageSize       int    `json:"pageSize,optional,default=10"` // 每页大小
-}
-
-type KnowledgeRouteTracePageResp struct {
-	PageNo     int                        `json:"pageNo"`     // 页码
-	PageSize   int                        `json:"pageSize"`   // 每页大小
-	Total      int64                      `json:"total"`      // 总条数
-	TotalPages int                        `json:"totalPages"` // 总页数
-	Records    []*KnowledgeRouteTraceItem `json:"records"`    // 列表数据
-}
-
 type KnowledgeScopeDeleteReq struct {
-	ID              string `json:"id"`                  // 主键ID
-	KnowledgeBaseId string `json:"knowledgeBaseId"`     // 知识库ID
-	OperatorId      string `json:"operatorId,optional"` // 操作人ID
+	ID              string `json:"id"`              // 主键ID
+	KnowledgeBaseId string `json:"knowledgeBaseId"` // 知识库ID
 }
 
 type KnowledgeScopeListReq struct {
@@ -89,13 +53,11 @@ type KnowledgeScopeSaveReq struct {
 	Aliases         string `json:"aliases,optional"`       // 别名
 	Examples        string `json:"examples,optional"`      // 示例
 	SortOrder       int    `json:"sortOrder,optional"`     // 排序
-	OperatorId      string `json:"operatorId,optional"`    // 操作人ID
 }
 
 type KnowledgeTopicDeleteReq struct {
-	ID              string `json:"id,optional"`         // 主键ID
-	KnowledgeBaseId string `json:"knowledgeBaseId"`     // 知识库ID
-	OperatorId      string `json:"operatorId,optional"` // 操作人ID
+	ID              string `json:"id,optional"`     // 主键ID
+	KnowledgeBaseId string `json:"knowledgeBaseId"` // 知识库ID
 }
 
 type KnowledgeTopicListReq struct {
@@ -127,7 +89,6 @@ type KnowledgeTopicSaveReq struct {
 	AnswerShape         string `json:"answerShape,optional"`         // 答复形态
 	ExecutionPreference string `json:"executionPreference,optional"` // 执行偏好
 	SortOrder           int    `json:"sortOrder,optional"`           // 排序
-	OperatorId          string `json:"operatorId,optional"`          // 操作人ID
 }
 
 type TopicDocumentRelationListReq struct {
@@ -136,10 +97,9 @@ type TopicDocumentRelationListReq struct {
 }
 
 type TopicDocumentRelationRemoveReq struct {
-	TopicId         string `json:"topicId"`             // 主题ID
-	KnowledgeBaseId string `json:"knowledgeBaseId"`     // 知识库ID
-	DocumentId      string `json:"documentId"`          // 文档ID
-	OperatorId      string `json:"operatorId,optional"` // 操作人ID
+	TopicId         string `json:"topicId"`         // 主题ID
+	KnowledgeBaseId string `json:"knowledgeBaseId"` // 知识库ID
+	DocumentId      string `json:"documentId"`      // 文档ID
 }
 
 type TopicDocumentRelationResp struct {
@@ -162,5 +122,4 @@ type TopicDocumentRelationSaveReq struct {
 	RelationScore   float64 `json:"relationScore,optional"`  // 关联分数
 	RelationSource  string  `json:"relationSource,optional"` // 关联来源
 	Reason          string  `json:"reason,optional"`         // 理由
-	OperatorId      string  `json:"operatorId,optional"`     // 操作人ID
 }
